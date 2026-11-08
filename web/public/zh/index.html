@@ -25,7 +25,7 @@
   <meta name="twitter:image" content="https://polyemergence.com/assets/social-preview.png">
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="manifest" href="/manifest.webmanifest">
-  <link rel="stylesheet" href="/styles.css?v=20261108-6">
+  <link rel="stylesheet" href="/styles.css?v=20261108-7">
   <script type="application/ld+json">
   {"@context":"https://schema.org","@graph":[
     {"@type":"NewsMediaOrganization","@id":"https://polyemergence.com/#organization","name":"多重涌现","alternateName":"Polyemergence","url":"https://polyemergence.com/","logo":{"@type":"ImageObject","url":"https://polyemergence.com/assets/mark.svg"},"description":"聚合 AI 新闻与人工智能行业动态的独立情报媒体。"},
@@ -37,7 +37,7 @@
 <body>
   <header class="site-header">
     <a class="brand" href="/zh/" aria-label="多重涌现首页"><img id="brand-logo" src="/assets/logo-zh-reverse.svg" alt="多重涌现" width="420" height="70"></a>
-    <nav class="desktop-nav" aria-label="主导航"><a href="#brief" data-copy="navNews">简报</a><a href="#about" data-copy="navInsight">方法</a></nav>
+    <nav class="desktop-nav" aria-label="主导航"><a href="#brief" data-copy="navNews">简报</a><a href="#about" data-copy="navInsight">方法</a><a href="#feedback" data-copy="navFeedback">反馈</a></nav>
     <div class="header-tools"><span class="edition" data-copy="edition">全球版</span><div class="language-switch" aria-label="语言"><a href="/en/" hreflang="en" data-locale-button="en">EN</a><span aria-hidden="true">|</span><a href="/zh/" hreflang="zh-Hans" data-locale-button="zh" aria-current="page">中</a></div></div>
   </header>
   <main>
@@ -52,8 +52,18 @@
       <div id="demo-notice" class="demo-notice" hidden></div><div id="lead-story" class="lead-story" aria-live="polite"></div><div id="story-grid" class="story-grid"></div><div id="empty-state" class="empty-state" hidden></div>
     </section>
     <section class="method" id="about" aria-labelledby="method-title"><div><p class="section-index">02</p><h2 id="method-title" data-copy="methodTitle">从信号到影响。</h2></div><ol><li><span>01</span><strong data-copy="methodSignal">信号</strong><p data-copy="methodSignalText">发生了什么变化？</p></li><li><span>02</span><strong data-copy="methodStructure">结构</strong><p data-copy="methodStructureText">什么更大的系统正在形成？</p></li><li><span>03</span><strong data-copy="methodConsequence">影响</strong><p data-copy="methodConsequenceText">谁会受到影响，下一步是什么？</p></li></ol></section>
+    <section class="feedback" id="feedback" aria-labelledby="feedback-title">
+      <div class="feedback-intro"><p class="section-index">03 / <span data-copy="feedbackIndex">读者信号</span></p><h2 id="feedback-title" data-copy="feedbackTitle">帮助我们<br>校准信号。</h2><p data-copy="feedbackIntro">发现错误、遗漏的重要信源，或值得持续追踪的线索？请私下告诉编辑。</p></div>
+      <form id="feedback-form" class="feedback-form" novalidate>
+        <div class="form-field"><label for="feedback-topic" data-copy="feedbackTopic">反馈类型</label><select id="feedback-topic" name="topic" required><option value="correction" data-copy="feedbackCorrection">内容纠错</option><option value="source" data-copy="feedbackSource">推荐信源</option><option value="product" data-copy="feedbackProduct">网站建议</option><option value="other" data-copy="feedbackOther">其他</option></select></div>
+        <div class="form-field"><label for="feedback-email"><span data-copy="feedbackEmail">回复邮箱</span> <small data-copy="feedbackOptional">选填</small></label><input id="feedback-email" name="email" type="email" maxlength="254" autocomplete="email" placeholder="you@example.com" data-copy-placeholder="feedbackEmailPlaceholder"></div>
+        <div class="form-field form-field-wide"><label for="feedback-message" data-copy="feedbackMessage">反馈内容</label><textarea id="feedback-message" name="message" rows="6" minlength="10" maxlength="2000" required placeholder="请告诉我们需要注意什么……" data-copy-placeholder="feedbackMessagePlaceholder"></textarea><div class="form-meta"><span data-copy="feedbackPrivate">信息将私下发送给编辑。</span><span><output id="feedback-count">0</output>/2000</span></div></div>
+        <div class="feedback-trap" aria-hidden="true"><label for="feedback-website">Website</label><input id="feedback-website" name="website" type="text" tabindex="-1" autocomplete="off"></div>
+        <div class="form-actions"><button id="feedback-submit" type="submit" data-copy="feedbackSubmit">发送反馈</button><p id="feedback-status" role="status" aria-live="polite"></p></div>
+      </form>
+    </section>
   </main>
   <footer><div class="footer-brand"><img id="footer-logo" src="/assets/logo-zh-reverse.svg" alt="多重涌现" width="360"></div><p data-copy="footer">面向变化世界的独立 AI 情报媒体。</p><p class="attribution">数据引擎基于 <a href="https://github.com/frankzch/ai-news-brief" rel="noopener noreferrer">AI News Brief</a> · MIT License</p></footer>
-  <script src="/app.js?v=20261108-6" defer></script>
+  <script src="/app.js?v=20261108-7" defer></script>
 </body>
 </html>

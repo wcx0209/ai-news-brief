@@ -25,7 +25,7 @@
   <meta name="twitter:image" content="https://polyemergence.com/assets/social-preview.png">
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="manifest" href="/manifest.webmanifest">
-  <link rel="stylesheet" href="/styles.css?v=20261108-6">
+  <link rel="stylesheet" href="/styles.css?v=20261108-7">
   <script type="application/ld+json">
   {"@context":"https://schema.org","@graph":[
     {"@type":"NewsMediaOrganization","@id":"https://polyemergence.com/#organization","name":"Polyemergence","alternateName":"多重涌现","url":"https://polyemergence.com/","logo":{"@type":"ImageObject","url":"https://polyemergence.com/assets/mark.svg"},"description":"Independent AI news and industry intelligence across technology, business, policy and society."},
@@ -38,7 +38,7 @@
   <header class="site-header">
     <a class="brand" href="/en/" aria-label="Polyemergence home"><img id="brand-logo" src="/assets/logo-en-reverse.svg" alt="Polyemergence" width="420" height="70"></a>
     <nav class="desktop-nav" aria-label="Primary">
-      <a href="#brief" data-copy="navNews">Brief</a><a href="#about" data-copy="navInsight">Method</a>
+      <a href="#brief" data-copy="navNews">Brief</a><a href="#about" data-copy="navInsight">Method</a><a href="#feedback" data-copy="navFeedback">Feedback</a>
     </nav>
     <div class="header-tools">
       <span class="edition" data-copy="edition">GLOBAL EDITION</span>
@@ -65,8 +65,18 @@
       <div><p class="section-index">02</p><h2 id="method-title" data-copy="methodTitle">From signal to consequence.</h2></div>
       <ol><li><span>01</span><strong data-copy="methodSignal">Signal</strong><p data-copy="methodSignalText">What changed?</p></li><li><span>02</span><strong data-copy="methodStructure">Structure</strong><p data-copy="methodStructureText">What larger system is taking shape?</p></li><li><span>03</span><strong data-copy="methodConsequence">Consequence</strong><p data-copy="methodConsequenceText">Who is affected, and what comes next?</p></li></ol>
     </section>
+    <section class="feedback" id="feedback" aria-labelledby="feedback-title">
+      <div class="feedback-intro"><p class="section-index">03 / <span data-copy="feedbackIndex">READER SIGNAL</span></p><h2 id="feedback-title" data-copy="feedbackTitle">Help sharpen<br>the signal.</h2><p data-copy="feedbackIntro">Found an error, a missing source, or a story we should follow? Send a private note to the editorial desk.</p></div>
+      <form id="feedback-form" class="feedback-form" novalidate>
+        <div class="form-field"><label for="feedback-topic" data-copy="feedbackTopic">What is this about?</label><select id="feedback-topic" name="topic" required><option value="correction" data-copy="feedbackCorrection">Story correction</option><option value="source" data-copy="feedbackSource">Source suggestion</option><option value="product" data-copy="feedbackProduct">Website suggestion</option><option value="other" data-copy="feedbackOther">Other</option></select></div>
+        <div class="form-field"><label for="feedback-email"><span data-copy="feedbackEmail">Email for a reply</span> <small data-copy="feedbackOptional">Optional</small></label><input id="feedback-email" name="email" type="email" maxlength="254" autocomplete="email" placeholder="you@example.com" data-copy-placeholder="feedbackEmailPlaceholder"></div>
+        <div class="form-field form-field-wide"><label for="feedback-message" data-copy="feedbackMessage">Your feedback</label><textarea id="feedback-message" name="message" rows="6" minlength="10" maxlength="2000" required placeholder="Tell us what we should know…" data-copy-placeholder="feedbackMessagePlaceholder"></textarea><div class="form-meta"><span data-copy="feedbackPrivate">Privately delivered to the editorial desk.</span><span><output id="feedback-count">0</output>/2000</span></div></div>
+        <div class="feedback-trap" aria-hidden="true"><label for="feedback-website">Website</label><input id="feedback-website" name="website" type="text" tabindex="-1" autocomplete="off"></div>
+        <div class="form-actions"><button id="feedback-submit" type="submit" data-copy="feedbackSubmit">Send feedback</button><p id="feedback-status" role="status" aria-live="polite"></p></div>
+      </form>
+    </section>
   </main>
   <footer><div class="footer-brand"><img id="footer-logo" src="/assets/logo-en-reverse.svg" alt="Polyemergence" width="360"></div><p data-copy="footer">Independent AI intelligence for a changing world.</p><p class="attribution">Data engine based on <a href="https://github.com/frankzch/ai-news-brief" rel="noopener noreferrer">AI News Brief</a> · MIT License</p></footer>
-  <script src="/app.js?v=20261108-6" defer></script>
+  <script src="/app.js?v=20261108-7" defer></script>
 </body>
 </html>

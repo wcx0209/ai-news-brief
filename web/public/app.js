@@ -1,6 +1,6 @@
 const COPY = {
   en: {
-    brand: "POLYEMERGENCE", navNews: "Brief", navSignals: "Signals", navInsight: "Method",
+    brand: "POLYEMERGENCE", navNews: "Brief", navSignals: "Signals", navInsight: "Method", navFeedback: "Feedback",
     edition: "GLOBAL EDITION", latest: "LATEST INTELLIGENCE",
     seoTitle: "AI News & Industry Intelligence | Polyemergence",
     seoDescription: "Daily AI news and analysis covering models, companies, startups, research, open source, policy, business, and society.",
@@ -13,10 +13,17 @@ const COPY = {
     methodTitle: "From signal to consequence.", methodSignal: "Signal", methodSignalText: "What changed?",
     methodStructure: "Structure", methodStructureText: "What larger system is taking shape?",
     methodConsequence: "Consequence", methodConsequenceText: "Who is affected, and what comes next?",
+    feedbackIndex: "READER SIGNAL", feedbackTitle: "Help sharpen<br>the signal.",
+    feedbackIntro: "Found an error, a missing source, or a story we should follow? Send a private note to the editorial desk.",
+    feedbackTopic: "What is this about?", feedbackCorrection: "Story correction", feedbackSource: "Source suggestion",
+    feedbackProduct: "Website suggestion", feedbackOther: "Other", feedbackEmail: "Email for a reply", feedbackOptional: "Optional",
+    feedbackEmailPlaceholder: "you@example.com", feedbackMessage: "Your feedback", feedbackMessagePlaceholder: "Tell us what we should know…",
+    feedbackPrivate: "Privately delivered to the editorial desk.", feedbackSubmit: "Send feedback", feedbackSending: "Sending…",
+    feedbackSuccess: "Thank you — your feedback has been delivered.", feedbackError: "We couldn’t send that. Please try again in a moment.",
     footer: "Independent AI intelligence for a changing world."
   },
   zh: {
-    brand: "多重涌现", navNews: "简报", navSignals: "信号", navInsight: "方法",
+    brand: "多重涌现", navNews: "简报", navSignals: "信号", navInsight: "方法", navFeedback: "反馈",
     edition: "全球版", latest: "最新情报",
     seoTitle: "AI 新闻与人工智能行业情报 | 多重涌现",
     seoDescription: "每日聚合 AI 模型、公司、创业、研究、开源、政策、商业与社会领域的重要新闻。",
@@ -29,6 +36,13 @@ const COPY = {
     methodTitle: "从信号到影响。", methodSignal: "信号", methodSignalText: "发生了什么变化？",
     methodStructure: "结构", methodStructureText: "什么更大的系统正在形成？",
     methodConsequence: "影响", methodConsequenceText: "谁会受到影响，下一步是什么？",
+    feedbackIndex: "读者信号", feedbackTitle: "帮助我们<br>校准信号。",
+    feedbackIntro: "发现错误、遗漏的重要信源，或值得持续追踪的线索？请私下告诉编辑。",
+    feedbackTopic: "反馈类型", feedbackCorrection: "内容纠错", feedbackSource: "推荐信源",
+    feedbackProduct: "网站建议", feedbackOther: "其他", feedbackEmail: "回复邮箱", feedbackOptional: "选填",
+    feedbackEmailPlaceholder: "you@example.com", feedbackMessage: "反馈内容", feedbackMessagePlaceholder: "请告诉我们需要注意什么……",
+    feedbackPrivate: "信息将私下发送给编辑。", feedbackSubmit: "发送反馈", feedbackSending: "正在发送……",
+    feedbackSuccess: "谢谢，反馈已发送给编辑。", feedbackError: "暂时无法发送，请稍后再试。",
     footer: "面向变化世界的独立 AI 情报媒体。"
   }
 };
@@ -307,6 +321,7 @@ function setLocale(locale) {
     else link.removeAttribute("aria-current");
   });
   $$('[data-copy]').forEach(node => node.innerHTML = COPY[state.locale][node.dataset.copy]);
+  $$('[data-copy-placeholder]').forEach(node => { node.placeholder = COPY[state.locale][node.dataset.copyPlaceholder]; });
   renderFilters(); renderFeed();
 }
 
@@ -323,6 +338,46 @@ async function loadFeed() {
   }
   setLocale(state.locale);
 }
+
+const feedbackForm = $("#feedback-form");
+const feedbackMessage = $("#feedback-message");
+const feedbackCount = $("#feedback-count");
+const feedbackStatus = $("#feedback-status");
+const feedbackSubmit = $("#feedback-submit");
+
+feedbackMessage?.addEventListener("input", () => { feedbackCount.textContent = String(feedbackMessage.value.length); });
+
+feedbackForm?.addEventListener("submit", async event => {
+  event.preventDefault();
+  if (!feedbackForm.reportValidity()) return;
+  feedbackSubmit.disabled = true;
+  feedbackStatus.className = "is-pending";
+  feedbackStatus.textContent = COPY[state.locale].feedbackSending;
+  const form = new FormData(feedbackForm);
+  try {
+    const response = await fetch("/api/feedback", {
+      method: "POST",
+      headers: { "Accept": "application/json", "Content-Type": "application/json" },
+      body: JSON.stringify({
+        topic: form.get("topic"),
+        email: form.get("email"),
+        message: form.get("message"),
+        website: form.get("website"),
+        locale: state.locale
+      })
+    });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    feedbackForm.reset();
+    feedbackCount.textContent = "0";
+    feedbackStatus.className = "is-success";
+    feedbackStatus.textContent = COPY[state.locale].feedbackSuccess;
+  } catch {
+    feedbackStatus.className = "is-error";
+    feedbackStatus.textContent = COPY[state.locale].feedbackError;
+  } finally {
+    feedbackSubmit.disabled = false;
+  }
+});
 
 setLocale(state.locale);
 loadFeed();
