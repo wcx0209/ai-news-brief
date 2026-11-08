@@ -126,6 +126,11 @@ class UserDatabase:
                     summary TEXT,
                     long_summary TEXT,
                     importance_score INTEGER DEFAULT 0,
+                    signal_score INTEGER DEFAULT 0,
+                    structure_score INTEGER DEFAULT 0,
+                    consequence_score INTEGER DEFAULT 0,
+                    confidence_score INTEGER DEFAULT 0,
+                    momentum_score INTEGER DEFAULT 0,
                     tags TEXT,
                     category TEXT DEFAULT 'news',
                     content_hash BIGINT,
@@ -139,6 +144,13 @@ class UserDatabase:
                     title_zh TEXT
                 )
             ''')
+            for score_column in (
+                'signal_score', 'structure_score', 'consequence_score',
+                'confidence_score', 'momentum_score'
+            ):
+                cursor.execute(
+                    f'ALTER TABLE articles ADD COLUMN IF NOT EXISTS {score_column} INTEGER DEFAULT 0'
+                )
             cursor.execute('''
                 CREATE INDEX IF NOT EXISTS idx_articles_source 
                 ON articles(rss_source_id, published_at DESC)
@@ -539,8 +551,9 @@ class UserDatabase:
                     (id, rss_source_id, title, url, 
                      summary_en, summary_zh, long_summary_en, long_summary_zh,
                      title_en, title_zh,
-                     importance_score, tags, category, content_hash, published_at)
-                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                     importance_score, signal_score, structure_score, consequence_score,
+                     confidence_score, momentum_score, tags, category, content_hash, published_at)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                 ''', (
                     article_id,
                     article_data['rss_source_id'],
@@ -553,6 +566,11 @@ class UserDatabase:
                     article_data.get('title_en', ''),
                     article_data.get('title_zh', ''),
                     article_data.get('importance_score', 0),
+                    article_data.get('signal_score', 0),
+                    article_data.get('structure_score', 0),
+                    article_data.get('consequence_score', 0),
+                    article_data.get('confidence_score', 0),
+                    article_data.get('momentum_score', 0),
                     tags,
                     article_data.get('category', 'news'),
                     content_hash,
@@ -823,14 +841,18 @@ class UserDatabase:
         with self._get_connection() as conn:
             cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
             cursor.execute(
-                'SELECT id, summary_en, summary_zh, category FROM articles WHERE url = %s',
+                '''SELECT id, summary_en, summary_zh, category, importance_score,
+                          signal_score, structure_score, consequence_score,
+                          confidence_score, momentum_score
+                   FROM articles WHERE url = %s''',
                 (url,)
             )
             row = cursor.fetchone()
             return dict(row) if row else None
 
     def update_article_refresh(self, article_id: str, published_at: str,
-                               importance_score: int, summary_en: str, summary_zh: str) -> bool:
+                               importance_score: int, summary_en: str, summary_zh: str,
+                               momentum_score: int = 0) -> bool:
         """Refresh an existing article's timestamp / score / summary (for trending re-fetch)."""
         with self._get_connection() as conn:
             cursor = conn.cursor()
@@ -838,10 +860,11 @@ class UserDatabase:
                 UPDATE articles SET
                     published_at = %s,
                     importance_score = %s,
+                    momentum_score = %s,
                     summary_en = %s,
                     summary_zh = %s
                 WHERE id = %s
-            ''', (published_at, importance_score, summary_en, summary_zh, article_id))
+            ''', (published_at, importance_score, momentum_score, summary_en, summary_zh, article_id))
             return cursor.rowcount > 0
 
     def get_articles_count_by_sources(self, source_ids: List[int], since_time: str = None) -> int:

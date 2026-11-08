@@ -395,7 +395,7 @@ def _process_single_entry(entry, sources, source_map, user_db, ai_engine, vector
     
     # Summarization
     logging.info(f"{log_prefix}Summarizing content: {title[:50]}... (category: {source_category})")
-    summary_en, summary_zh, long_summary_en, long_summary_zh, ai_importance_score, tags, title_en, title_zh, content_category, china_blocked = ai_engine.summarize_content(full_text, title=title, category=source_category)
+    summary_en, summary_zh, long_summary_en, long_summary_zh, ai_importance_score, tags, title_en, title_zh, content_category, china_blocked, method_scores = ai_engine.summarize_content(full_text, title=title, category=source_category)
 
     if china_blocked:
         logging.warning(f"{log_prefix}China compliance blocked. Skipping. URL: {url}")
@@ -453,13 +453,18 @@ def _process_single_entry(entry, sources, source_map, user_db, ai_engine, vector
     llm_input_chars = min(len(full_text), 8000)
     llm_output_chars = len(summary_en) + len(summary_zh) + len(long_summary_en) + len(long_summary_zh) + len(title_en) + len(title_zh)
     
-    # Calculate final importance score
-    importance_scores = [ai_importance_score, source_importance_score]
+    # Importance follows the editorial Method only. Source authority and public
+    # attention are exposed separately as confidence and momentum.
+    importance_score = ai_importance_score
+    method_scores['confidence'] = round(method_scores['confidence'] * 0.65 + source_importance_score * 0.35)
     if discussion_importance_score is not None:
-        importance_scores.append(discussion_importance_score)
-    importance_score = sum(importance_scores) / len(importance_scores)
-    
-    logging.info(f"{log_prefix} -> Tags: {tags}, AI: {ai_importance_score}, Source: {source_importance_score}, Discussion: {discussion_importance_score}, Final: {importance_score:.1f}")
+        method_scores['momentum'] = int(discussion_importance_score)
+
+    logging.info(
+        f"{log_prefix} -> Method: signal={method_scores['signal']}, structure={method_scores['structure']}, "
+        f"consequence={method_scores['consequence']}, importance={importance_score}, "
+        f"confidence={method_scores['confidence']}, momentum={method_scores['momentum']}"
+    )
     
     # Configure prefix for discussion articles
     discussion_prefix_en = ""
@@ -487,6 +492,11 @@ def _process_single_entry(entry, sources, source_map, user_db, ai_engine, vector
         'long_summary_zh': long_summary_zh,
         'category': content_category,
         'importance_score': importance_score,
+        'signal_score': method_scores['signal'],
+        'structure_score': method_scores['structure'],
+        'consequence_score': method_scores['consequence'],
+        'confidence_score': method_scores['confidence'],
+        'momentum_score': method_scores['momentum'],
         'tags': tags,
         'content_hash': content_hash,
         'published_at': entry['published_at']

@@ -182,7 +182,9 @@ def main():
                 """
                 SELECT a.id, a.url, a.title, a.title_en, a.title_zh,
                        a.summary_en, a.summary_zh, a.long_summary_en, a.long_summary_zh,
-                       a.importance_score, a.tags, a.category, a.published_at,
+                       a.importance_score, a.signal_score, a.structure_score,
+                       a.consequence_score, a.confidence_score, a.momentum_score,
+                       a.tags, a.category, a.published_at,
                        a.created_at, rs.name AS source_name
                 FROM articles a
                 LEFT JOIN rss_sources rs ON rs.id = a.rss_source_id
@@ -212,6 +214,13 @@ def main():
                 row["category"], row["tags"], row["title"] or "", row["source_name"] or ""
             ),
             "importance": int(row["importance_score"] or 0),
+            "scores": {
+                "signal": int(row["signal_score"] or 0),
+                "structure": int(row["structure_score"] or 0),
+                "consequence": int(row["consequence_score"] or 0),
+                "confidence": int(row["confidence_score"] or 0),
+                "momentum": int(row["momentum_score"] or 0),
+            },
             "published_at": iso(row["published_at"] or row["created_at"]),
             "image_url": image_url,
             "tags": parse_tags(row["tags"]),
@@ -227,6 +236,11 @@ def main():
 
     items = merge_recent_items(items, previous_items, args.limit, args.max_open_source)
     for item in items:
+        scores = item.get("scores") or {}
+        item["scores"] = {
+            key: max(0, min(100, int(scores.get(key) or 0)))
+            for key in ("signal", "structure", "consequence", "confidence", "momentum")
+        }
         for locale in ("en", "zh"):
             localized = item.get(locale) or {}
             item[locale] = {

@@ -740,7 +740,7 @@ def fetch_twitter_posts(twitter_sources, user_db, ai_engine, vector_store, fetch
                 logging.info(f"{log_prefix}Summarizing: {title[:50]}...")
                 try:
                     summary_en, summary_zh, long_summary_en, long_summary_zh, \
-                        ai_importance, tags, title_en, title_zh, content_category, china_blocked = \
+                        ai_importance, tags, title_en, title_zh, content_category, china_blocked, method_scores = \
                         ai_engine.summarize_content(full_text, title=title, category='discussion')
                 except Exception as e:
                     logging.error(f"{log_prefix}LLM summarization failed for {tweet_url}: {e}")
@@ -808,6 +808,11 @@ def fetch_twitter_posts(twitter_sources, user_db, ai_engine, vector_store, fetch
                     'long_summary_zh': long_summary_zh,
                     'category': content_category,
                     'importance_score': ai_importance,
+                    'signal_score': method_scores['signal'],
+                    'structure_score': method_scores['structure'],
+                    'consequence_score': method_scores['consequence'],
+                    'confidence_score': method_scores['confidence'],
+                    'momentum_score': method_scores['momentum'],
                     'tags': tags,
                     'content_hash': content_hash,
                     'published_at': published_at or None

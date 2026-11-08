@@ -239,10 +239,12 @@ def fetch_github_trending(user_db, ai_engine, vector_store, fetch_stats: 'FetchS
 
         logging.info(f"[GitHub] [{rank}/{len(repos)}] Processing: {owner}/{repo_name} (⭐{stars:,})")
 
-        # 复用已有记录：URL 命中则只刷新 star/排名/时间，跳过 LLM 流程
+        # Reuse an already Method-scored record. Trending rank updates momentum,
+        # never editorial importance.
         existing = user_db.get_article_by_url(repo_url)
         if existing and existing.get('category') == 'open_source':
-            importance_score = max(1, 101 - rank)
+            importance_score = int(existing.get('importance_score') or 0)
+            momentum_score = max(1, 101 - rank)
             base_en = _star_prefix_re.sub('', existing.get('summary_en') or '')
             base_zh = _star_prefix_re.sub('', existing.get('summary_zh') or '')
             new_summary_en = f"⭐ {stars:,} | {base_en}" if base_en else ''
@@ -253,6 +255,7 @@ def fetch_github_trending(user_db, ai_engine, vector_store, fetch_stats: 'FetchS
                 importance_score=importance_score,
                 summary_en=new_summary_en,
                 summary_zh=new_summary_zh,
+                momentum_score=momentum_score,
             )
             refreshed += 1
             logging.info(f"[GitHub] ↻ Refreshed: {owner}/{repo_name} (rank={rank}, ⭐{stars:,})")
@@ -287,7 +290,7 @@ def fetch_github_trending(user_db, ai_engine, vector_store, fetch_stats: 'FetchS
         
         try:
             summary_en, summary_zh, long_summary_en, long_summary_zh, \
-                ai_importance, tags, title_en, title_zh, _content_category, china_blocked = \
+                ai_importance, tags, title_en, title_zh, _content_category, china_blocked, method_scores = \
                 ai_engine.summarize_content(full_text, title=title, category='opensource')
         except Exception as e:
             logging.error(f"[GitHub] LLM summarization failed for {owner}/{repo_name}: {e}")
@@ -315,16 +318,16 @@ def fetch_github_trending(user_db, ai_engine, vector_store, fetch_stats: 'FetchS
             fetch_stats.record_failure('https://github.com/trending', 'GitHub Trending', 'summarize_failed')
             continue
         
-        # AI 相关性过滤 (prompt 中: 非AI项目 importance < 60)
-        if ai_importance < 60:
+        # AI 相关性过滤. Importance is Method-based, so a genuinely relevant
+        # early project may score below 60 and still be worth retaining.
+        if ai_importance == 0:
             logging.info(f"[GitHub] Non-AI project (score={ai_importance}): {owner}/{repo_name}, skipping")
             skipped_non_ai += 1
             fetch_stats.record_skip('https://github.com/trending', 'GitHub Trending', 'non_ai_project')
             continue
         
-        # 覆写 importance_score: 用 trending 排名（越前越高）
-        # rank 1 → 100, rank 25 → 76
-        importance_score = max(1, 101 - rank)
+        importance_score = ai_importance
+        method_scores['momentum'] = max(1, 101 - rank)
         
         # 入库
         article_data = {
@@ -339,6 +342,11 @@ def fetch_github_trending(user_db, ai_engine, vector_store, fetch_stats: 'FetchS
             'long_summary_zh': long_summary_zh,
             'category': 'open_source',
             'importance_score': importance_score,
+            'signal_score': method_scores['signal'],
+            'structure_score': method_scores['structure'],
+            'consequence_score': method_scores['consequence'],
+            'confidence_score': method_scores['confidence'],
+            'momentum_score': method_scores['momentum'],
             'tags': tags,
             'content_hash': None,
             'published_at': datetime.now(timezone.utc).isoformat(),

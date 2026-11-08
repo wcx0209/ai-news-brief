@@ -8,11 +8,13 @@ const COPY = {
     promise: "Daily AI intelligence across models, companies, startups, research, open source, policy, business, and society.",
     loading: "Loading today’s brief…", updated: "Updated", stories: "stories", dailyBrief: "Daily Brief",
     filters: { all: "All", models: "Models", company: "Company", startups: "Startups", research: "Research", open_source: "Open Source", policy: "Policy", business: "Business", society: "Society" }, importance: "Importance",
+    scoreSignal: "Signal", scoreStructure: "Structure", scoreConsequence: "Consequence", scoreConfidence: "Confidence", scoreMomentum: "Momentum",
     read: "Read original", noStories: "No stories in this section yet.", error: "The live feed is unavailable. Showing the last bundled briefing.",
     demo: "Demo feed — run the scheduled collector to publish the live briefing.",
-    methodTitle: "From signal to consequence.", methodSignal: "Signal", methodSignalText: "What changed?",
-    methodStructure: "Structure", methodStructureText: "What larger system is taking shape?",
-    methodConsequence: "Consequence", methodConsequenceText: "Who is affected, and what comes next?",
+    methodTitle: "From signal to consequence.", methodSignal: "Signal", methodSignalText: "Novelty · timing · verification",
+    methodStructure: "Structure", methodStructureText: "System change · durable pattern",
+    methodConsequence: "Consequence", methodConsequenceText: "Business · policy · society",
+    methodFormula: "Importance = 35% Signal + 35% Structure + 30% Consequence. Confidence and momentum remain separate.",
     feedbackIndex: "READER SIGNAL", feedbackTitle: "Help sharpen<br>the signal.",
     feedbackIntro: "Found an error, a missing source, or a story we should follow? Send a private note to the editorial desk.",
     feedbackTopic: "What is this about?", feedbackCorrection: "Story correction", feedbackSource: "Source suggestion",
@@ -31,11 +33,13 @@ const COPY = {
     promise: "每日追踪模型、公司、创业、研究、开源、政策、商业与社会领域的重要 AI 新闻。",
     loading: "正在载入今日简报…", updated: "更新于", stories: "条内容", dailyBrief: "每日简报",
     filters: { all: "全部", models: "模型", company: "公司", startups: "创业", research: "研究", open_source: "开源", policy: "政策", business: "商业", society: "社会" }, importance: "重要性",
+    scoreSignal: "信号", scoreStructure: "结构", scoreConsequence: "影响", scoreConfidence: "可信度", scoreMomentum: "热度",
     read: "阅读原文", noStories: "这个栏目暂时没有内容。", error: "实时数据暂时不可用，正在显示最近一次简报。",
     demo: "当前为演示数据——运行定时采集任务后将自动发布实时内容。",
-    methodTitle: "从信号到影响。", methodSignal: "信号", methodSignalText: "发生了什么变化？",
-    methodStructure: "结构", methodStructureText: "什么更大的系统正在形成？",
-    methodConsequence: "影响", methodConsequenceText: "谁会受到影响，下一步是什么？",
+    methodTitle: "从信号到影响。", methodSignal: "信号", methodSignalText: "新颖性 · 时效性 · 可验证性",
+    methodStructure: "结构", methodStructureText: "系统变化 · 持续趋势",
+    methodConsequence: "影响", methodConsequenceText: "商业 · 政策 · 社会",
+    methodFormula: "重要性 = 35% 信号 + 35% 结构 + 30% 影响；可信度与热度独立呈现。",
     feedbackIndex: "读者信号", feedbackTitle: "帮助我们<br>校准信号。",
     feedbackIntro: "发现错误、遗漏的重要信源，或值得持续追踪的线索？请私下告诉编辑。",
     feedbackTopic: "反馈类型", feedbackCorrection: "内容纠错", feedbackSource: "推荐信源",
@@ -245,6 +249,21 @@ function renderHero(items) {
   }).join("");
 }
 
+function scoreBreakdown(item, compact = false) {
+  const scores = item.scores || {};
+  const core = ["signal", "structure", "consequence"].map(key => Math.max(0, Math.min(100, Math.round(Number(scores[key]) || 0))));
+  if (!core.some(Boolean)) return "";
+  const labels = [COPY[state.locale].scoreSignal, COPY[state.locale].scoreStructure, COPY[state.locale].scoreConsequence];
+  const cells = core.map((score, index) => {
+    if (compact) return `<span><small>${escapeHtml(labels[index])}</small><strong>${score}</strong></span>`;
+    return `<span><small>${escapeHtml(labels[index])}</small><i aria-hidden="true"><b class="score-w-${Math.round(score / 10)}"></b></i><strong>${score}</strong></span>`;
+  }).join("");
+  const confidence = Math.max(0, Math.min(100, Math.round(Number(scores.confidence) || 0)));
+  const momentum = Math.max(0, Math.min(100, Math.round(Number(scores.momentum) || 0)));
+  const context = compact ? "" : `<em>${escapeHtml(COPY[state.locale].scoreConfidence)} ${confidence} · ${escapeHtml(COPY[state.locale].scoreMomentum)} ${momentum}</em>`;
+  return `<div class="method-score${compact ? " is-compact" : ""}" aria-label="${escapeHtml(COPY[state.locale].importance)} ${Number(item.importance || 0)}">${cells}${context}</div>`;
+}
+
 function renderLead(item) {
   if (!item) { $("#lead-story").innerHTML = ""; return; }
   const text = textFor(item);
@@ -252,6 +271,7 @@ function renderLead(item) {
   $("#lead-story").innerHTML = `
     <div class="lead-copy">
       <div class="story-kicker"><span>${escapeHtml(item.source)} · ${COPY[state.locale].filters[categoryFor(item)]} · ${escapeHtml(formatDate(item.published_at))}</span><span class="score" title="${COPY[state.locale].importance} ${importance}"><small>${COPY[state.locale].importance}</small>${importance}</span></div>
+      ${scoreBreakdown(item)}
       <div><h3>${escapeHtml(text.title)}</h3><p>${inlineMarkup(text.summary)}</p><a class="read-link" href="${escapeHtml(safeUrl(item.url))}" target="_blank" rel="noopener noreferrer">${COPY[state.locale].read} ↗</a></div>
     </div>
     <div class="story-visual">${imageMarkup(item, true)}</div>`;
@@ -265,6 +285,7 @@ function renderCard(item) {
     <div class="card-visual">${imageMarkup(item)}<span class="card-plane" aria-hidden="true"></span></div>
     <div class="card-copy">
     <div class="story-kicker"><span>${escapeHtml(item.source)} · ${COPY[state.locale].filters[categoryFor(item)]}</span><span>${COPY[state.locale].importance} ${importance}</span></div>
+    ${scoreBreakdown(item, true)}
     <h3>${escapeHtml(text.title)}</h3><p>${inlineMarkup(text.summary)}</p>
     <a class="read-link" href="${escapeHtml(safeUrl(item.url))}" target="_blank" rel="noopener noreferrer">${COPY[state.locale].read} ↗</a>
     <div class="tags">${tags}</div>

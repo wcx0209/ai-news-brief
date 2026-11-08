@@ -27,11 +27,7 @@
     - 如果原文长度小于1000，可以不生成长摘要
     - 长摘要的长度要根据原文内容的多少来决定，在尊重原文事实或观点，不虚构的前提下，尽量详细的总结
     - **不要提及任何用户名或用户ID**（不要写"@xxx说"、"用户xxx认为"、"u/xxx表示"等）
-  4. **重要性评分**（0-100）：请从以下维度综合评估：
-    - **话题热度**（30%）：讨论量、点赞数、转发数
-    - **信息价值**（70%）：是否有AI技术相关的干货，比如AI技术交流、AI产品使用心得等
-    
-    评分参考：90+全网现象级讨论，70-89社区热门话题，50-69值得关注的讨论，30-49一般讨论串，<30边缘话题
+  4. **重要性评分**（0-100）：严格采用 Polyemergence Method：35% 信号、35% 结构、30% 影响。点赞、评论和转发只计入热度分，不得直接提高重要性。
     
     **AI相关性前置过滤**：如果帖子与 AI（人工智能）没有关系，则直接给出 0 分。
 
@@ -60,6 +56,11 @@ Output Format (JSON only):
     "long_summary_en": "English long detailed summary referencing key opinions from input...",
     "long_summary_zh": "中文长摘要（引用输入中的关键观点，直接用中文表述）...",
     "importance_score": <根据上述维度计算的0-100分数>,
+    "signal_score": <0-100>,
+    "structure_score": <0-100>,
+    "consequence_score": <0-100>,
+    "confidence_score": <0-100>,
+    "momentum_score": <0-100>,
     "tags": ["tag1", "tag2", "tag3"],
     "category": "models|company|startups|research|open_source|policy|business|society",
     "china_blocked": false

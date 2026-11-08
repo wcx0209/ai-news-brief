@@ -114,7 +114,20 @@ class AIEngine:
         title_section = f'Original Title: "{title}"\n\n' if title else ''
         
         # 根据类别获取对应的提示词，作为 system 消息
-        system_prompt = self._get_prompt_for_category(category)
+        system_prompt = self._get_prompt_for_category(category) + """
+
+# Polyemergence Method scoring (required)
+Score the item with five separate integer fields from 0 to 100:
+- signal_score: how novel, timely, verified, and meaningfully different the event is.
+- structure_score: whether it changes competitive dynamics, connects multiple actors or domains, or reveals a durable industry pattern.
+- consequence_score: the breadth and depth of likely effects on companies, investors, workers, policymakers, users, or society.
+- confidence_score: evidence quality, source directness, factual specificity, and corroboration visible in the supplied text.
+- momentum_score: observable attention and rate of adoption or discussion. Popularity belongs here, not in importance.
+
+Set importance_score to round(signal_score * 0.35 + structure_score * 0.35 + consequence_score * 0.30).
+Company fame, source prestige, follower counts, likes, comments, stars, and trending rank MUST NOT directly raise signal_score, structure_score, consequence_score, or importance_score. They may affect confidence_score or momentum_score only. Preserve the existing AI relevance rule: unrelated content must receive importance_score 0.
+Include all five component fields plus importance_score in the JSON output.
+"""
         
         # 文章内容作为 user 消息，末尾追加格式提醒以利用结尾高注意力
         user_content = f"""{title_section}Text:
@@ -159,7 +172,28 @@ Reminder: You MUST output valid JSON in the exact format specified in your instr
             )
 
         if last_data is None:
-            return '', '', '', '', 0, [], '', '', normalize_topic_category(None, category), False
+            return '', '', '', '', 0, [], '', '', normalize_topic_category(None, category), False, {
+                'signal': 0, 'structure': 0, 'consequence': 0, 'confidence': 0, 'momentum': 0
+            }
+
+        def bounded_score(name, fallback=0):
+            try:
+                return max(0, min(100, int(round(float(last_data.get(name, fallback))))))
+            except (TypeError, ValueError):
+                return max(0, min(100, int(round(float(fallback or 0)))))
+
+        legacy_importance = bounded_score('importance_score')
+        signal = bounded_score('signal_score', legacy_importance)
+        structure = bounded_score('structure_score', legacy_importance)
+        consequence = bounded_score('consequence_score', legacy_importance)
+        method_importance = round(signal * 0.35 + structure * 0.35 + consequence * 0.30)
+        scores = {
+            'signal': signal,
+            'structure': structure,
+            'consequence': consequence,
+            'confidence': bounded_score('confidence_score', 50),
+            'momentum': bounded_score('momentum_score', 50),
+        }
 
         tags = last_data.get('tags', [])
         if len(tags) > 5:
@@ -169,12 +203,13 @@ Reminder: You MUST output valid JSON in the exact format specified in your instr
             last_data.get('summary_zh', ''),
             last_data.get('long_summary_en', ''),
             last_data.get('long_summary_zh', ''),
-            last_data.get('importance_score', 0),
+            0 if legacy_importance == 0 else method_importance,
             tags,
             last_data.get('title_en', ''),
             last_data.get('title_zh', ''),
             normalize_topic_category(last_data.get('category'), category),
-            last_data.get('china_blocked', False)
+            last_data.get('china_blocked', False),
+            scores
         )
 
 
