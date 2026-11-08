@@ -28,7 +28,7 @@ Create a Gemini API key in Google AI Studio, then add:
 GEMINI_API_KEY=...
 ```
 
-The project uses Google's OpenAI-compatible endpoint and `gemini-3.8-flash`. Change `INBRIEF_LLM_MODEL_NAME` in the workflow if the available free model changes.
+The project uses Google's OpenAI-compatible endpoint and `gemini-3.5-flash-lite`, selected for its higher-throughput free tier. Change `INBRIEF_LLM_MODEL_NAME` in the workflow if the available free model changes.
 
 Only public news content is sent for summarization. Do not send private or licensed full-text material that your terms do not permit.
 
