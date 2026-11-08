@@ -74,7 +74,12 @@ export async function onRequestPost({ request, env }) {
   try {
     upstream = await fetch(`https://formsubmit.co/ajax/${encodeURIComponent(recipient)}`, {
       method: "POST",
-      headers: { "Accept": "application/json", "Content-Type": "application/json" },
+      headers: {
+        "Accept": "application/json",
+        "Content-Type": "application/json",
+        "Origin": "https://polyemergence.com",
+        "Referer": `https://polyemergence.com/${locale}/`
+      },
       body: JSON.stringify({
         _subject: `[Polyemergence Feedback] ${TOPIC_LABELS[topic]}`,
         _template: "table",
@@ -93,7 +98,9 @@ export async function onRequestPost({ request, env }) {
 
   let result = null;
   try { result = await upstream.json(); } catch {}
-  if (!upstream.ok || result?.success === false) return json({ ok: false, error: "Delivery failed" }, 502);
+  if (!upstream.ok || String(result?.success).toLowerCase() === "false") {
+    return json({ ok: false, error: "Delivery failed" }, 502);
+  }
   return json({ ok: true });
 }
 
