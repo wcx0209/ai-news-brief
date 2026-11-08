@@ -1,0 +1,44 @@
+{
+  "brand": "Polyemergence",
+  "generated_at": "2026-11-08T04:30:00Z",
+  "count": 6,
+  "demo": true,
+  "items": [
+    {
+      "id": "demo-1", "url": "https://openai.com/news/", "source": "Official AI labs", "category": "news", "importance": 92, "published_at": "2026-11-08T02:00:00Z", "image_url": "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1800&q=85",
+      "tags": ["models", "industry"],
+      "en": { "title": "The next model cycle is becoming an infrastructure story", "summary": "Capability gains matter, but deployment cost, power, and distribution increasingly determine who can turn them into products." },
+      "zh": { "title": "下一轮模型竞争正在成为基础设施竞争", "summary": "能力提升仍然重要，但部署成本、能源和分发能力正在决定谁能真正把模型转化为产品。" }
+    },
+    {
+      "id": "demo-2", "url": "https://github.com/trending", "source": "GitHub Trending", "category": "opensource", "importance": 88, "published_at": "2026-11-08T01:20:00Z", "image_url": "https://images.unsplash.com/photo-1485827404703-89b55fcc595e?auto=format&fit=crop&w=1200&q=85",
+      "tags": ["open source", "agents"],
+      "en": { "title": "Open-source agent tooling moves from demos toward operations", "summary": "The fastest-growing projects emphasize observability, permissions, and repeatable workflows rather than another chat interface." },
+      "zh": { "title": "开源智能体工具正从演示走向真实运营", "summary": "增长最快的项目开始强调可观察性、权限和可重复工作流，而不再只是增加一个聊天界面。" }
+    },
+    {
+      "id": "demo-3", "url": "https://news.ycombinator.com/", "source": "Hacker News", "category": "discussion", "importance": 84, "published_at": "2026-11-07T22:45:00Z", "image_url": "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=1200&q=85",
+      "tags": ["developers", "economics"],
+      "en": { "title": "Developers are measuring AI by workflow compression", "summary": "Discussion is shifting from benchmark scores toward how many handoffs, tools, and review cycles a system can remove." },
+      "zh": { "title": "开发者开始用工作流压缩程度衡量 AI", "summary": "讨论正在从基准分数转向：一个系统究竟能减少多少交接、工具切换和审核周期。" }
+    },
+    {
+      "id": "demo-4", "url": "https://huggingface.co/papers", "source": "Hugging Face Papers", "category": "news", "importance": 81, "published_at": "2026-11-07T18:10:00Z", "image_url": "https://images.unsplash.com/photo-1535378917042-10a22c95931a?auto=format&fit=crop&w=1200&q=85",
+      "tags": ["research", "efficiency"],
+      "en": { "title": "Efficiency research becomes a product constraint", "summary": "Memory, inference latency, and data quality are moving from optimization details to first-order product decisions." },
+      "zh": { "title": "效率研究正在成为产品设计的核心约束", "summary": "内存、推理延迟与数据质量正从优化细节变成一阶产品决策。" }
+    },
+    {
+      "id": "demo-5", "url": "https://www.technologyreview.com/topic/artificial-intelligence/", "source": "Technology reporting", "category": "news", "importance": 78, "published_at": "2026-11-07T15:30:00Z", "image_url": "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&w=1200&q=85",
+      "tags": ["policy", "adoption"],
+      "en": { "title": "AI policy is moving closer to procurement and deployment", "summary": "The practical question is no longer only what models may do, but which institutions can buy, audit, and operate them." },
+      "zh": { "title": "AI 政策正在向采购与部署环节靠近", "summary": "现实问题不再只是模型可以做什么，而是哪些机构能够购买、审计并稳定运行它们。" }
+    },
+    {
+      "id": "demo-6", "url": "https://huggingface.co/blog", "source": "Hugging Face", "category": "opensource", "importance": 75, "published_at": "2026-11-07T12:00:00Z", "image_url": "https://images.unsplash.com/photo-1555949963-ff9fe0c870eb?auto=format&fit=crop&w=1200&q=85",
+      "tags": ["ecosystem", "standards"],
+      "en": { "title": "Interoperability is becoming a competitive advantage", "summary": "Teams increasingly value components that can move between model providers, runtimes, and deployment environments." },
+      "zh": { "title": "互操作性正在成为新的竞争优势", "summary": "团队越来越重视能够在不同模型供应商、运行时和部署环境之间迁移的组件。" }
+    }
+  ]
+}

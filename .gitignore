@@ -9,6 +9,8 @@ dist/
 
 # Runtime data (cookies, browser profile, local DBs, flags)
 data/
+!web/public/data/
+!web/public/data/latest.json
 logs/
 *.log
 

@@ -13,39 +13,44 @@
 <body>
   <header class="site-header">
     <a class="brand" href="./" aria-label="Polyemergence home">
-      <img src="./assets/mark.svg" alt="" width="54" height="44">
-      <span class="brand-name" data-copy="brand">POLYEMERGENCE</span>
+      <img id="brand-logo" src="./assets/logo-en-reverse.svg" alt="Polyemergence" width="420" height="70">
     </a>
     <nav class="desktop-nav" aria-label="Primary">
       <a href="#brief" data-copy="navNews">News</a>
       <a href="#brief" data-filter-link="discussion" data-copy="navSignals">Signals</a>
       <a href="#about" data-copy="navInsight">Insight</a>
     </nav>
-    <div class="language-switch" role="group" aria-label="Language">
-      <button type="button" data-locale-button="en" aria-pressed="true">EN</button>
-      <button type="button" data-locale-button="zh" aria-pressed="false">中</button>
+    <div class="header-tools">
+      <span class="edition" data-copy="edition">GLOBAL EDITION</span>
+      <div class="language-switch" role="group" aria-label="Language">
+        <button type="button" data-locale-button="en" aria-pressed="true">EN</button>
+        <span aria-hidden="true">|</span>
+        <button type="button" data-locale-button="zh" aria-pressed="false">中</button>
+      </div>
     </div>
   </header>
 
   <main>
-    <section class="intro" aria-labelledby="intro-title">
-      <div>
+    <section class="hero-stage" aria-labelledby="intro-title">
+      <img id="hero-photo" class="hero-photo" src="https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&amp;fit=crop&amp;w=2200&amp;q=88" alt="" referrerpolicy="no-referrer">
+      <div class="hero-shade" aria-hidden="true"></div>
+      <div class="hero-corner" aria-hidden="true"></div>
+      <div class="hero-copy">
         <p class="eyebrow" data-copy="eyebrow">AI NEWS · SIGNALS · INSIGHT</p>
         <h1 id="intro-title" data-copy="tagline">What’s next,<br>made visible.</h1>
-      </div>
-      <div class="intro-meta">
         <p data-copy="promise">Important AI changes, connected across technology, business, policy, and society.</p>
         <div class="update-line">
-          <span class="pulse" aria-hidden="true"></span>
+          <span class="live-label">LIVE</span>
           <span id="update-status">Loading today’s brief…</span>
         </div>
       </div>
+      <div class="hero-ticker" id="hero-ticker" aria-label="Latest signals"></div>
     </section>
 
     <section class="brief" id="brief" aria-labelledby="brief-title">
       <div class="section-heading">
         <div>
-          <p class="section-index">01</p>
+          <p class="section-index">01 / <span data-copy="latest">LATEST INTELLIGENCE</span></p>
           <h2 id="brief-title" data-copy="dailyBrief">Daily Brief</h2>
         </div>
         <div class="filters" id="filters" role="group" aria-label="Filter stories"></div>
@@ -70,7 +75,7 @@
   </main>
 
   <footer>
-    <div class="footer-brand"><img src="./assets/mark-reverse.svg" alt="" width="44"><span data-copy="brand">POLYEMERGENCE</span></div>
+    <div class="footer-brand"><img id="footer-logo" src="./assets/logo-en-reverse.svg" alt="Polyemergence" width="360"></div>
     <p data-copy="footer">Independent AI intelligence for a changing world.</p>
     <p class="attribution">Data engine based on <a href="https://github.com/frankzch/ai-news-brief" rel="noopener noreferrer">AI News Brief</a> · MIT License</p>
   </footer>

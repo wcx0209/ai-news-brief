@@ -1,12 +1,13 @@
 const COPY = {
   en: {
     brand: "POLYEMERGENCE", navNews: "News", navSignals: "Signals", navInsight: "Insight",
+    edition: "GLOBAL EDITION", latest: "LATEST INTELLIGENCE",
     eyebrow: "AI NEWS · SIGNALS · INSIGHT", tagline: "What’s next,<br>made visible.",
     promise: "Important AI changes, connected across technology, business, policy, and society.",
     loading: "Loading today’s brief…", updated: "Updated", stories: "stories", dailyBrief: "Daily Brief",
     filters: { all: "All", news: "News", discussion: "Discussion", video: "Video", opensource: "Open source" },
     read: "Read original", noStories: "No stories in this section yet.", error: "The live feed is unavailable. Showing the last bundled briefing.",
-    demo: "Demo feed — connect Supabase and run the collector to publish live reporting.",
+    demo: "Demo feed — run the scheduled collector to publish the live briefing.",
     methodTitle: "From signal to consequence.", methodSignal: "Signal", methodSignalText: "What changed?",
     methodStructure: "Structure", methodStructureText: "What larger system is taking shape?",
     methodConsequence: "Consequence", methodConsequenceText: "Who is affected, and what comes next?",
@@ -14,12 +15,13 @@ const COPY = {
   },
   zh: {
     brand: "多重涌现", navNews: "新闻", navSignals: "信号", navInsight: "洞察",
+    edition: "全球版", latest: "最新情报",
     eyebrow: "AI 新闻 · 信号 · 洞察", tagline: "看见<br>下一步。",
     promise: "连接技术、商业、政策与社会，理解真正重要的 AI 变化。",
     loading: "正在载入今日简报…", updated: "更新于", stories: "条内容", dailyBrief: "每日简报",
     filters: { all: "全部", news: "新闻", discussion: "讨论", video: "视频", opensource: "开源" },
     read: "阅读原文", noStories: "这个栏目暂时没有内容。", error: "实时数据暂时不可用，正在显示最近一次简报。",
-    demo: "当前为演示数据——连接 Supabase 并运行采集任务后将自动发布实时内容。",
+    demo: "当前为演示数据——运行定时采集任务后将自动发布实时内容。",
     methodTitle: "从信号到影响。", methodSignal: "信号", methodSignalText: "发生了什么变化？",
     methodStructure: "结构", methodStructureText: "什么更大的系统正在形成？",
     methodConsequence: "影响", methodConsequenceText: "谁会受到影响，下一步是什么？",
@@ -57,6 +59,15 @@ function imageMarkup(item) {
   return image !== "#" ? `<img src="${escapeHtml(image)}" alt="" loading="lazy" referrerpolicy="no-referrer">` : "";
 }
 
+function renderHero(items) {
+  const lead = items[0];
+  if (lead && safeUrl(lead.image_url) !== "#") $("#hero-photo").src = safeUrl(lead.image_url);
+  $("#hero-ticker").innerHTML = items.slice(0, 3).map((item, index) => {
+    const text = textFor(item);
+    return `<a href="${escapeHtml(safeUrl(item.url))}" target="_blank" rel="noopener noreferrer"><span>${String(index + 1).padStart(2, "0")}</span><strong>${escapeHtml(text.title)}</strong><small>${escapeHtml(formatDate(item.published_at))}</small></a>`;
+  }).join("");
+}
+
 function renderLead(item) {
   if (!item) { $("#lead-story").innerHTML = ""; return; }
   const text = textFor(item);
@@ -72,16 +83,20 @@ function renderCard(item) {
   const text = textFor(item);
   const tags = (item.tags || []).slice(0, 4).map(tag => `<span class="tag">${escapeHtml(tag)}</span>`).join("");
   return `<article class="story-card">
+    <div class="card-visual">${imageMarkup(item)}<span class="card-plane" aria-hidden="true"></span></div>
+    <div class="card-copy">
     <div class="story-kicker"><span>${escapeHtml(item.source)}</span><span>${Number(item.importance || 0)}</span></div>
     <h3>${escapeHtml(text.title)}</h3><p>${escapeHtml(text.summary)}</p>
     <a class="read-link" href="${escapeHtml(safeUrl(item.url))}" target="_blank" rel="noopener noreferrer">${COPY[state.locale].read} ↗</a>
     <div class="tags">${tags}</div>
+    </div>
   </article>`;
 }
 
 function renderFeed() {
   if (!state.feed) return;
   const items = state.feed.items || [];
+  renderHero(items);
   const filtered = state.category === "all" ? items : items.filter(item => item.category === state.category);
   renderLead(filtered[0]);
   $("#story-grid").innerHTML = filtered.slice(1).map(renderCard).join("");
@@ -105,6 +120,11 @@ function setLocale(locale) {
   document.documentElement.lang = state.locale === "zh" ? "zh-Hans" : "en";
   document.documentElement.dataset.locale = state.locale;
   document.title = state.locale === "zh" ? "多重涌现 — AI 新闻、信号与洞察" : "Polyemergence — AI News, Signals, Insight";
+  const logoName = state.locale === "zh" ? "logo-zh-reverse.svg" : "logo-en-reverse.svg";
+  $("#brand-logo").src = `./assets/${logoName}`;
+  $("#brand-logo").alt = COPY[state.locale].brand;
+  $("#footer-logo").src = `./assets/${logoName}`;
+  $("#footer-logo").alt = COPY[state.locale].brand;
   $$('[data-locale-button]').forEach(button => button.setAttribute("aria-pressed", String(button.dataset.localeButton === state.locale)));
   $$('[data-copy]').forEach(node => node.innerHTML = COPY[state.locale][node.dataset.copy]);
   renderFilters(); renderFeed();
