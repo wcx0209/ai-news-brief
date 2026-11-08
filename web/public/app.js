@@ -333,6 +333,16 @@ async function loadFeed() {
     state.feed = { generated_at: new Date().toISOString(), items: [], demo: true };
   }
   setLocale(state.locale);
+  if (location.hash) {
+    let target = null;
+    try { target = document.getElementById(decodeURIComponent(location.hash.slice(1))); } catch {}
+    if (target) requestAnimationFrame(() => requestAnimationFrame(() => {
+      const previousBehavior = document.documentElement.style.scrollBehavior;
+      document.documentElement.style.scrollBehavior = "auto";
+      target.scrollIntoView({ block: "start" });
+      requestAnimationFrame(() => { document.documentElement.style.scrollBehavior = previousBehavior; });
+    }));
+  }
 }
 
 const feedbackForm = $("#feedback-form");
