@@ -24,10 +24,11 @@
   <meta name="twitter:description" content="What’s next, made visible through daily AI news, signals and analysis.">
   <meta name="twitter:image" content="https://polyemergence.com/assets/social-preview.png">
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
   <link rel="manifest" href="/manifest.webmanifest">
   <link rel="preconnect" href="https://images.unsplash.com" crossorigin>
   <link rel="preload" href="/data/latest.json" as="fetch" crossorigin="anonymous">
-  <link rel="stylesheet" href="/styles.css?v=20261108-15">
+  <link rel="stylesheet" href="/styles.css?v=20261108-16">
   <script type="application/ld+json">
   {"@context":"https://schema.org","@graph":[
     {"@type":"NewsMediaOrganization","@id":"https://polyemergence.com/#organization","name":"Polyemergence","alternateName":"多重涌现","url":"https://polyemergence.com/","logo":{"@type":"ImageObject","url":"https://polyemergence.com/assets/mark.svg"},"description":"Independent AI news and industry intelligence across technology, business, policy and society."},
@@ -44,6 +45,7 @@
     </nav>
     <div class="header-tools">
       <span class="edition" data-copy="edition">GLOBAL EDITION</span>
+      <button class="install-app-button" id="install-app" type="button" aria-haspopup="dialog" aria-controls="install-dialog"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M12 3v12m0 0 4-4m-4 4-4-4M5 19h14"/></svg><span data-copy="installApp">Install</span></button>
       <div class="language-switch" aria-label="Language"><a href="/en/" hreflang="en" data-locale-button="en" aria-current="page">EN</a><span aria-hidden="true">|</span><a href="/zh/" hreflang="zh-Hans" data-locale-button="zh">中</a></div>
     </div>
   </header>
@@ -78,7 +80,8 @@
       </form>
     </section>
   </main>
+  <dialog class="install-dialog" id="install-dialog" aria-labelledby="install-title"><form method="dialog"><button class="install-dialog-close" value="cancel" aria-label="Close">×</button><div class="install-dialog-mark"><img src="/assets/app-icon.svg" alt="" width="72" height="72"></div><p class="section-index">POLYEMERGENCE</p><h2 id="install-title" data-copy="installTitle">Add to your Home Screen</h2><p data-copy="installIntro">Open Polyemergence like an app, directly from your phone.</p><ol id="install-steps"></ol><button class="install-dialog-done" value="cancel" data-copy="installDone">Got it</button></form></dialog>
   <footer><div class="footer-brand"><img id="footer-logo" src="/assets/logo-en-reverse.svg" alt="Polyemergence" width="360"></div><div class="footer-copy"><p data-copy="footer">Independent AI intelligence for a changing world.</p><p class="company-note">Published by a Singapore-based technology startup focused on data and investment.</p><p class="footer-meta"><a href="/en/open-source/">Open-source notices</a></p></div></footer>
-  <script src="/app.js?v=20261108-17" defer></script>
+  <script src="/app.js?v=20261108-18" defer></script>
 </body>
 </html>

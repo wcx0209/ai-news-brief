@@ -1,11 +1,16 @@
 {
-  "name": "Polyemergence",
+  "name": "Polyemergence AI News",
   "short_name": "Polyemergence",
   "description": "Daily AI news, industry signals, and analysis.",
-  "start_url": "/en/",
+  "id": "/",
+  "start_url": "/",
   "scope": "/",
   "display": "standalone",
-  "background_color": "#f7f5ee",
+  "background_color": "#111111",
   "theme_color": "#111111",
-  "icons": [{ "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml" }]
+  "icons": [
+    { "src": "/assets/app-icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/assets/app-icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/assets/app-icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
 }

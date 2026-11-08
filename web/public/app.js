@@ -22,6 +22,10 @@ const COPY = {
     feedbackEmailPlaceholder: "you@example.com", feedbackMessage: "Your feedback", feedbackMessagePlaceholder: "Tell us what we should know…",
     feedbackPrivate: "Privately delivered to the editorial desk.", feedbackSubmit: "Send feedback", feedbackSending: "Sending…",
     feedbackSuccess: "Thank you — your feedback has been delivered.", feedbackError: "We couldn’t send that. Please try again in a moment.",
+    installApp: "Install", installTitle: "Add to your Home Screen",
+    installIntro: "Open Polyemergence like an app, directly from your phone.", installDone: "Got it",
+    installIosSteps: ["Open this page in Safari.", "Tap the Share button in the browser toolbar.", "Choose “Add to Home Screen”, then tap “Add”."],
+    installGenericSteps: ["Open your browser menu.", "Choose “Install app” or “Add to Home screen”.", "Confirm to place the Polyemergence icon on your device."],
     footer: "Independent AI intelligence for a changing world."
   },
   zh: {
@@ -47,6 +51,10 @@ const COPY = {
     feedbackEmailPlaceholder: "you@example.com", feedbackMessage: "反馈内容", feedbackMessagePlaceholder: "请告诉我们需要注意什么……",
     feedbackPrivate: "信息将私下发送给编辑。", feedbackSubmit: "发送反馈", feedbackSending: "正在发送……",
     feedbackSuccess: "谢谢，反馈已发送给编辑。", feedbackError: "暂时无法发送，请稍后再试。",
+    installApp: "添加到桌面", installTitle: "添加到手机桌面",
+    installIntro: "像打开 App 一样，从手机桌面直接进入多重涌现。", installDone: "知道了",
+    installIosSteps: ["请使用 Safari 打开本页面。", "点击浏览器工具栏中的“分享”按钮。", "选择“添加到主屏幕”，再点击“添加”。"],
+    installGenericSteps: ["打开浏览器菜单。", "选择“安装应用”或“添加到主屏幕”。", "确认后，多重涌现图标会出现在设备桌面。"],
     footer: "面向变化世界的独立 AI 情报媒体。"
   }
 };
@@ -439,5 +447,60 @@ feedbackForm?.addEventListener("submit", async event => {
   }
 });
 
+const installButton = $("#install-app");
+const installDialog = $("#install-dialog");
+const installSteps = $("#install-steps");
+let deferredInstallPrompt = null;
+
+function isStandaloneApp() {
+  return window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
+}
+
+function isAppleMobile() {
+  return /iPhone|iPad|iPod/i.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+}
+
+function renderInstallSteps() {
+  if (!installSteps) return;
+  const steps = COPY[state.locale][isAppleMobile() ? "installIosSteps" : "installGenericSteps"];
+  installSteps.innerHTML = steps.map((step, index) => `<li><span aria-hidden="true">${index + 1}</span><span>${escapeHtml(step)}</span></li>`).join("");
+}
+
+function showInstallHelp() {
+  renderInstallSteps();
+  if (typeof installDialog?.showModal === "function") installDialog.showModal();
+  else installDialog?.setAttribute("open", "");
+}
+
+if (isStandaloneApp()) installButton?.setAttribute("hidden", "");
+
+window.addEventListener("beforeinstallprompt", event => {
+  event.preventDefault();
+  deferredInstallPrompt = event;
+  installButton?.removeAttribute("hidden");
+});
+
+window.addEventListener("appinstalled", () => {
+  deferredInstallPrompt = null;
+  installButton?.setAttribute("hidden", "");
+  installDialog?.close();
+});
+
+installButton?.addEventListener("click", async () => {
+  if (!deferredInstallPrompt) {
+    showInstallHelp();
+    return;
+  }
+  deferredInstallPrompt.prompt();
+  const choice = await deferredInstallPrompt.userChoice;
+  deferredInstallPrompt = null;
+  if (choice.outcome === "accepted") installButton.setAttribute("hidden", "");
+});
+
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => navigator.serviceWorker.register("/sw.js").catch(() => {}));
+}
+
 setLocale(state.locale);
+renderInstallSteps();
 loadFeed();
