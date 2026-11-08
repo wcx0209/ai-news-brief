@@ -318,8 +318,22 @@ def _process_single_entry(entry, sources, source_map, user_db, ai_engine, vector
         full_text, video_id = _fetch_youtube_content(url, page=browser_page, browser_context=browser_context, log_prefix=log_prefix)
 
         if not full_text:
-            logging.info(f"{log_prefix}Skipping YouTube video without usable subtitles: {title}")
-            fetch_stats.record_skip(rss_url, rss_desc, 'youtube_no_transcript')
+            from bs4 import BeautifulSoup
+            publisher_description = BeautifulSoup(entry.get('summary') or '', 'html.parser').get_text(' ', strip=True)
+            if len(publisher_description) >= 300:
+                full_text = (
+                    "Publisher-supplied video description (not a verbatim transcript). "
+                    "Treat attributed claims as the publisher's summary unless directly quoted below:\n\n"
+                    f"{publisher_description}"
+                )
+                logging.info(
+                    f"{log_prefix}YouTube subtitles unavailable; using publisher description "
+                    f"({len(publisher_description)} chars): {title}"
+                )
+            else:
+                logging.info(f"{log_prefix}Skipping YouTube video without usable subtitles or description: {title}")
+                fetch_stats.record_skip(rss_url, rss_desc, 'youtube_no_content')
+                return 0
     elif entry.get('is_twitter'):
         with counter_lock:
             if twitter_fetched_counter:
