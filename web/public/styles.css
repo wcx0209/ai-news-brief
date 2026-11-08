@@ -161,7 +161,9 @@ footer { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; padding: 58px
 .footer-brand { width: min(100%, 360px); height: 60px; }
 .footer-brand img { width: 100%; height: 100%; object-fit: contain; object-position: left center; }
 footer p { margin: 0; color: var(--fog); }
-.footer-meta { grid-column: 2; font-size: 12px; }
+.footer-copy { display: grid; gap: 16px; align-content: start; }
+.company-note { max-width: 620px; color: #858585; font-size: 12px; line-height: 1.6; }
+.footer-meta { font-size: 12px; }
 .footer-meta a { color: var(--mineral); text-decoration-color: #555; text-underline-offset: 4px; }
 .footer-meta a:hover, .footer-meta a:focus-visible { color: var(--white); text-decoration-color: var(--orange); }
 
@@ -217,7 +219,6 @@ footer p { margin: 0; color: var(--fog); }
   .cover-category { font-size: 66px; }
   .card-visual .cover-labels { transform: translateX(180px); }
   footer { grid-template-columns: 1fr; padding-inline: 20px; }
-  .footer-meta { grid-column: 1; }
   .legal-page { padding: 82px 20px 96px; }
   .legal-lede { margin-bottom: 48px; }
   .license-text { padding: 18px; font-size: 11px; }
