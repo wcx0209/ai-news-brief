@@ -2,6 +2,8 @@ import os
 from openai import OpenAI
 import json
 import logging
+import threading
+import time
 
 class AIEngine:
     
@@ -16,10 +18,26 @@ class AIEngine:
         fetching_config = ConfigLoader.get_instance().get('fetching', {})
         self.ai_timeout = fetching_config.get('ai_timeout', 90)
         self.max_input_chars = fetching_config.get('max_input_chars', 8000)
+        self.min_request_interval = fetching_config.get('llm_min_interval_seconds', 0)
+        self._request_lock = threading.Lock()
+        self._last_request_at = 0.0
         # 提示词目录路径
         self.prompts_dir = os.path.join(os.path.dirname(__file__), 'prompts')
         # 预加载通用提示词
         self._prompt_cache = {}
+
+    def _create_chat_completion(self, **kwargs):
+        """Serialize LLM calls and respect free-tier request-rate limits."""
+        with self._request_lock:
+            elapsed = time.monotonic() - self._last_request_at
+            delay = max(0, self.min_request_interval - elapsed)
+            if delay:
+                logging.info(f"LLM rate limit guard: waiting {delay:.1f}s")
+                time.sleep(delay)
+            try:
+                return self.client.chat.completions.create(**kwargs)
+            finally:
+                self._last_request_at = time.monotonic()
 
     def _get_prompt_for_category(self, category: str) -> str:
         """
@@ -98,7 +116,7 @@ Reminder: You MUST output valid JSON in the exact format specified in your instr
         last_data = None
         for attempt in range(2):
             try:
-                response = self.client.chat.completions.create(
+                response = self._create_chat_completion(
                     model=self.model,
                     messages=[
                         {"role": "system", "content": system_prompt},

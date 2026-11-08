@@ -559,6 +559,9 @@ def _fetch_and_process_source(source: dict, rss_fetcher, sources, source_map,
         if 'reddit.com/search.rss' in url:
             max_posts = fetching_config.get('reddit', {}).get('max_posts_per_keyword', 10)
             entries = entries[:max_posts]
+        else:
+            max_entries_per_source = max(1, fetching_config.get('max_entries_per_source', 3))
+            entries = entries[:max_entries_per_source]
         logging.info(f"{log_prefix}Fetched {len(entries)} entries from RSS")
 
     # 2) 串行处理 entries

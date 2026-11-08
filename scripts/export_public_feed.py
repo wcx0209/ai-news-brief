@@ -110,6 +110,10 @@ def main():
             )
             rows = select_balanced_rows(cursor.fetchall(), args.limit, args.max_open_source)
 
+    if not rows and os.path.exists(args.output):
+        print(f"No curated articles; preserving existing feed at {args.output}")
+        return
+
     items = []
     for index, row in enumerate(rows):
         source_url = safe_http_url(row["url"])

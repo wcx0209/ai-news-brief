@@ -14,8 +14,10 @@ fetching:
   network_timeout: 60
   ai_timeout: 90
   max_input_chars: 30000
-  concurrency: 3
+  concurrency: 1
   max_entries: 18
+  max_entries_per_source: 1
+  llm_min_interval_seconds: 15
   article_max_age_days: 2
   hf_daily_top_n: 5
   discussion:
@@ -41,7 +43,7 @@ fetching:
     delay_max: 0
   github_trending:
     enabled: true
-    max_repos: 4
+    max_repos: 2
     since: "weekly"
   playwright_domains: []
 

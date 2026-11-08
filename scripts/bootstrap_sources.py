@@ -24,7 +24,6 @@ SOURCES = [
     ("https://www.technologyreview.com/topic/artificial-intelligence/feed/", "MIT Technology Review AI", "Independent AI industry reporting", "news", 76),
     ("https://techcrunch.com/category/artificial-intelligence/feed/", "TechCrunch AI", "AI companies, funding, and products", "news", 74),
     ("https://huggingface.co/api/daily_papers", "Hugging Face Daily Papers", "Community-ranked research", "news", 65),
-    ("https://news.ycombinator.com/rss", "Hacker News", "High-signal technology discussion", "discussion", 50),
 ]
 
 
