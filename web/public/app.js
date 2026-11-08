@@ -50,7 +50,6 @@ const COPY = {
 const routeLocale = location.pathname.split("/").filter(Boolean)[0];
 const state = { locale: routeLocale === "zh" ? "zh" : routeLocale === "en" ? "en" : (navigator.language.startsWith("zh") ? "zh" : "en"), category: "all", feed: null };
 const categories = ["all", "models", "company", "startups", "research", "open_source", "policy", "business", "society"];
-const DEFAULT_HERO_IMAGE = "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=2200&q=88";
 const $ = (selector) => document.querySelector(selector);
 const $$ = (selector) => [...document.querySelectorAll(selector)];
 
@@ -214,7 +213,7 @@ function imageMarkup(item, priority = false) {
   const alt = textFor(item).title;
   const loading = priority ? 'fetchpriority="high"' : 'loading="lazy"';
   if (image === "#") return fallbackCover(item);
-  return `<img class="media-${imageFit(item)}" data-fallback-image src="${escapeHtml(image)}" alt="${escapeHtml(alt)}" ${loading} referrerpolicy="no-referrer">${fallbackCover(item, true)}`;
+  return `<img class="media-${imageFit(item)}" data-fallback-image src="${escapeHtml(image)}" alt="${escapeHtml(alt)}" ${loading} decoding="async" referrerpolicy="no-referrer">${fallbackCover(item, true)}`;
 }
 
 function activateImageFallback(image) {
@@ -228,7 +227,6 @@ function activateImageFallback(image) {
 
 document.addEventListener("error", event => {
   if (event.target.matches?.("img[data-fallback-image]")) activateImageFallback(event.target);
-  if (event.target.id === "hero-photo" && event.target.src !== DEFAULT_HERO_IMAGE) event.target.src = DEFAULT_HERO_IMAGE;
 }, true);
 
 document.addEventListener("load", event => {
@@ -241,8 +239,6 @@ document.addEventListener("load", event => {
 }, true);
 
 function renderHero(items) {
-  const lead = items[0];
-  $("#hero-photo").src = lead && safeUrl(lead.image_url) !== "#" ? safeUrl(lead.image_url) : DEFAULT_HERO_IMAGE;
   $("#hero-ticker").innerHTML = items.slice(0, 3).map((item, index) => {
     const text = textFor(item);
     return `<a href="${escapeHtml(safeUrl(item.url))}" target="_blank" rel="noopener noreferrer"><span>${String(index + 1).padStart(2, "0")}</span><strong>${escapeHtml(text.title)}</strong><small>${escapeHtml(formatDate(item.published_at))}</small></a>`;
@@ -329,7 +325,7 @@ $$('[data-filter-link]').forEach(link => link.addEventListener("click", () => { 
 
 async function loadFeed() {
   try {
-    const response = await fetch("/data/latest.json", { cache: "no-store" });
+    const response = await fetch("/data/latest.json", { cache: "default", credentials: "omit" });
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     state.feed = await response.json();
   } catch (error) {

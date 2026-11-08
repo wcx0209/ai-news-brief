@@ -109,6 +109,7 @@ main { overflow: hidden; }
 
 .story-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; background: var(--carbon); border: 2px solid var(--carbon); }
 .story-card { min-width: 0; background: var(--white); }
+.story-card { content-visibility: auto; contain-intrinsic-size: 520px; }
 .story-card:last-child:nth-child(3n + 1) { grid-column: 1 / -1; }
 .story-card:last-child:nth-child(3n + 2) { grid-column: span 2; }
 .story-card:last-child:is(:nth-child(3n + 1), :nth-child(3n + 2)) { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }

@@ -217,17 +217,22 @@ def main():
             "tags": parse_tags(row["tags"]),
             "en": {
                 "title": row["title_en"] or row["title"],
-                "summary": row["summary_en"] or "",
-                "long_summary": row["long_summary_en"] or "",
+                "summary": row["summary_en"] or row["long_summary_en"] or "",
             },
             "zh": {
                 "title": row["title_zh"] or row["title"],
-                "summary": row["summary_zh"] or "",
-                "long_summary": row["long_summary_zh"] or "",
+                "summary": row["summary_zh"] or row["long_summary_zh"] or "",
             },
         })
 
     items = merge_recent_items(items, previous_items, args.limit, args.max_open_source)
+    for item in items:
+        for locale in ("en", "zh"):
+            localized = item.get(locale) or {}
+            item[locale] = {
+                "title": localized.get("title") or "",
+                "summary": localized.get("summary") or localized.get("long_summary") or "",
+            }
 
     payload = {
         "brand": "Polyemergence",
@@ -237,7 +242,7 @@ def main():
     }
     os.makedirs(os.path.dirname(args.output), exist_ok=True)
     with open(args.output, "w", encoding="utf-8") as handle:
-        json.dump(payload, handle, ensure_ascii=False, indent=2)
+        json.dump(payload, handle, ensure_ascii=False, separators=(",", ":"))
         handle.write("\n")
 
     sitemap_path = os.path.join(os.path.dirname(os.path.dirname(args.output)), "sitemap.xml")
