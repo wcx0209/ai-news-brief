@@ -54,6 +54,8 @@ SOURCES = [
 
     # High-signal AI interviews and long-form conversations. Keep this set small:
     # video transcripts are expensive to collect and should complement, not crowd out, news.
+    ("https://www.youtube.com/feeds/videos.xml?channel_id=UCKV2yWPB3wn0RTZh3cTD8YA", "硅谷101", "Original Chinese long-form interviews on AI research, companies, infrastructure, and markets", "interviews", 92),
+    ("https://www.youtube.com/feeds/videos.xml?channel_id=UCqoy3g7ZH24j2mLOq_nbKrQ", "十字路口 Crossing", "Original Chinese video-podcast interviews with AI founders, researchers, builders, and creators", "interviews", 88),
     ("https://www.youtube.com/feeds/videos.xml?channel_id=UCZa18YV7qayTh-MRIrBhDpA", "Dwarkesh Patel", "Long-form interviews with AI researchers, founders, and policymakers", "interviews", 88),
     ("https://www.youtube.com/feeds/videos.xml?channel_id=UCSI7h9hydQ40K5MJHnCrQvw", "No Priors", "Interviews with AI founders, researchers, and investors", "interviews", 86),
     ("https://www.youtube.com/feeds/videos.xml?channel_id=UCxBcwypKK-W3GHd_RZ9FZrQ", "Latent Space", "AI engineering interviews and technical conversations", "interviews", 84),

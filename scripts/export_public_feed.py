@@ -6,7 +6,7 @@ import json
 import os
 import re
 from datetime import datetime, timedelta, timezone
-from urllib.parse import urlparse
+from urllib.parse import parse_qs, urlparse
 
 import psycopg2
 import psycopg2.extras
@@ -28,6 +28,24 @@ def safe_http_url(value):
         return value if parsed.scheme in {"http", "https"} and parsed.netloc else None
     except ValueError:
         return None
+
+
+def youtube_thumbnail(url):
+    """Return YouTube's reliable static thumbnail without using the Data API."""
+    if not url:
+        return None
+    parsed = urlparse(url)
+    video_id = None
+    if parsed.netloc.lower().endswith("youtu.be"):
+        video_id = parsed.path.strip("/").split("/")[0]
+    elif "youtube.com" in parsed.netloc.lower():
+        if parsed.path == "/watch":
+            video_id = parse_qs(parsed.query).get("v", [None])[0]
+        elif parsed.path.startswith(("/shorts/", "/embed/")):
+            video_id = parsed.path.strip("/").split("/")[1]
+    if video_id and re.fullmatch(r"[A-Za-z0-9_-]{11}", video_id):
+        return f"https://i.ytimg.com/vi/{video_id}/hqdefault.jpg"
+    return None
 
 
 def discover_image(url, timeout=8):
@@ -207,7 +225,9 @@ def main():
     items = []
     for index, row in enumerate(rows):
         source_url = safe_http_url(row["url"])
-        image_url = discover_image(source_url) if source_url and index < args.discover_images else None
+        image_url = youtube_thumbnail(source_url)
+        if not image_url and source_url and index < args.discover_images:
+            image_url = discover_image(source_url)
         items.append({
             "id": row["id"],
             "url": source_url,

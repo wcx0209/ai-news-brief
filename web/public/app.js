@@ -115,9 +115,22 @@ function imageFit(item) {
   if (["cover", "contain"].includes(item.image_fit)) return item.image_fit;
   const source = String(item.source || "");
   const image = String(item.image_url || "");
+  if (/youtube\.com|youtu\.be|ytimg\.com/i.test(`${item.url || ""} ${image}`)) return "cover";
   const editorialPhoto = /techcrunch|reuters|ap news|associated press|the verge|wired|bloomberg|venturebeat|cnbc|bbc|fortune|forbes/i;
   const photoUrl = /gettyimages|unsplash|techcrunch\.com\/wp-content/i;
   return editorialPhoto.test(source) || photoUrl.test(image) ? "cover" : "contain";
+}
+
+function youtubeThumbnail(item) {
+  const url = String(item.url || "");
+  const match = url.match(/(?:youtube\.com\/watch\?[^#]*v=|youtu\.be\/|youtube\.com\/shorts\/)([\w-]{11})/i);
+  return match ? `https://i.ytimg.com/vi/${match[1]}/hqdefault.jpg` : null;
+}
+
+function prefersBrandCover(item, priority = false) {
+  const source = String(item.source || "");
+  const weakVisualSource = /github trending|qbitai|aws machine learning|itmedia ai\+|geekpark/i;
+  return weakVisualSource.test(source) || (priority && imageFit(item) === "contain");
 }
 
 function coverGeometry(category) {
@@ -223,10 +236,11 @@ function fallbackCover(item, hidden = false) {
 }
 
 function imageMarkup(item, priority = false) {
-  const image = safeUrl(item.image_url);
+  const videoThumbnail = youtubeThumbnail(item);
+  const image = safeUrl(videoThumbnail || item.image_url);
   const alt = textFor(item).title;
   const loading = priority ? 'fetchpriority="high"' : 'loading="lazy"';
-  if (image === "#") return fallbackCover(item);
+  if (image === "#" || (!videoThumbnail && prefersBrandCover(item, priority))) return fallbackCover(item);
   return `<img class="media-${imageFit(item)}" data-fallback-image src="${escapeHtml(image)}" alt="${escapeHtml(alt)}" ${loading} decoding="async" referrerpolicy="no-referrer">${fallbackCover(item, true)}`;
 }
 
