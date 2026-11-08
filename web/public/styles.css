@@ -71,9 +71,10 @@ main { overflow: hidden; }
 .lead-copy h3 { margin: 52px 0 24px; text-transform: uppercase; font-size: clamp(38px, 4.3vw, 70px); font-weight: 900; line-height: .94; letter-spacing: -.045em; }
 .lead-copy p { max-width: 760px; margin: 0 0 30px; color: #d4d4d4; font-size: 17px; line-height: 1.5; }
 .read-link { width: fit-content; padding-bottom: 5px; border-bottom: 4px solid var(--orange); font-weight: 850; text-decoration: none; }
-.story-visual, .card-visual { position: relative; background: linear-gradient(135deg, #222 0 34%, #777 34% 58%, var(--orange) 58% 100%); overflow: hidden; }
-.story-visual { min-height: 360px; }
-.story-visual img, .card-visual img { width: 100%; height: 100%; object-fit: cover; }
+.story-visual, .card-visual { position: relative; overflow: hidden; }
+.story-visual { min-height: 360px; background: #151515; }
+.card-visual { background: var(--mineral); }
+.story-visual img, .card-visual img { display: block; width: 100%; height: 100%; object-fit: contain; object-position: center; }
 .story-visual::after { content: ""; position: absolute; inset: 0; border-left: 12px solid var(--orange); pointer-events: none; }
 
 .story-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; background: var(--carbon); border: 2px solid var(--carbon); }
