@@ -348,17 +348,6 @@ class RSSFetcher:
                 except Exception as e:
                     logging.warning(f"curl_cffi failed for difficult domain {name}: {e}")
             
-            # For YouTube fallback, use browser engine to bypass TLS fingerprint detection
-            if content is None and is_youtube:
-                try:
-                    with self._browser_lock:
-                        browser = self._get_browser_unlocked()
-                        browser.get(url)
-                        content = browser.html.encode('utf-8')
-                    logging.info(f"Using browser engine for YouTube: {name}")
-                except Exception as e:
-                    logging.warning(f"Browser engine failed for {name}: {e}")
-            
             # Fallback to httpx/autodetect logic if content is still None
             if content is None:
                 # Strategy: curl_cffi (TLS impersonation) → DrissionPage (real browser) → httpx
