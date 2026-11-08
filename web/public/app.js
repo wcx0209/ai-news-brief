@@ -127,12 +127,6 @@ function youtubeThumbnail(item) {
   return match ? `https://i.ytimg.com/vi/${match[1]}/hqdefault.jpg` : null;
 }
 
-function prefersBrandCover(item, priority = false) {
-  const source = String(item.source || "");
-  const weakVisualSource = /github trending|qbitai|aws machine learning|itmedia ai\+|geekpark/i;
-  return weakVisualSource.test(source) || (priority && imageFit(item) === "contain");
-}
-
 function coverGeometry(category) {
   const shapes = {
     models: `
@@ -240,7 +234,7 @@ function imageMarkup(item, priority = false) {
   const image = safeUrl(videoThumbnail || item.image_url);
   const alt = textFor(item).title;
   const loading = priority ? 'fetchpriority="high"' : 'loading="lazy"';
-  if (image === "#" || (!videoThumbnail && prefersBrandCover(item, priority))) return fallbackCover(item);
+  if (image === "#") return fallbackCover(item);
   return `<img class="media-${imageFit(item)}" data-fallback-image src="${escapeHtml(image)}" alt="${escapeHtml(alt)}" ${loading} decoding="async" referrerpolicy="no-referrer">${fallbackCover(item, true)}`;
 }
 
@@ -260,10 +254,8 @@ document.addEventListener("error", event => {
 document.addEventListener("load", event => {
   const image = event.target;
   if (!image.matches?.("img[data-fallback-image]")) return;
-  const aspect = image.naturalWidth / Math.max(image.naturalHeight, 1);
-  const tooSmall = image.naturalWidth * image.naturalHeight < 160000;
-  const unusableRatio = aspect < 0.65 || aspect > 3.2;
-  if (tooSmall || unusableRatio) activateImageFallback(image);
+  const tooSmall = image.naturalWidth < 480 || image.naturalHeight < 270;
+  if (tooSmall) activateImageFallback(image);
 }, true);
 
 function renderHero(items) {
