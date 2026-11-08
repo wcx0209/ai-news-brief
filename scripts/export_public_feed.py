@@ -63,11 +63,27 @@ def iso(value):
     return value.astimezone(timezone.utc).isoformat().replace("+00:00", "Z") if value else None
 
 
+def select_balanced_rows(rows, limit, max_open_source):
+    """Keep the public brief news-led while retaining a small open-source signal."""
+    selected = []
+    open_source_count = 0
+    for row in rows:
+        if row["category"] == "opensource":
+            if open_source_count >= max_open_source:
+                continue
+            open_source_count += 1
+        selected.append(row)
+        if len(selected) >= limit:
+            break
+    return selected
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--output", default="web/public/data/latest.json")
     parser.add_argument("--limit", type=int, default=60)
     parser.add_argument("--discover-images", type=int, default=12)
+    parser.add_argument("--max-open-source", type=int, default=2)
     args = parser.parse_args()
 
     db_url = os.environ.get("INBRIEF_SUPABASE_DB_URL")
@@ -85,12 +101,14 @@ def main():
                 FROM articles a
                 LEFT JOIN rss_sources rs ON rs.id = a.rss_source_id
                 WHERE COALESCE(a.published_at, a.created_at) >= NOW() - INTERVAL '14 days'
-                ORDER BY a.importance_score DESC, COALESCE(a.published_at, a.created_at) DESC
+                ORDER BY (a.importance_score - CASE WHEN a.category = 'opensource' THEN 25 ELSE 0 END) DESC,
+                         COALESCE(rs.importance_score, 0) DESC,
+                         COALESCE(a.published_at, a.created_at) DESC
                 LIMIT %s
                 """,
-                (args.limit,),
+                (max(args.limit * 3, args.limit),),
             )
-            rows = cursor.fetchall()
+            rows = select_balanced_rows(cursor.fetchall(), args.limit, args.max_open_source)
 
     items = []
     for index, row in enumerate(rows):

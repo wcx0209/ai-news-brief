@@ -41,7 +41,7 @@ fetching:
     delay_max: 0
   github_trending:
     enabled: true
-    max_repos: 10
+    max_repos: 4
     since: "weekly"
   playwright_domains: []
 

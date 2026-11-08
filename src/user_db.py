@@ -444,16 +444,23 @@ class UserDatabase:
             logging.debug(f"RSS source URL already exists: {url}")
             return None
     
-    def get_or_create_rss_source(self, url: str, name: str, description: str = None, category: str = None) -> int:
-        """Get existing RSS source ID or create new one."""
+    def get_or_create_rss_source(self, url: str, name: str, description: str = None,
+                                 category: str = None, importance_score: int = 0) -> int:
+        """Get an RSS source or create it, keeping editorial metadata current."""
         with self._get_connection() as conn:
             cursor = conn.cursor()
             cursor.execute('SELECT id FROM rss_sources WHERE url = %s', (url,))
             row = cursor.fetchone()
             if row:
+                cursor.execute(
+                    '''UPDATE rss_sources
+                       SET name = %s, description = %s, category = %s, importance_score = %s
+                       WHERE id = %s''',
+                    (name, description, category, importance_score, row[0])
+                )
                 return row[0]
         
-        source_id = self.add_rss_source(url, name, description, category)
+        source_id = self.add_rss_source(url, name, description, category, importance_score)
         if source_id:
             return source_id
         

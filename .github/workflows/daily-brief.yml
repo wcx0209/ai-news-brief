@@ -68,7 +68,7 @@ jobs:
         run: python scripts/run_once.py
 
       - name: Export public feed
-        run: python scripts/export_public_feed.py --output web/public/data/latest.json --limit 60 --discover-images 12
+        run: python scripts/export_public_feed.py --output web/public/data/latest.json --limit 60 --discover-images 12 --max-open-source 2
 
       - name: Commit refreshed feed
         run: |
