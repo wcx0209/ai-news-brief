@@ -209,23 +209,40 @@ function truncateLabel(value, max = 30) {
   return text.length > max ? `${text.slice(0, max - 1)}…` : text;
 }
 
+function coverArtwork(category, label, source, format = "landscape") {
+  const square = format === "square";
+  const viewBox = square ? "0 0 750 900" : "0 0 1200 675";
+  const grid = square
+    ? "M0 150h750M0 300h750M0 450h750M0 600h750M0 750h750M125 0v900M250 0v900M375 0v900M500 0v900M625 0v900"
+    : "M0 112.5h1200M0 225h1200M0 337.5h1200M0 450h1200M0 562.5h1200M200 0v675M400 0v675M600 0v675M800 0v675M1000 0v675";
+  const emergence = square ? "M0 0h180l-65 900H0z" : "M0 0h238l-86 675H0z";
+  const geometry = square
+    ? `<g transform="translate(-300 150)">${coverGeometry(category)}</g>`
+    : coverGeometry(category);
+  const categoryY = square ? 760 : 535;
+  const sourceY = square ? 820 : 594;
+  const labelX = square ? 56 : 68;
+  return `<svg class="cover-art cover-art-${format}" viewBox="${viewBox}" preserveAspectRatio="${square ? "xMidYMid meet" : "xMidYMid slice"}" aria-hidden="true" focusable="false">
+    <rect class="cover-bg" width="100%" height="100%"/>
+    <path class="cover-grid" d="${grid}"/>
+    <path class="cover-emergence" d="${emergence}"/>
+    ${geometry}
+    <g class="cover-labels">
+      <text class="cover-index" x="${labelX}" y="84">POLYEMERGENCE / ${escapeHtml(category.replace("_", " ").toUpperCase())}</text>
+      <text class="cover-category" x="${labelX}" y="${categoryY}">${escapeHtml(label.toUpperCase())}</text>
+      <text class="cover-source" x="${labelX + 4}" y="${sourceY}">${escapeHtml(source)}</text>
+    </g>
+  </svg>`;
+}
+
 function fallbackCover(item, hidden = false) {
   const category = categoryFor(item);
   const label = COPY[state.locale].filters[category] || category;
   const source = truncateLabel(item.source);
   const aria = state.locale === "zh" ? `${label}分类品牌配图，来源 ${source}` : `${label} category artwork, source ${source}`;
   return `<div class="brand-cover" data-fallback-cover data-category="${category}" role="img" aria-label="${escapeHtml(aria)}"${hidden ? " hidden" : ""}>
-    <svg viewBox="0 0 1200 675" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">
-      <rect class="cover-bg" width="1200" height="675"/>
-      <path class="cover-grid" d="M0 112.5h1200M0 225h1200M0 337.5h1200M0 450h1200M0 562.5h1200M200 0v675M400 0v675M600 0v675M800 0v675M1000 0v675"/>
-      <path class="cover-emergence" d="M0 0h238l-86 675H0z"/>
-      ${coverGeometry(category)}
-      <g class="cover-labels">
-        <text class="cover-index" x="68" y="84">POLYEMERGENCE / ${escapeHtml(category.replace("_", " ").toUpperCase())}</text>
-        <text class="cover-category" x="68" y="535">${escapeHtml(label.toUpperCase())}</text>
-        <text class="cover-source" x="72" y="594">${escapeHtml(source)}</text>
-      </g>
-    </svg>
+    ${coverArtwork(category, label, source)}
+    ${coverArtwork(category, label, source, "square")}
   </div>`;
 }
 

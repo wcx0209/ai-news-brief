@@ -102,6 +102,8 @@ main { overflow: hidden; }
 .brand-cover { position: absolute; inset: 0; width: 100%; height: 100%; color: var(--white); background: var(--carbon); }
 .brand-cover[hidden] { display: none; }
 .brand-cover svg { display: block; width: 100%; height: 100%; }
+.brand-cover .cover-art-square { display: none; }
+.cover-art-square .cover-labels { transform: none !important; }
 .cover-bg { fill: #151515; }
 .cover-grid { fill: none; stroke: rgba(255,255,255,.08); stroke-width: 2; }
 .cover-emergence, .cover-orange { fill: var(--orange); }
@@ -127,6 +129,19 @@ main { overflow: hidden; }
 .story-card:last-child:is(:nth-child(3n + 1), :nth-child(3n + 2)) { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
 .story-card:last-child:is(:nth-child(3n + 1), :nth-child(3n + 2)) .card-visual { height: 100%; min-height: 320px; }
 .card-visual { height: 210px; }
+@media (min-width: 1051px) {
+  /* The final card expands to close an incomplete three-column row. Its image
+     must adopt the expanded slot's ratio instead of letterboxing inside it. */
+  .story-card:last-child:is(:nth-child(3n + 1), :nth-child(3n + 2)) .card-visual img {
+    object-fit: cover;
+  }
+  .story-card:last-child:is(:nth-child(3n + 1), :nth-child(3n + 2)) .brand-cover .cover-art-landscape {
+    display: none;
+  }
+  .story-card:last-child:is(:nth-child(3n + 1), :nth-child(3n + 2)) .brand-cover .cover-art-square {
+    display: block;
+  }
+}
 .card-plane { position: absolute; top: 0; right: 0; width: 74px; height: 74px; background: var(--orange); clip-path: polygon(42% 0, 100% 0, 100% 100%); }
 .card-copy { padding: 26px; }
 .story-card .story-kicker { color: var(--neutral); }
@@ -202,6 +217,9 @@ footer p { margin: 0; color: var(--fog); }
   .story-card:last-child:is(:nth-child(3n + 1), :nth-child(3n + 2)) .card-visual { height: 210px; min-height: 0; }
   .story-card:last-child:nth-child(odd) { grid-column: 1 / -1; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
   .story-card:last-child:nth-child(odd) .card-visual { height: 100%; min-height: 280px; }
+  .story-card:last-child:nth-child(odd) .card-visual img { object-fit: cover; }
+  .story-card:last-child:nth-child(odd) .brand-cover .cover-art-landscape { display: none; }
+  .story-card:last-child:nth-child(odd) .brand-cover .cover-art-square { display: block; }
   .story-card:last-child:nth-child(odd) .cover-labels { transform: translateX(220px); }
   .method, .feedback { grid-template-columns: 1fr; }
 }
@@ -230,6 +248,9 @@ footer p { margin: 0; color: var(--fog); }
   .form-actions { align-items: stretch; flex-direction: column; }
   .story-card:last-child:nth-child(odd) { grid-column: auto; display: block; }
   .story-card:last-child:nth-child(odd) .card-visual { height: 250px; min-height: 0; }
+  .story-card:last-child:nth-child(odd) .card-visual img.media-contain { object-fit: contain; }
+  .story-card:last-child:nth-child(odd) .brand-cover .cover-art-landscape { display: block; }
+  .story-card:last-child:nth-child(odd) .brand-cover .cover-art-square { display: none; }
   .card-visual { height: 250px; }
   .cover-category { font-size: 66px; }
   .card-visual .cover-labels { transform: translateX(180px); }
