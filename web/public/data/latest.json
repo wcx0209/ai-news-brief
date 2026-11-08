@@ -1,292 +1,187 @@
 {
   "brand": "Polyemergence",
-  "generated_at": "2026-11-08T05:30:16.412140Z",
-  "count": 11,
+  "generated_at": "2026-11-08T05:49:42.731189Z",
+  "count": 7,
   "items": [
     {
-      "id": "dba2d51a-9a40-4895-a85e-33d9aeab8254",
+      "id": "960a53f1-299f-4898-b629-ce804e4196f0",
+      "url": "https://aws.amazon.com/blogs/machine-learning/sagemaker-inference-now-supports-multi-instance-gpu-to-maximize-gpu-utilization-for-model-endpoints/",
+      "source": "AWS Machine Learning",
+      "category": "news",
+      "importance": 85,
+      "published_at": "2026-11-06T18:01:00Z",
+      "image_url": "https://d2908q01vomqb2.cloudfront.net/f1f836cb4ea6efb2a0b1b99f41ad8b103eff4b59/2026/11/05/ML-22216-featured-image.png",
+      "tags": [
+        "sagemaker",
+        "aws",
+        "gpu",
+        "ai",
+        "nvidia"
+      ],
+      "en": {
+        "title": "Amazon SageMaker Inference adds Multi-Instance GPU to cut AI costs",
+        "summary": "Amazon SageMaker Inference now supports **Multi-Instance GPU (MIG)**, letting you divide a single physical GPU into multiple isolated partitions. This means you can run **multiple AI models** on one GPU without wasting resources, and avoid the complex setup of doing this manually on Kubernetes.",
+        "long_summary": "## How GPU Partitioning Works\nPreviously, when you deployed an AI model to a GPU endpoint, you had to request at least one whole accelerator. This often led to wasted hardware because many models do not need an entire A100 or H100 chip. With the new **SageMaker GPU partitioning**, powered by NVIDIA MIG, you can divide a physical GPU into up to seven independent partitions. Each partition gets its own dedicated compute power and memory, enforced strictly at the hardware level.\n\n## Key Benefits and Cost Savings\nThis hardware-level isolation ensures **predictable latency** and strict fault containment, meaning a traffic spike or crash in one model will not affect others on the same chip. AWS testing showed that using a smaller slice of a newer, powerful GPU (like an H100) can actually deliver **better performance and lower costs** compared to using a whole older GPU, striking a much better balance for real-world production workloads."
+      },
+      "zh": {
+        "title": "亚马逊 SageMaker 推理现在支持 GPU 切割，帮你省下真金白银",
+        "summary": "亚马逊 SageMaker 推理现在支持 **GPU 多实例切片（MIG）** 技术，允许把一块完整的显卡拆成多个独立的小格子。这样你就能在**同一张显卡**上同时跑好几个 AI 模型，不用再为浪费算力或复杂的集群配置而头疼了。",
+        "long_summary": "## GPU 切割是怎么回事\n以前在云端部署 AI 模型时，最低消费就是整整一张显卡。但现实是，很多模型根本用不完一张 A100 或者 H100 的全部性能，造成了极大的浪费。现在通过 **SageMaker 的 GPU 切割功能**，借助英伟达的 MIG 技术，你可以把一块大显卡切成最多七个独立的小格子。每个格子都有专属的算力和内存，彼此互不干扰。\n\n## 核心好处与实际省钱效果\n这种硬件级别的隔离能带来**更稳定的响应速度**，而且一个模型崩了或者并发暴涨，也不会连累隔壁的其他模型。亚马逊测试发现，用高端显卡（比如 H100）的一个切片来跑模型，不仅**性能比老显卡更好**，而且均摊下来还能省下不少钱，给企业提供了更灵活的部署选择。"
+      }
+    },
+    {
+      "id": "8d36b502-a15e-429b-8eb6-f2cfa5d58b5e",
+      "url": "https://blogs.nvidia.com/blog/telco-open-source-tools-research-6g-networks/",
+      "source": "NVIDIA Generative AI",
+      "category": "news",
+      "importance": 82,
+      "published_at": "2026-11-06T16:00:35Z",
+      "image_url": "https://blogs.nvidia.com/wp-content/uploads/2026/11/Screenshot-2026-11-05-at-8.30.25-PM-scaled.png",
+      "tags": [
+        "nvidia",
+        "6g",
+        "ai",
+        "telecom",
+        "open source"
+      ],
+      "en": {
+        "title": "NVIDIA Open Source Tools Help Researchers Build Next-Generation 6G Networks",
+        "summary": "NVIDIA's open-source 6G and 5G software tools, like Aerial and Sionna, have seen a **tenfold growth** in global adoption over the past year. Researchers are using these tools to build smarter networks that help **robots react faster**, improve signal reception, save power, and speed up network simulations.",
+        "long_summary": "Over the past year, NVIDIA's open-source wireless tools have surpassed 1 million downloads, being adopted by more than 8,000 research institutions worldwide. These platforms bridge simulation and AI training with real-world wireless systems, aiming to build AI-native 6G networks.\n\nResearchers at King's College London used Sionna to enable robots to transmit compact descriptions instead of full images, cutting task completion time by up to **52.6%**. Meanwhile, SoftBank and ETH Zurich demonstrated that AI receivers can significantly improve signal decoding under interference, achieving up to a **60% gain** in uplink throughput.\n\nAdditionally, universities like Leeds are using AI to predict network demand and manage base station power, cutting RAN energy consumption by **45.6%**. Institutions like CTTC are also leveraging GPU acceleration to slash network simulation times from hours down to minutes, paving the way for faster 6G innovation."
+      },
+      "zh": {
+        "title": "英伟达开源工具助力研究人员打造下一代 6G 网络",
+        "summary": "英伟达旗下的 Aerial 和 Sionna 等开源 6G 和 5G 软件工具，在过去一年里全球下载量和使用量迎来了**十倍增长**。研究人员正在利用这些工具打造更聪明的网络，不仅能帮**机器人反应更快**，还能更好地接收信号、省电以及加快网络模拟测试。",
+        "long_summary": "在过去的一年里，英伟达的开源无线工具下载量已经突破 100 万次，被全球 8000 多家研究和学术机构使用。这些平台将虚拟仿真、AI 训练与真实的无线系统连接起来，目标是打造以人工智能为核心的 6G 网络。\n\n来自伦敦国王学院的研究人员利用 Sionna 让机器人只传输精简的物体描述而非完整的图像，成功将机器人的任务完成时间缩短了 **52.6%**。同时，软银集团和苏黎世联邦理工学院的研究表明，AI 接收器可以在干扰环境下更好地解码信号，使上行吞吐量提升高达 **60%**。\n\n此外，利兹大学等机构利用人工智能来预测网络需求并智能管理基站开关，成功将基站能耗降低了 **45.6%**。加泰罗尼亚电信技术中心（CTTC）还利用 GPU 加速将原本需要数小时的网络模拟时间缩短至十几分钟，大幅加快了 6G 技术的研发步伐。"
+      }
+    },
+    {
+      "id": "4c66b234-6af6-4894-8efe-88e95836a986",
+      "url": "https://huggingface.co/blog/allenai/toyblocks",
+      "source": "Hugging Face",
+      "category": "news",
+      "importance": 82,
+      "published_at": "2026-11-06T14:00:48Z",
+      "image_url": "https://cdn-uploads.huggingface.co/production/uploads/638e39b249de7ae552d977b5/OAJMu2jr7i5jVAbmsKdZW.jpeg",
+      "tags": [
+        "robotics",
+        "ai simulation",
+        "reinforcement learning",
+        "computer vision",
+        "embodied ai"
+      ],
+      "en": {
+        "title": "ToyBlocks: A controlled world for robot learning and evaluation",
+        "summary": "Researchers have introduced **ToyBlocks**, an open simulation framework designed to help robots learn how to handle, sort, and stack objects. By providing a controlled environment with realistic physics, it allows scientists to automatically **generate training data** and test why robots succeed or fail, ultimately bridging the gap between simulation and real-world robot deployment.",
+        "long_summary": "## Background and Design\nTo understand why complex AI systems succeed or fail, scientists often rely on controlled environments. ToyBlocks is the first 'FoundationWorld' designed for robotics, featuring a simulated tabletop with a robot arm and blocks. It fulfills four key requirements: **realistic physics**, automatic task generation, a combination of reasoning and dexterity, and broad task coverage. Unlike messy real-world scenarios, its narrow scope allows researchers to rigorously track performance.\n\n## Capabilities and Experiments\nToyBlocks uses reinforcement learning and motion planning to automatically generate skills like pushing and flipping blocks without tedious remote control. Researchers tested various AI models using this framework. For instance, vision-language-action models often struggled with spatial generalization, while advanced reasoning models like Claude could use tools to solve block-stacking tasks. Additionally, action-conditioned world models were evaluated for their ability to predict physical interactions accurately, with **Wan 2.2** performing best.\n\n## Real-World Transfer\nPolicies trained entirely inside ToyBlocks were successfully transferred to physical robots zero-shot. By carefully tuning simulation parameters and randomizing visual properties, the **low-level skills** achieved success rates in the real world that closely matched their performance in simulation, proving the framework's value for future robotics research."
+      },
+      "zh": {
+        "title": "玩具积木：用于机器人学习与评估的受控虚拟世界",
+        "summary": "研究人员推出了**玩具积木**（ToyBlocks）开源模拟框架，旨在帮机器人学习如何抓取、分类和堆叠物体。通过提供带有真实物理效果的受控环境，它允许科学家自动**生成训练数据**并测试机器人成功或失败的原因，从而最终缩小模拟与现实世界机器人部署之间的差距。",
+        "long_summary": "## 背景与设计\n为了弄清复杂人工智能系统成功或失败的原因，科学家们通常依赖受控环境。ToyBlocks 是首个专为机器人技术设计的“基础世界”，包含一个带有机械臂和积木的模拟桌面。它满足四个关键要求：**逼真的物理效果**、自动任务生成、推理与灵活性结合以及广泛的任务覆盖。与杂乱的现实场景不同，其狭窄的范围使研究人员能够严格追踪性能表现。\n\n## 功能与实验\nToyBlocks 利用强化学习和运动规划来自动生成诸如推动和翻转积木等技能，无需繁琐的远程遥控。研究人员利用该框架测试了各种 AI 模型。例如，视觉语言动作模型在空间泛化能力上往往表现不佳，而像 Claude 这样的高级推理模型则可以使用工具来解决积木堆叠任务。此外，研究人员还评估了动作条件世界模型准确预测物理交互的能力，其中 **Wan 2.2** 表现最好。\n\n## 现实世界迁移\n完全在 ToyBlocks 内部训练的策略被零样本成功迁移到了实体机器人上。通过仔细调整模拟参数并随机化视觉属性，其**底层技能**在现实世界中的成功率与模拟中的表现高度吻合，证明了该框架对未来机器人研究的价值。"
+      }
+    },
+    {
+      "id": "ec634c6e-fbfc-4d7f-84a1-20e21d96422f",
+      "url": "https://techcrunch.com/2026/11/07/after-the-midterms-things-are-looking-rocky-for-elon-musk-and-data-centers/",
+      "source": "TechCrunch AI",
+      "category": "news",
+      "importance": 78,
+      "published_at": "2026-11-07T22:07:22Z",
+      "image_url": "https://techcrunch.com/wp-content/uploads/2025/05/GettyImages-2207245107-1.jpg?resize=1200,765",
+      "tags": [
+        "elon musk",
+        "data centers",
+        "openai",
+        "midterm elections",
+        "ai regulation"
+      ],
+      "en": {
+        "title": "US Midterm Results Spell Trouble for Elon Musk and AI Data Centers",
+        "summary": "The recent US midterm elections brought a **blue wave** that could spell trouble for tech giants and AI data centers. Voters across the country rejected data center projects, and politicians who promised to restrict them won office. Even **Elon Musk** found himself empty-handed after donating massive sums to Republicans while his companies remain based in a newly blue state. In response, AI companies like OpenAI are trying to change their tune by dropping secret deals and rebranding data centers as **compute campuses** to appease the public.",
+        "long_summary": "## Political Backlash\nThe recent US midterm elections have created a rocky road for the tech industry, particularly regarding AI data centers. Across the country, voters rejected local ballot measures that would have paved the way for new data centers, while electing politicians who campaigned on restricting them. Notable figures like Elon Musk are now in an awkward position, having donated massive amounts to the Republican Party only to find their companies headquartered in a state that has turned heavily Democratic.\n\n## Grassroots Resistance\nExperts note that the backlash against data centers is not just a partisan issue, but an **increasing grassroots movement**. Tech companies have historically pushed through projects using secretive tactics, demanding non-disclosure agreements from local officials and ignoring community concerns over environmental issues and water scarcity in sensitive regions.\n\n## Corporate Response\nIn response to mounting political pressure and changing market dynamics, tech companies are starting to pivot. OpenAI recently released a new policy blueprint promising to ditch NDAs and share project plans openly. They are even attempting to rebrand data centers as **compute campuses** to shake off their toxic public image, though industry observers remain skeptical about whether this cosmetic change will actually solve the growing regulatory and financial hurdles."
+      },
+      "zh": {
+        "title": "美国中期选举结果出炉，马斯克和AI数据中心要头疼了",
+        "summary": "最近的美国中期选举迎来了民主党的胜出，这可能会给科技巨头和AI数据中心带来麻烦。全国各地的选民纷纷拒绝数据中心项目，承诺限制数据中心的政客也赢得了选举。就连**马斯克**在向共和党捐赠巨额资金后也发现自己竹篮打水一场空，而他的公司还总部设在一个变成了蓝色的州。为了平息民愤，像OpenAI这样的AI公司开始改变策略，不再搞秘密协议，甚至把数据中心改名叫**计算园区**来挽回公众好感。",
+        "long_summary": "## 政治风向转变\n美国最近的中期选举给科技行业带来了不小的麻烦，尤其是AI数据中心的发展开始受阻。在全国各地，选民们投票反对旨在加速数据中心建设的提案，并选出了承诺要限制数据中心发展的政治人物。像马斯克这样的大佬现在处境尴尬，他之前给共和党砸了巨资，结果自己的公司却留在一个全面转向民主党的州里。\n\n## 基层民众抵制\n业内专家指出，反对数据中心的浪潮并非单一党派问题，而是一个**日益高涨的基层运动**。过去科技公司在推进项目时往往采用遮遮掩掩的战术，要求地方官员签署保密协议，忽视了敏感地区的环境问题和水资源短缺，引发了民众的不满。\n\n## 科技公司妥协\n面对越来越大的政治压力和华尔街的财务质疑，科技公司开始做出调整。OpenAI最近发布了新的政策蓝图，承诺不再使用保密协议，并公开项目计划。他们甚至试图把数据中心改名为**计算园区**，以此来摆脱负面形象，不过业内人士对这种换汤不换药的做法能否真正解决监管和资金难题持怀疑态度。"
+      }
+    },
+    {
+      "id": "82a85a48-9609-415c-8064-73cf60e9c661",
+      "url": "https://huggingface.co/papers/2611.00859",
+      "source": "Hugging Face Daily Papers",
+      "category": "news",
+      "importance": 75,
+      "published_at": "2026-10-30T20:00:00Z",
+      "image_url": "https://cdn-thumbnails.huggingface.co/social-thumbnails/papers/2611.00859/gradient.png",
+      "tags": [
+        "video generation",
+        "artificial intelligence",
+        "streaming",
+        "deep learning"
+      ],
+      "en": {
+        "title": "Wave Forcing: Towards Speed-of-Light Streaming Video Generation",
+        "summary": "Researchers have introduced **Wave Forcing**, a new framework that makes AI video generation much faster and smoother. By letting different parts of a video **overlap their processing**, this system achieves incredible speed while keeping the video quality high and natural, solving the annoying lagging and quality drops in older methods.",
+        "long_summary": "## Background\nGenerating long AI videos in real-time has always been tough because older methods process video chunks one by one, causing delays and making the video quality drop over time.\n\n## Details\nWave Forcing uses a clever trick called **wavefront scheduling**, meaning later parts of the video start generating before the earlier parts are completely finished. It also comes with a special runtime system called WaveRT that speeds up communication between GPUs and handles heavy workloads efficiently.\n\n## Impact\nTests show this system can run at incredible speeds, reaching **134.8 end-to-end frames per second** on multiple GPUs, which is a massive performance boost that brings us much closer to real-time, live AI video generation."
+      },
+      "zh": {
+        "title": "Wave Forcing：迈向光速般的流式视频生成新技术",
+        "summary": "研究人员推出了一种名为 **Wave Forcing** 的全新AI视频生成技术，能让视频生成变得飞快且流畅。它通过让视频的不同部分**同时处理**，在保持画质清晰和动作自然的同时，大幅提升了生成速度，解决了以往技术容易卡顿和画质变差的老毛病。",
+        "long_summary": "## 背景\n实时生成长视频一直是AI领域的难题，因为老方法必须一块一块地串行处理视频，不仅速度慢，而且视频生成时间一长画面就会开始崩溃或跑偏。\n\n## 细节\n这项新技术采用了一种叫作**波前调度**的妙招，让后面的视频片段不等前面的完全搞定就能提前开工。同时，研发团队还配套推出了专属的运行加速系统，通过优化显卡之间的配合与数据传输，把效率压榨到了极致。\n\n## 影响\n测试结果表明，该系统在多张高端显卡上能跑出每秒 **134.8帧的惊人速度**。这种性能的大幅飞跃，让我们向真正的实时流式AI视频生成迈出了一大步。"
+      }
+    },
+    {
+      "id": "d3fecd4a-f647-4bce-a2bf-6d6a707c8cc1",
       "url": "https://github.com/thedotmack/claude-mem",
       "source": "GitHub Trending",
       "category": "opensource",
       "importance": 100,
-      "published_at": "2026-11-08T05:17:44.082722Z",
+      "published_at": "2026-11-08T05:47:49.244861Z",
       "image_url": "https://repository-images.githubusercontent.com/1048065319/62ccff98-4c97-4bab-97b7-ed6e1995cfba",
       "tags": [
-        "claude-mem",
-        "agent-memory",
-        "context-engineering",
-        "llm-tools",
-        "coding-agent"
+        "ai agent",
+        "memory",
+        "claude code",
+        "typescript",
+        "developer tools"
       ],
       "en": {
-        "title": "Claude-Mem: Persistent Context and Long-Term Memory for Coding Agents",
-        "summary": "⭐ 114,578 | Claude-Mem gives coding agents a persistent brain so they never start from zero again. Instead of forgetting past fixes and re-reading the same files in every new session, it runs a quiet **second observer agent** in the background that captures key actions, compresses them, and smoothly injects relevant context into future sessions while **saving up to 90% tokens**.",
-        "long_summary": "## Key Features and Highlights\nClaude-Mem solves the pain of amnesia across sessions for developers using AI coding tools. By deploying a background observer agent, it captures tool calls, edits, and decisions as you code. It provides an efficient **three-step search mechanism** (index, timeline, and detail retrieval), which prevents context bloating and cuts token usage drastically. It also features a real-time web dashboard (\"My Work\"), team-sharing capabilities (\"TeamBrain\"), opt-in cloud synchronization, automatic image capture, and strict privacy filtering through `<private>` tags.\n\n## Architecture and Mechanics\nThe tool operates through a modular pipeline: host-agent hooks intercept lifecycle events (like tool execution and prompt submissions) and stream them to a local HTTP worker managed by Bun. An observer module digests these events into compact notes stored locally in **SQLite and Chroma vector databases** for hybrid keyword-plus-semantic searches. When a fresh session initializes, Claude-Mem injects a lightweight index of relevant historical observations, loading granular details only when prompted.\n\n## Installation and Supported Agents\nGetting started is straightforward via the command line or Claude Code's plugin ecosystem. Running `npx claude-mem install` launches an interactive setup that discovers supported tools on your machine. Beyond Claude Code, it supports **over a dozen agent environments** including OpenCode, Cursor, Codex, Grok Bot, Pi, and OpenClaw gateways.\n\n## Configuration and Usage Modes\nAll user preferences reside locally in `~/.claude-mem/settings.json`. Users can choose their preferred LLM inference backend (Claude, OpenRouter, Gemini, or host-managed) and switch between specialized operation modes via `CLAUDE_MEM_MODE`. It supports multiple preset languages (including Chinese, Spanish, Japanese, and Korean) as well as behavior toggles like `code--chill` to record only high-friction bugfixes and structural design choices."
+        "title": "thedotmack/claude-mem: Persistent Context Across Sessions for Every Agent",
+        "summary": "⭐ 114,583 | Your AI coding agent **forgets everything** between sessions, making you repeat yourself and walk back into old mistakes. Claude-Mem runs a quiet observer alongside your agent to take notes, compresses them with AI, and automatically **injects relevant context** into your next session so it always picks up right where you left off.",
+        "long_summary": "## Detailed Features\nClaude-Mem solves the universal headache of AI agents starting from zero every time a new session begins. It captures everything your agent does during a session, uses AI to compress the activity into concise observations, and **injects relevant context** back into future sessions. It supports major agents like Claude Code, OpenClaw, Codex, Gemini, Cursor, and more, ensuring you never have to re-explain your codebase.\n\n## System Architecture & Installation\nThe system relies on a local worker service managed by Bun, lightweight lifecycle hooks that intercept tool calls, and a SQLite database paired with Chroma for hybrid keyword and vector search. To get started, you simply run **`npx claude-mem install`** in your interactive terminal, which automatically discovers supported agents on your machine and sets up the necessary hooks and workspace.\n\n## Usage & Search Tools\nOnce installed, Claude-Mem runs completely on its own in the background. It features a token-efficient three-step MCP search workflow (`search`, `timeline`, and `get_observations`) that saves up to 90% of tokens by fetching full details **only when needed**. You can also check a live web viewer to monitor ongoing work, track progress, and manage your project memory effortlessly."
       },
       "zh": {
-        "title": "Claude-Mem：让AI编程助手拥有跨会话持久记忆的开源上下文管理工具",
-        "summary": "⭐ 114,578 | 每次开启新会话，AI编程助手总会把之前讨论过的事情忘得一干二净？Claude-Mem 就像给AI配了一个**随身记事本**。它在后台默默派出第二位AI观察员，自动记录你的开发操作并提炼出关键信息，在新会话启动时精准注入历史上下文，不仅彻底告别重复沟通，还能**节省大量Token开销**。",
-        "long_summary": "## 核心功能与亮点\n很多开发者在使用AI编码工具时，最头疼的就是每次打开新对话，AI都会“瞬间失忆”，重复阅读文件甚至踩同样的坑。Claude-Mem 彻底解决了这个难题。它相当于给你的主开发助手配备了一位**专职速记员**，在后台默默记录所有关键决策、修改记录和错误排查过程。配合独特的“三步检索法”（索引、时间线、按需拉取详情），帮助AI**省下约90%的Token**，同时支持跨团队知识共享、隐私脱敏标签以及本地Web可视化看板。\n\n## 系统工作架构\n整个系统由几大关键模块高效协同运作：宿主Agent的生命周期钩子（Hooks）实时捕获工具调用行为，并无缝投递给本地由 Bun 驱动的轻量 Worker 服务；观察者模型将原始操作提炼为高密度的观察记录，持久化存储在**本地 SQLite 与 Chroma 向量库**中以提供语义与全文混合检索。当下次打开新项目会话时，系统仅预先注入精炼索引，由AI在需要时再按ID调取完整详情。\n\n## 安装与多Agent支持\n安装过程十分无脑，只需在终端中执行 `npx claude-mem install`，安装程序会自动探测机器上现有的开发环境并引导完成配置；Claude Code 用户也可以直接通过官方插件市场一键安装。该工具除了原生深度适配 Claude Code，还全面兼容 **OpenCode、Cursor、Codex 等十余款Agent**，甚至支持通过单行脚本挂载到 OpenClaw 网关。\n\n## 配置与多语言模式\n用户的所有个性化设置都保存在 `~/.claude-mem/settings.json` 中，可自由切换模型底座（支持 Anthropic、OpenRouter、Gemini 等）。更贴心的是，它提供了丰富的工作模式与多语言支持，通过设置 `CLAUDE_MEM_MODE` 参数即可直接输出中文、日文等多语种总结；如果不想记录太频繁，还能开启**极简轻量模式**，仅记录那些最让人抓狂的疑难Bug与核心决策。"
+        "title": "thedotmack/claude-mem：为所有 AI 编程助手提供跨会话的持久化上下文",
+        "summary": "⭐ 114,583 | 你的 AI 编程助手在每次对话结束后就会**失忆**，导致你不得不一遍遍重复需求、重复踩坑。Claude-Mem 会在后台默默当一个“记笔记的小助手”，把 AI 做过的事用人工智能压缩好，并在你开启新对话时自动**注入关键记忆**，让它无缝衔接之前的工作。",
+        "long_summary": "## 详细功能\nClaude-Mem 彻底解决了 AI 助手每次开启新会话时都会“清零”的痛点。它会记录 AI 在工作时的一举一动，用 AI 提炼并压缩成简短的观察记录，然后在未来的会话中**自动注入上下文**。它支持 Claude Code、OpenClaw、Codex、Gemini、Cursor 等主流 AI 工具，让你再也不用向 AI 反复解释代码库。\n\n## 系统架构与安装说明\n该系统采用由 Bun 管理的本地服务、拦截工具调用的轻量级生命周期钩子，以及结合了 SQLite 与 Chroma 向量数据库的混合搜索架构。安装非常简单，只需在终端运行 **`npx claude-mem install`**，它就会自动扫描你电脑上支持的 AI 助手并完成所有配置。\n\n## 使用说明与搜索工具\n安装完成后，Claude-Mem 就会在后台完全自动化运行。它提供了一套极其省 Token 的三步走 MCP 搜索工作流（`search`、`timeline` 和 `get_observations`），**只在需要时**才去获取详细内容，能节省高达 90% 的 Token。此外，你还可以通过网页端随时查看工作进度、管理项目的历史记忆。"
       }
     },
     {
-      "id": "94ce7253-1a59-45fd-b1e3-ec52852bb19c",
+      "id": "70ef5fc8-7ced-4ed0-8848-804099d01be9",
       "url": "https://github.com/max-sixty/worktrunk",
       "source": "GitHub Trending",
       "category": "opensource",
       "importance": 99,
-      "published_at": "2026-11-08T05:20:26.622460Z",
+      "published_at": "2026-11-08T05:49:03.504149Z",
       "image_url": "https://repository-images.githubusercontent.com/1078528927/6196f2ac-248f-42f5-abb5-d18768111b3b",
       "tags": [
         "git",
         "cli",
         "ai-agents",
-        "worktree",
-        "developer-tools"
+        "rust",
+        "workflow"
       ],
       "en": {
-        "title": "Worktrunk: A Git Worktree CLI Built for Parallel AI Coding Agents",
-        "summary": "⭐ 11,981 | Running multiple AI agents like Claude Code at the same time usually leads to messy conflicts, while native Git worktrees are notoriously clunky to type out. Worktrunk fixes this with an intuitive CLI that makes isolated worktrees **as simple as normal branches**, letting you spin up **5 to 10+ parallel AI agents** in their own sandboxed folders without breaking a sweat.",
-        "long_summary": "## The Problem with Parallel AI Agents\nModern autonomous coding agents like Claude Code or Codex can run extensive tasks unattended, making it attractive to run multiple instances concurrently. However, having them work in the same repository inevitably overwrites unstaged files. While native Git worktrees offer clean separation across folders, their user experience is cumbersome—requiring users to retype branch names and juggle paths manually.\n\n## Making Worktrees Ergonomic\nWorktrunk turns worktrees into first-class citizens. Instead of wrestling with path names, developers simply run `wt switch <branch>` or `wt switch -c -x claude <feature>` to automatically generate a fresh branch, allocate a worktree directory, and launch the AI agent in a single command. It also features **copy-on-write build cache sharing** on supported filesystems (like APFS, btrfs, and XFS), saving developers from repeatedly running heavy setup steps like downloading `node_modules` or rebuilding Rust targets across isolated trees.\n\n## Automation and Smart Merge Workflows\nBeyond basic path switching, Worktrunk ships with advanced developer-experience perks. It supports automated hooks for environment setup, **AI-generated commit messages** straight from diffs, and interactive dashboards to view active branches, CI statuses, and PR links. When work is completed, a single `wt merge main` command handles rebasing, fast-forward merging, and automatic cleanup of the temporary worktree.\n\n## Getting Started\nWorktrunk is built in Rust and can be installed on macOS and Linux via `brew install worktrunk && wt config shell install`, through Cargo with `cargo install worktrunk`, or on Windows via Winget. The included shell integration ensures terminal navigation stays seamlessly in sync as you jump between different active agent workspaces."
+        "title": "Worktrunk: A CLI for Git worktree management, designed for parallel AI agent workflows",
+        "summary": "⭐ 11,981 | Worktrunk is a command-line tool that makes **Git worktrees** as easy to use as regular branches. It solves the annoying, multi-step process of managing separate directories for different tasks, making it super smooth to run **multiple AI agents** in parallel without them stepping on each other's toes.",
+        "long_summary": "## What is Worktrunk?\n\nWorktrunk is a specialized **CLI tool** built in Rust designed to streamline Git worktree management, specifically tailored for developers running parallel AI agent workflows like Claude Code or Codex. Git's native worktree feature lets you have multiple working directories for the same repository so different agents don't mess up each other's changes, but the default Git commands are clunky and require typing branch names multiple times and manually switching directories.\n\n## Core Features and Workflow\n\nWorktrunk simplifies this entire process down to a few intuitive commands. With **core commands** like `wt switch`, you can create a new branch, set up a worktree, and jump straight into it instantly. It also supports advanced features such as workflow automation hooks, automated LLM-generated commit messages, a streamlined merge workflow, an interactive picker with CI status previews, and shared build caches across worktrees using advanced filesystems.\n\n## Installation\n\nWorktrunk can be easily installed on macOS, Linux, and Windows using popular package managers. For instance, Mac and Linux users can install it via **Homebrew** with the command `brew install worktrunk && wt config shell install`. Windows users can install it via Winget as `git-wt` to avoid command conflicts with Windows Terminal."
       },
       "zh": {
-        "title": "Worktrunk：专为多 AI 智能体并行开发打造的 Git Worktree 管理神器",
-        "summary": "⭐ 11,981 | 同时开几个类似 Claude Code 的 AI 智能体写代码时，文件很容易互相打架，而 Git 自带的 worktree 机制又极其难用。Worktrunk 把工作树的操作简化得**像切分支一样轻松**，让你能毫无压力地同时挂着 **5 到 10 个 AI 智能体并行干活**，彻底解放开发双手。",
-        "long_summary": "## 为什么多 AI 协同写代码需要它？\n现在的 AI 编程助手（比如 Claude Code）已经能独立完成复杂的长任务，很多开发者习惯同时开好几个 AI 并行敲代码。但如果让它们挤在同一个项目目录里，文件改动很快就会乱套；而 Git 原生的 Worktree 功能虽然能为每个分支创建独立目录，操作起来却非常反人类，不仅要在命令行里连敲好几遍分支名，还得反复手动跳转路径。\n\n## 把多目录切换做得像切分支一样自然\nWorktrunk 彻底改造了工作树的交互体验。用户只需执行一条简短的命令，就能直接创建分支并自动生成对应目录，甚至可以通过参数在创建瞬间**自动启动 AI 智能体**。更贴心的是，在支持写时复制的文件系统上，它能实现**跨工作树共享构建缓存**，哪怕同时开 10 个代码树，也不用反复下载几百兆的依赖包或重新编译代码。\n\n## 自动化流与一键合并清理\n除了基础的目录管理，该工具还内置了一整套极客级的辅助功能。比如在每个工作树分配独立的端口避免本地服务冲突、利用 AI 自动根据修改差异**生成规范的 Commit 提交信息**，以及通过交互面板实时查看各个分支的 CI 状态。当 AI 完成任务后，一条 `wt merge` 就能自动完成代码变基、快照合并，并在后台顺手清理掉用完的临时工作树和分支。\n\n## 安装与上手\nWorktrunk 由 Rust 编写，性能极高。macOS 和 Linux 用户可直接通过 `brew install worktrunk && wt config shell install` 快速安装；Rust 玩家可以通过 `cargo install worktrunk` 搞定；Windows 端也支持通过 Winget 安装。配合终端 Shell 集成，可以在各个 AI 工作目录之间一键丝滑切换。"
-      }
-    },
-    {
-      "id": "a7320f4f-e556-46d9-9bfc-e27bc57bc03a",
-      "url": "https://github.com/Donchitos/Claude-Code-Game-Studios",
-      "source": "GitHub Trending",
-      "category": "opensource",
-      "importance": 98,
-      "published_at": "2026-11-08T05:22:54.406817Z",
-      "image_url": "https://opengraph.githubassets.com/3837a6882f326e64f763058048c2587e3a98887b8e7efcd0ade5b354ed9220aa/Donchitos/Claude-Code-Game-Studios",
-      "tags": [
-        "claude-code",
-        "game-development",
-        "multi-agent",
-        "workflow",
-        "anthropic"
-      ],
-      "en": {
-        "title": "Claude-Code-Game-Studios: Turn Claude Code into a Full-Scale Game Development Studio",
-        "summary": "⭐ 36,660 | Claude Code Game Studios turns a single Claude Code session into a structured game development studio. Instead of a single chatbot prone to hallucinating or writing messy code, it equips you with **49 specialized agents** across three studio tiers, **74 workflow skills**, and automated safety hooks. It balances documentation and speed via **customizable rigor modes**, ensuring you build real, verified games without losing control.",
-        "long_summary": "## The Problem & The Studio Structure\nSolo game development with AI often suffers from chaotic code, forgotten requirements, and zero quality assurance. Claude Code Game Studios addresses this by implementing an industry-standard **three-tier studio hierarchy**. Tier 1 Directors (Creative Director, Technical Director, Producer) safeguard vision and project management; Tier 2 Department Leads manage design, code, art, audio, and QA; and Tier 3 Specialists execute hands-on tasks across engines including Godot 4, Unity, and Unreal Engine 5. Most specialists dynamically **inherit your session's model**, keeping compute costs reasonable.\n\n## Workflow Skills & Collaborative Model\nThe project provides 74 slash commands spanning from `/start` and `/brainstorm` to `/qa-plan` and release management. Rather than operating as an uncontrollable autopilot, the system follows a **collaborative sign-off protocol**: agents formulate questions, propose trade-offs, and draft work, while **the human user retains full authority** over every major decision and commit.\n\n## Practical Rigor vs. Over-Documentation\nTo ensure users build games rather than just generating paperwork, the template includes a `modes.rigor` configuration (`minimal`, `standard`, `full`). The default **minimal jam-game speed** allows jumping straight from a one-page brief to game code without writing dozens of design docs. Crucially, tasks affecting visual systems are never marked done until the game is actually run and a **screenshot evidence file** is saved under QA records.\n\n## Installation & Safe Automation\nSetting up requires cloning the repository, opening Claude Code at the project root, and invoking `/start`. Behind the scenes, **15 automated hooks** and 14 path-scoped rules guard code health—blocking dangerous terminal commands, catching hardcoded values upon git commit, validating data formats, and ensuring path-specific architectural integrity."
-      },
-      "zh": {
-        "title": "Claude-Code-Game-Studios：把 Claude Code 变身专业级全功能游戏开发工作室",
-        "summary": "⭐ 36,660 | 这个项目能把单个 Claude Code 会话直接变成一个分工明确的专业游戏工作室。它彻底解决了单人用 AI 做游戏时容易写出意大利面代码和缺乏结构的问题，内置了 **49个专业智能体** 组成的团队层级架构、**74个全流程指令技能** 以及严格的校验拦截钩子。通过灵活的 **严格度调节机制**，它既能帮你跑出真正可玩的游戏，又能守住项目架构底线。",
-        "long_summary": "## 解决痛点与工作室组织架构\n一个人用 AI 做游戏最怕结构失控：无人把控全局、容易硬编码乱写、缺少测试与设计规范。该项目通过模拟真实游戏公司的 **三层岗位层级** 解决了这一难题。第一层总监组负责把控方向与排期；第二层部门主管负责主程、主美、策划和测试领航；第三层则是涵盖 Godot 4、Unity、虚幻5 等引擎的各领域专家。绝大多数基层专家 **直接沿用当前会话模型**，既专业又不会带来高额开销。\n\n## 74种工作流技能与协同原则\n项目封装了多达 74 个斜杠指令，从前期的 `/brainstorm` 构思、`/design-system` 系统设计，到中期的 `/dev-story` 研发、以及后期的测试与发布全流程覆盖。系统遵循严格的协作协议，绝非盲目的“无人驾驶”模式；智能体会先提问梳理、给出备选方案，由 **人类最终拍板定夺** 后才会真正落地代码与方案。\n\n## 实用至上：杜绝无效文档陷阱\n很多多智能体框架容易陷入“光写文档不写游戏代码”的误区。CCGS 通过 `modes.rigor` 机制提供从极简到严苛的配置选项。默认的 **极简 Jam 级速度** 只需一页设计概述即可迅速进入写代码与原型阶段；更关键的是，系统制定了铁律：任何影响画面表现的改动，必须把游戏跑起来并在 QA 目录保存 **实机观察截图** 后才算真正完工。\n\n## 快速上手与安全自动化护栏\n用户只需克隆项目并在根目录启动 Claude Code 会话，运行 `/start` 即可根据向导开始项目。在底层，多达 **15个自动化钩子** 和 14 项目录编码规则随时提供安全防护，在执行 Git 提交时会自动拦截硬编码与格式错误，并严禁执行高危的不可逆终端指令，为整个开发周期保驾护航。"
-      }
-    },
-    {
-      "id": "82f0f7c6-7e81-48a7-9d78-601408a845c2",
-      "url": "https://github.com/Renhuai123/ziwei-doushu",
-      "source": "GitHub Trending",
-      "category": "opensource",
-      "importance": 97,
-      "published_at": "2026-11-08T05:25:51.503907Z",
-      "image_url": "https://opengraph.githubassets.com/6fb5f4e3e05968f1bade63b2b5f5b1dcc947a52a2fc137697811a6d4c31404d1/Renhuai123/ziwei-doushu",
-      "tags": [
-        "ziwei-doushu",
-        "astrology",
-        "dataset",
-        "llm-training",
-        "typescript"
-      ],
-      "en": {
-        "title": "ziwei-doushu: Open-Source Astrological Charting Engine and Massive AI Training Dataset Based on Tian Ji",
-        "summary": "⭐ 16,765 | ziwei-doushu is an open-source astrological calculation engine and knowledge dataset based on Master Ni Haixia's Tian Ji system. It eliminates the \"black box\" of traditional metaphysics by providing **complete charting algorithms** along with a massive dataset of **675,000 natal charts** and 8.77 million interpretations. Designed for easy use, it solves the problem of proprietary algorithms and provides clean, structured training data for **fine-tuning AI models** or building smart astrology applications.",
-        "long_summary": "## Complete Astrological Engine\nThe project provides a high-precision TypeScript charting core that adheres to traditional rules while handling complex modern edge cases. It features **true solar time correction** based on municipal geographic coordinates and automatically accounts for historical Chinese daylight saving time periods (1986–1991). The engine supports four different calculation standards for leap months, configurable day-boundary cutoffs for late-night rat hours (Zi hour), 7-level star brightness variations, and a rule base containing **over 1,100 lines of pattern logic** covering classical formations and flying star transformations.\n\n## Massive AI Training Dataset\nA major highlight of the project is its production-grade interpretation dataset. The latest v4.0 release includes **674,976 unique natal charts** spanning 1950 to 2026 across 13 distinct life dimensions (personality, career, wealth, health, marriage, etc.), generating over 8.77 million structured interpretation paragraphs (approx. 20.4 billion characters). The corpus is released under CC BY 4.0, making it an ideal open-source resource for **RAG knowledge retrieval** and domain-specific LLM fine-tuning without commercial restrictions.\n\n## Classical Texts and Primary Sources\nThe repository curates complete texts of essential historical classics in modern digital format, including Gu Sui Fu, Quan Ji, and Quan Shu. Additionally, it compiles **1,848 original lecture quotes** from Master Ni Haixia's video teachings, each meticulously timestamped and indexed for direct source verification and cross-referencing.\n\n## Quick Start and Architecture\nBuilt with Next.js 16 and TypeScript, the repository acts as an end-to-end runnable demo for charting and visualization. Developers can run `npm install` and start local development via `npm run dev`. Comprehensive **regression test suites** ensure that boundary dates, branch conversions, and astrological rules remain consistent across modifications. Note that while charting and basic rendering are fully client-side, dynamic AI endpoints require developers to integrate their own API keys and model backends."
-      },
-      "zh": {
-        "title": "ziwei-doushu：基于倪海厦《天纪》体系的开源紫微斗数排盘引擎与海量命理数据集",
-        "summary": "⭐ 16,765 | ziwei-doushu 是一个基于倪海厦《天纪》体系的紫微斗数开源排盘引擎与数据集。它打破了传统玄学软件把算法当“黑盒”的围墙，开放了**完整的排盘算法**与多流派判定逻辑，还附带了包含 **67.5 万张命盘** 的海量解读数据集。无论你想自己搭建排盘工具，还是想给大模型准备 **高价值的微调语料**，它都能直接拿来即用。",
-        "long_summary": "## 严谨硬核的排盘引擎\n该项目以 TypeScript 构建了一套高精度的排盘内核，完整落地了倪海厦《天纪》流派的断盘逻辑。引擎不仅实现了定五行局、安十四主星与辅星、推算大限流年与四化飞星，还内置了中国各市县经纬度数据库用于**真太阳时精确校正**。此外，它还贴心支持了 1986–1991 年中国夏令时判断、四种闰月切分口径以及晚子时换日策略，并内置超过 1100 行代码的**经典格局知识库**，彻底告别了传统排盘软件口径不透明的痛点。\n\n## 专为 AI 准备的海量命理数据集\n除了代码，项目最亮眼的当属其开源的超大数据集。最新 v4.0 版本覆盖了 1950 至 2026 年每一个真实日期的命盘组合，包含 **67.5 万张命盘**、13 个分析维度（事业、财运、健康、婚姻等），共计 877 万段解读、约 204 亿字。整个数据集采用 CC BY 4.0 协议发布，可自由商用，是开发者用来构建命理领域 RAG 知识检索库或**微调垂类大语言模型**的绝佳语料来源。\n\n## 古籍原文与倪师原话考据\n仓库不仅提供了《骨髓赋》、《紫微斗数全集》、《紫微斗数全书》等公共领域古籍的数字版本，还整理了倪海厦老师《天纪》视频教学中的 **1848 条原话引证**。每条断语均标注了集数与具体时间戳，方便研究者随时回放核对，把传统术数研究做出了严谨的学术考据范儿。\n\n## 快速上手与开源边界\n项目基于 Next.js 16 构建了一个轻量级演示前端，用户克隆仓库后执行 `npm install` 和 `npm run dev` 即可在本地浏览器中直接排盘。排盘引擎自带**全套回归自动化测试**，确保核心规则不受干扰。需要说明的是，开源版本完全在前端完成算盘，若需在线流式 AI 解读或合盘问答，需开发者自行接入大语言模型 API 接口。"
-      }
-    },
-    {
-      "id": "542538e0-4fe5-41be-b666-08bd0770f450",
-      "url": "https://github.com/pingdotgg/t3code",
-      "source": "GitHub Trending",
-      "category": "opensource",
-      "importance": 96,
-      "published_at": "2026-11-08T05:27:03.201063Z",
-      "image_url": "https://opengraph.githubassets.com/63162fb1d49b51f1ed832eae381729099b73d8b0e666e4d2038e4806a7525fe3/pingdotgg/t3code",
-      "tags": [
-        "ai-agents",
-        "developer-tools",
-        "claude-code",
-        "cursor",
-        "remote-development"
-      ],
-      "en": {
-        "title": "T3 Code: Control All Your AI Coding Agents from Desktop, Web, or Phone",
-        "summary": "⭐ 51,470 | Ever wished you could command your local AI coding tools right from your phone? T3 Code is an open-source **agent control surface** that lets you remotely operate CLI tools like Claude Code, Cursor, and Codex on your computer. Whether you are using their **polished mobile app**, a browser, or a desktop client, it effortlessly turns your scattered AI tools into a unified **remote cockpit** for smooth, hassle-free coding.",
-        "long_summary": "## What is T3 Code?\nThink of T3 Code as a universal **remote cockpit** for all the AI coding agents running on your local machine. If you use tools like Claude Code, Cursor, or Codex, juggling between command lines can get messy. T3 Code wraps them into an intuitive interface, allowing you to trigger tasks, monitor progress, and review code from your desktop, browser, or even **your smartphone** while away from your desk.\n\n## Supported Tools and Key Features\nWhat makes T3 Code shine is its broad provider compatibility and **truly multi-platform reach**. It offers dedicated apps for iOS and Android, a web dashboard, and an Electron desktop app. Out of the box, it connects with your authenticated CLI accounts across Claude Code, Codex, Cursor, Grok Build, OpenCode, and Antigravity. The creators built it with **high performance and openness** in mind—completely free of charge, with all source code open so anyone can inspect or fork it.\n\n## Installation and Getting Started\nGetting up and running takes just seconds with a **one-line install script** across macOS, Linux, and Windows PowerShell, or an instant test run using `npx t3@latest`. Desktop users can easily grab binaries via **popular package managers** like Homebrew, Winget, Scoop, or AUR. Once installed, running `t3` boots up the local server, and you can even set it to run as a continuous background daemon."
-      },
-      "zh": {
-        "title": "T3 Code：让你躺在沙发上用手机就能遥控电脑里的 AI 编程助手",
-        "summary": "⭐ 51,470 | 平时在电脑上用 Claude Code 或 Cursor 写代码，是不是也想**在手机上随手指挥它们**干活？T3 Code 就是一个专门用来**遥控本地 AI 编程助手**的神器。不管是躺在床上拿手机、用网页还是开桌面客户端，它都能直接连上你电脑里的各个 AI 助手，帮你把零散的工具变成一个统一、超顺手的**跨平台控制中心**，而且完全免费开源！",
-        "long_summary": "## 它是干什么用的？\n简单来说，T3 Code 就像是给你电脑里所有 AI 程序员配备的一个**全能遥控器**。现在很多人电脑里同时装了 Claude Code、Cursor、OpenAI Codex 甚至 Grok 等五花八门的命令行 AI 工具，在终端里来回切换非常繁琐。T3 Code 为它们穿上了一层漂亮的外衣，不管是想在电脑桌面使用，还是出个门直接掏出**手机移动端应用**，都能随时向家里的电脑发号施令，让 AI 继续帮你写代码。\n\n## 核心特性与支持的工具\n这个项目的最大魅力在于**强大的兼容性与跨平台能力**。它原生支持 iOS 和 Android 手机 App、网页版以及基于 Electron 的跨平台桌面端。只要你的机器上配置好了对应工具的账号，无论是 Claude Code、Codex、Cursor，还是 Grok Build、OpenCode、Google Antigravity，它都能无缝接管并进行控制。团队打造它的初衷就是想做一个**完全开放且高性能**的开发体验工具，不玩任何商业套路，代码全开源，任何人都能自由魔改。\n\n## 如何快速安装与启动\nT3 Code 提供了极其简单的安装方式，甚至一行命令就能启动。在 Mac 或 Linux 终端中只需运行官方的 **一键安装脚本**，或者直接通过 `npx t3@latest` 尝鲜运行。对于习惯使用桌面端包管理器的用户，它还支持通过 Homebrew（Mac）、Winget / Scoop（Windows）、以及 AUR 和 Nix 等各种渠道下载安装，装好后一条命令就能跑起本地后台服务。"
-      }
-    },
-    {
-      "id": "b73af996-42f5-4af4-bcf5-7174a925d8d8",
-      "url": "https://github.com/milind-soni/OpenMausBot",
-      "source": "GitHub Trending",
-      "category": "opensource",
-      "importance": 93,
-      "published_at": "2026-11-08T05:30:03.747874Z",
-      "image_url": "https://opengraph.githubassets.com/5b5f70992480f76d3e6fe689035eacc597624d4cbeac912661f73869623c579b/milind-soni/OpenMausBot",
-      "tags": [
-        "ai-agents",
-        "automation",
-        "electron",
-        "local-first",
-        "mcp"
-      ],
-      "en": {
-        "title": "OpenMausBot: Open-Source AI Agent Team Chat with Virtual Machine & Computer Control",
-        "summary": "⭐ 17,228 | OpenMausBot is an open-source alternative to Grok Bot and Manus Cue that turns your favorite AI models into a **collaborative team of bots** inside a messaging interface. Instead of a single chatbox, each bot runs locally or via CLI with its own persona, memory, and even **its own computer environment** to browse or execute code. Crucially, it adopts a **local-first approach** where your credentials and chat histories remain strictly on your own device, requiring your explicit approval for any sensitive actions.",
-        "long_summary": "## What is OpenMausBot\nOpenMausBot is a desktop application built with Electron, React, and TypeScript that re-imagines how we interact with autonomous AI agents. Rather than interacting with a generic assistant through a standard prompt box, OpenMausBot provides a Telegram-style messaging layout where every contact in the sidebar is an autonomous agent. Users can **bring their own agent CLIs**—including Claude Code, Codex, and Grok CLI—without relying on third-party proxies or cloud lock-in.\n\n## Core Architecture and Operating Model\nThe system operates via two local components: a lightweight harness server running on `127.0.0.1:8799` and the chat UI client on port `5199`. The harness server handles driver normalization, task execution, and an inline **permission broker** that turns shell executions, file edits, or external API calls into human-approval cards. Bots can operate either inside isolated cloud Linux desktops provided by Boat, in local virtual machines, or directly execute tasks on host machines via the Cua Driver runtime.\n\n## Tools, Integrations, and Orchestration\nOpenMausBot integrates with more than 500 external services like Gmail, GitHub, and Slack through Composio. It also features scheduled routines and webhooks to trigger tasks on schedules or inbound application events. External coding tools and orchestrators like Claude Desktop or Cursor can control the agent fleet using its built-in **stdio MCP server**, while power users can automate workflows in headless CI/CD environments via a standalone CLI command.\n\n## Installation and Getting Started\nPre-built desktop packages are provided for macOS (Apple Silicon and Intel, signed and notarized), Windows x64, and Ubuntu 24.04. Developers can alternatively build from source with Node 24+ and pnpm by cloning the repository, running `pnpm install`, and launching both the server and desktop frontend. Voice calling and text-to-speech features can be optionally enabled using **system built-in voices** or hosted providers like ElevenLabs and Fish Audio."
-      },
-      "zh": {
-        "title": "OpenMausBot：自带虚拟机与电脑操控能力的开源多智能体协作聊天应用",
-        "summary": "⭐ 17,228 | OpenMausBot 是一款对标 Grok Bot 和 Manus Cue 的开源桌面应用，把原本单打独斗的 AI 变成了**聊天列表里的智能体战队**。每个机器人都能接入 Claude、Codex 或 Grok，不仅各具性格和专属记忆，还配有**独立的虚拟机甚至操控真机**的双手来替你跑代码、做杂活。它坚持**本地优先和安全可控**，所有聊天记录和密钥全存放在你本地电脑里，执行危险操作前必须弹窗经你点头同意。",
-        "long_summary": "## 什么是 OpenMausBot\nOpenMausBot 是一个基于 Electron、React 和 TypeScript 开发的开源多智能体协作桌面应用，旨在作为 Grok Bot、Meta Muse 和 Manus Cue 等闭源商业产品的开源替代方案。它摒弃了传统单窗口人机问答模式，采用了类似即时通讯软件的列表架构，侧边栏里的每个联系人都是一个独立的 AI 智能体。用户可以**直接复用本地 CLI 订阅**（如 Claude、Codex 或 Grok CLI），所有模型配置与对话数据均完全由本地管理，无需依赖任何第三方中转。\n\n## 核心架构与运行机制\n该项目采用轻量化双进程架构：前端负责交互与状态渲染，本地轻量服务负责生命周期和事件总线调度。系统内置了一套严格的**权限审批代理机制**，当智能体尝试运行 Shell 命令、修改本地文件或调用高危网络接口时，聊天窗口会自动弹出卡片供人工授权。此外，每个智能体都支持挂载独立的云端 Linux 桌面（通过 Boat 服务）、本地虚拟机或在受控环境下使用 Cua Driver **接管宿主机屏幕与键鼠**来完成任务。\n\n## 应用生态与自动化触发\n借助 Composio 平台，智能体可以轻松挂载 500 多种外部 SaaS 工具（包括 Gmail、GitHub、Notion 等），授权一次即可作为工具调用。项目还内置了强大的定时任务与 Webhook 触发器系统，能够在收到特定邮件或定时计划到达时自动唤醒机器人执行任务。外部开发环境（如 Cursor 或 Claude Desktop）还能通过其自带的 **stdio MCP 服务器协议** 对智能体团队下发协同工作指令，甚至通过无界面的 CLI 命令直接嵌进 CI/CD 自动化流水线。\n\n## 安装与快速上手\n官方为 macOS（已签名公证）、Windows x64 以及 Ubuntu 24.04 提供了开箱即用的安装包，安装后内置服务器即开即用。开发者也可以在具备 Node 24+ 与 pnpm 的环境中拉取代码自行编译启动。对于语音交互需求，应用不仅兼容 **本地系统原生语音**，还支持接入 ElevenLabs、Fish Audio 以及 xAI 实现语音电话般的双向流畅对话。"
-      }
-    },
-    {
-      "id": "5ab94881-cdba-433f-8172-d655fbf2f87a",
-      "url": "https://techcrunch.com/2026/11/06/openai-reportedly-raises-an-additional-11-billion-at-a-1-25-trillion-valuation/",
-      "source": "TechCrunch AI",
-      "category": "news",
-      "importance": 45,
-      "published_at": "2026-11-06T22:53:46Z",
-      "image_url": "https://techcrunch.com/wp-content/uploads/2026/07/OpenAI-logo-green.jpg?w=1024",
-      "tags": [
-        "openai",
-        "funding",
-        "valuation",
-        "anthropic",
-        "ai"
-      ],
-      "en": {
-        "title": "OpenAI reportedly raises $11 billion at a $1.25 trillion valuation",
-        "summary": "OpenAI has reportedly secured **$11 billion** so far in an ongoing funding round that values the company at an eye-popping **$1.25 trillion**. While the round could eventually hit $20 billion, it still falls short of its earlier $30 billion goal. The massive cash haul comes as investors grow cautious about the AI boom, with rival Anthropic also facing **lowered valuation expectations** amid political and regulatory jitters.",
-        "long_summary": "## Funding Progress and Targets\nOpenAI is currently wrapping up a massive financing round, having pulled in **$11 billion** so far. This round pegs the company's valuation at a staggering **$1.25 trillion**. Sources say the final deal could total around $20 billion when it closes in the coming weeks, though that is still well below the $30 billion target OpenAI was reportedly aiming for in September.\n\n## Market Realities and Rival Pressure\nOpenAI had previously dropped hints about going public this year, but those plans have been pushed back to next year. Meanwhile, its chief rival Anthropic is running into valuation headwinds. Prospective buyers in Anthropic's expected IPO are reportedly eyeing a valuation as low as **$1.1 trillion**, down sharply from the $2 trillion figures floating around just a month ago.\n\n## Regulatory Uncertainty Ahead\nThe overall AI market is sitting in a delicate position. A recent Democratic wave in the U.S. midterm elections, combined with strong voter pushback against power-hungry data centers, has sparked widespread fears of **tougher future regulation** that could slow down growth across the industry."
-      },
-      "zh": {
-        "title": "传OpenAI又拿到110亿美元融资，公司估值冲上1.25万亿美元",
-        "summary": "据彭博社爆料，OpenAI在最新一轮融资中已经拿到了 **110亿美元**，让这家AI巨头的估值直接飙到了 **1.25万亿美元**。虽然这轮融资最终可能冲到200亿美元，但还是比之前传出的300亿目标少了一截。眼下整个AI投资圈都在降温，连老对手Anthropic的上市估值预期也大幅缩水，市场对算力中心扩张和 **监管风险** 变得越发谨慎。",
-        "long_summary": "## 融资进展与缩水的预期\n彭博社援引知情人士消息称，OpenAI在新一轮融资中已经进账 **110亿美元**，直接把公司估值推到了惊人的 **1.25万亿美元**。这轮融资目前还没彻底结束，预计在未来几周全部完成后，吸金总额可能会达到200亿美元左右。不过，虽然钱拿得很多，但比起9月下旬传出的300亿美元目标，实际数字还是有了明显缩水。\n\n## 上市推迟与对手遇冷\nOpenAI此前曾暗示可能在今年上市，但后来推迟了计划，外界普遍预计时间点会被延到明年。与此同时，它的头号死对头Anthropic在资本市场也遇到了阻力。有意认购Anthropic首次公开募股股票的买家，如今给出的估值心理价位大约只有 **1.1万亿美元**，远低于一个月前投资圈疯传的2万亿美元预期。\n\n## 政策与民意带来的阴影\n整个AI赛道目前其实都处在一个相当微妙且敏感的节点。在美国中期选举后，普通选民对疯狂耗电的巨型数据中心产生了强烈的抵触情绪，这让华尔街开始担忧未来可能会出台更严厉的 **监管挑战**。各大AI巨头哪怕估值依然庞大，也不得不面对市场狂热逐渐退潮的现实。"
-      }
-    },
-    {
-      "id": "98d339cb-c36b-406f-b983-71b5c7274b63",
-      "url": "https://techcrunch.com/2026/11/06/crusoe-sells-troubled-wyoming-data-center-project-to-google/",
-      "source": "TechCrunch AI",
-      "category": "news",
-      "importance": 38,
-      "published_at": "2026-11-07T01:40:28Z",
-      "image_url": "https://techcrunch.com/wp-content/uploads/2026/09/crusoe-ceo-getty.jpg?resize=1200,800",
-      "tags": [
-        "google",
-        "crusoe",
-        "data center",
-        "ai infrastructure",
-        "cloud"
-      ],
-      "en": {
-        "title": "Google Takes Over Struggling Wyoming AI Data Center from Crusoe",
-        "summary": "AI data center builder Crusoe has **sold an unfinished site** in Wyoming to Google after struggling with construction timelines and rising costs. Google initially considered being a tenant, but stepped in to buy the site directly and plans to **pour $17 billion** into finishing it. The deal highlights just how brutal it is for independent startups to build massive AI infrastructure on time, even as Crusoe maintains high-profile contracts with giants like OpenAI and Microsoft.",
-        "long_summary": "## Google Steps In After Delays\nCrusoe initially teamed up with infrastructure firm Tallgrass to build a massive Wyoming campus planned for up to 10 gigawatts of capacity. Crusoe tried to bring Google on board as a marquee customer, but Google grew uneasy over **construction delays and ballooning costs**. As a result, Google took over the unfinished facility completely and announced an ambitious **$17 billion investment plan** to develop it into a functional campus.\n\n## The Brutal Reality of AI Infrastructure\nThe transaction reveals the immense challenges independent developers face in the AI boom. Building facilities for heavy AI computing requires **locking down massive power capacity** and scarce hardware, all while dealing with tight delivery timelines and community pushback. When startups stumble under these pressures, tech giants with deep pockets often prefer to take total control.\n\n## Crusoe Keeps Moving with Tech Giants\nDespite the setback, Google has not cut ties with Crusoe and is working with the company on a separate site near Amarillo, Texas. Originally founded to mine crypto using flared natural gas, Crusoe has morphed into an AI cloud powerhouse valued at $30.9 billion. Backed by a recent $3.9 billion funding round, the company continues to construct multibillion-dollar campuses for **heavyweights like OpenAI and Microsoft**."
-      },
-      "zh": {
-        "title": "嫌工期太慢预算超标，谷歌亲自接盘独角兽Crusoe的怀俄明算力中心",
-        "summary": "估值超300亿美元的AI数据中心独角兽Crusoe，最近把怀俄明州一个**还没完工的算力基地转卖给了谷歌**。原本Crusoe想拉谷歌来当租户，但谷歌嫌他们施工拖拉、预算超标，干脆自己买下接盘，并打算**后续怒砸170亿美元**继续扩建。这桩买卖直观反映出当下建AI基建有多艰难，哪怕是行业当红炸子鸡，搞定电力、设备和工期也极其费劲。",
-        "long_summary": "## 嫌工期太拖，谷歌直接掏钱接盘\n初创公司Crusoe原本计划联手基建公司Tallgrass，在怀俄明州打造一个供电规模高达10吉瓦的超大算力园区。他们原本想拉谷歌入驻当金主租客，但谷歌在评估后对Crusoe的成本控制和**施工拖延严重不满**。最终，谷歌决定直接买下这个半成品工地自己干，并宣布后续将**豪掷170亿美元**把这个园区建起来。\n\n## 自己搞AI算力基建有多难？\n这桩收购案直接给行业敲了记警钟：建AI数据中心远不只是买显卡那么简单。作为独立的第三方开发商，Crusoe这类创业团队在**搞定电力指标和硬件设备**上面临极大不确定性，中途还要应对当地社区的反对，想既按时完工又不超预算几乎是地狱级难度。\n\n## 挫折虽大，大厂朋友圈依旧稳固\n虽然怀俄明项目翻车，但谷歌并没有和Crusoe彻底撕破脸，双方在得克萨斯州依然有另一个数据中心在合作。Crusoe最初靠利用油田废气发电挖矿起家，如今转型做AI算力租赁，估值已高达309亿美元。除了9月新拿到的39亿美元融资外，它还手握**OpenAI、微软和Meta**等巨头的长期超级大单，在AI算力争夺战中依然是绕不开的重头玩家。"
-      }
-    },
-    {
-      "id": "566f71d4-5743-4657-ab85-5f1af12621ee",
-      "url": "https://huggingface.co/blog/allenai/toyblocks",
-      "source": "Hugging Face",
-      "category": "news",
-      "importance": 38,
-      "published_at": "2026-11-06T14:00:48Z",
-      "image_url": "https://cdn-uploads.huggingface.co/production/uploads/638e39b249de7ae552d977b5/OAJMu2jr7i5jVAbmsKdZW.jpeg",
-      "tags": [
-        "robotics",
-        "ai2",
-        "toyblocks",
-        "simulation",
-        "embodied ai"
-      ],
-      "en": {
-        "title": "Ai2 Unveils ToyBlocks: A Virtual Playground for Robot Learning and Testing",
-        "summary": "While robots can fold laundry or sort items, researchers often struggle to pinpoint why they fail. Ai2 has introduced **ToyBlocks**, an open simulation platform where a robotic arm manipulates tabletop blocks in a controlled setting. It **automatically generates training demonstrations** at scale without tedious manual control, letting scientists systematically test spatial reasoning and failure modes. Remarkably, models trained entirely in ToyBlocks achieved up to an **81% success rate on physical robots** with zero real-world training.",
-        "long_summary": "## Why Robots Need a Petri Dish\nMost robot demonstrations look impressive, but their policies often prove fragile in new situations, leaving researchers clueless about whether high-level planning or low-level control failed. Ai2 introduced FoundationWorlds to address this, debuting with **ToyBlocks**. By focusing on a tabletop robot arm manipulating toy blocks, it provides a strictly controlled environment where researchers can systematically isolate variables, trace failure causes, and test how training tweaks alter physical manipulation.\n\n## Automated Data Generation and Frontier Model Tests\nTraditionally, training robots requires humans to manually teleoperate arms for hundreds of hours. ToyBlocks automates skill and demonstration generation using reinforcement learning and motion planning, achieving **up to 24x real-time data creation** on a single GPU. It ships with over 85,000 long-horizon trajectories. Researchers also plugged in frontier models like Claude through tool-use protocols: the agent acted like a scientist, formulating hypotheses, designing mini-experiments, and raising task success from 24% to **63%**.\n\n## Seamless Sim-to-Real Transfer\nA major headache in robotics is the reality gap: simulated skills often break in real life. By tuning physical parameters like joint friction and camera noise, policies trained solely on ToyBlocks were deployed zero-shot onto a physical Franka robot arm. Individual skills achieved an **81.1% real-world success rate**, mirroring simulated figures almost exactly. By fully open-sourcing the environment, models, and code, Ai2 offers the community a repeatable foundation to accelerate physical AI research."
-      },
-      "zh": {
-        "title": "机器人学抓积木：Ai2推出开源虚拟实验场ToyBlocks",
-        "summary": "现在的机器人能叠衣服、分拣零件，但一出错很难查出到底卡在哪。Ai2 最近推出了一个开源机器人模拟框架 **ToyBlocks**，专门用机械臂玩积木的方式做实验。它就像机器人的“培养皿”，不仅能 **全自动生成海量训练数据**，免去人工遥控标注的麻烦，还能精准测试机器人为何失误。最厉害的是，在虚拟环境里练出来的技能，直接放到 **真机抓取** 上也有五成到八成的成功率，让机器人的研发和评测变得透明简单。",
-        "long_summary": "## 为什么机器人也需要“培养皿”\n很多机器人展示看着很酷，但背后往往是在特定场景死记硬背，换个环境就容易翻车，而且研究人员很难排查究竟是哪一步搞砸了。为了解决这个问题，Ai2 提出了 FoundationWorlds 概念，第一个落地的就是 **ToyBlocks**。它故意设定在一个简单的桌面抓积木环境里，让机械臂练习推、翻转、堆叠等动作。通过把物理和视觉属性高度标准化，研究人员终于有了一个可以反复对照、严密排查失败原因的 **受控实验环境**。\n\n## 告别繁琐的人工遥控，数据全自动批量造\n以往教机器人学动作，需要人类用手柄遥控做示范，费时又费力。ToyBlocks 借助强化学习与运动规划，在一块 GPU 上就能以 **24倍现实速度并行生成任务数据**。首批开源包就包含了超过 8.5 万条长步骤演示、近 1,600 小时的运行轨迹。更有趣的是，研究人员还把 Claude 等大模型拉进实验场：智能体能够像科学家一样先提出假设、自己设计小动作试探环境，成功将任务完成率从 24% 提升到了 **63%**。\n\n## 虚拟训练直接无缝用到真机\n仿真做再好，落地到现实不灵也是白搭。团队通过对机械臂的摩擦力、桌面材质做精细校准，测试了“纯虚拟训练”直接搬到现实的效果。在一台真实的 Franka 机械臂测试中，基础技能的成功率达到了 **81.1%**，多步骤拼写积木任务的零样本成功率也达到了 50%，与虚拟环境表现高度一致。这项研究和数据集的全面开源，将帮助整个具身智能领域找到更可信的评估与训练路径。"
-      }
-    },
-    {
-      "id": "ead606a9-a290-412f-a167-3ca89165e522",
-      "url": "https://huggingface.co/papers/2611.00859",
-      "source": "Hugging Face Daily Papers",
-      "category": "news",
-      "importance": 38,
-      "published_at": "2026-10-30T20:00:00Z",
-      "image_url": "https://cdn-thumbnails.huggingface.co/social-thumbnails/papers/2611.00859/gradient.png",
-      "tags": [
-        "ai video",
-        "wave forcing",
-        "streaming generation",
-        "wan2.1",
-        "open source"
-      ],
-      "en": {
-        "title": "Wave Forcing: Real-Time Streaming Video Generation Hits 134 FPS",
-        "summary": "Generating long videos with AI often suffers from slow speeds and visual drift. Researchers have introduced **Wave Forcing**, a framework for real-time streaming video generation. By letting subsequent video chunks start denoising before earlier ones even finish, it achieves a seamless assembly-line process that pumps out **134.8 end-to-end FPS** on eight H200 GPUs. It dramatically boosts motion naturalness and **subject consistency** in long videos up to 100 seconds, and the code is fully open source.",
-        "long_summary": "## The Bottleneck in Long Video Generation\nStandard AI video generation usually processes video chunks sequentially. An earlier chunk must be fully denoised before the next can begin, which severely bottlenecks generation speed. Moreover, as videos get longer, models tend to suffer from severe **camera drift and visual degradation**, causing unnatural and stiff motion.\n\n## Pipelined Wavefront Generation\nWave Forcing rethinks this pipeline by introducing wavefront scheduling. Later video chunks can start denoising early by taking advantage of cleaner intermediate states from preceding chunks. Powered by the WaveRT runtime and Wave Parallelism, the system seamlessly overlaps communication with computation. Once the pipeline fills up, it achieves a steady state where every single forward round **delivers an output chunk**.\n\n## Massive Speed and Consistency Gains\nTested on eight H200 GPUs, Wave Forcing achieved an astonishing **134.8 end-to-end FPS** on Wan2.1. In 100-second long video tests, its Dynamic Degree score surged from 36.63 to 91.45 while notably improving **subject preservation**. The open-source framework showcases a viable technical path toward truly real-time, interactive video generation."
-      },
-      "zh": {
-        "title": "上海交大开源Wave Forcing：AI实时流式生成长视频，每秒狂飙134帧",
-        "summary": "做长视频生成最怕卡顿和画面崩坏，上海交大团队推出了全新的流式生成框架 **Wave Forcing**。它打破了传统一段一段排队生成的死板做法，让后一段画面在前面还没完全画好时就提前开工，流水线跑起来后，每个计算轮次都能吐出一个视频片段。在8块H200显卡上，它跑出了惊人的 **134.8端到端FPS**，不仅生成飞快，而且100秒超长视频的主体一致性和动作流畅度也 **大幅提升**，目前代码和权重已全面开源。",
-        "long_summary": "## 传统视频生成的痛点\n传统的长视频AI生成大多像排队做工，前面的一小段视频必须完全降噪、渲染完毕，才能开始算下一段。这种做法不仅慢，而且视频一旦拉长，画面很容易 **产生形变和漂移**，镜头和角色的动作也会变得十分僵硬。\n\n## 像流水线一样连贯生成\nWave Forcing的核心绝活是“波前调度”：它允许后面的视频片段在前面的片段还没完全算完时，就提前读取半成品的清晰状态作为参考并直接开工。配合专为这种架构打造的运行时系统WaveRT，各个显卡之间一边传输数据一边计算，形成如同工厂流水线般的高效循环，实现每一轮计算都能 **稳定吐出一个片段**。\n\n## 惊人的速度与质量跃升\n在硬件实测中，该方案在8张英伟达H200显卡上实现了高达 **134.8 FPS** 的端到端超高帧率，吞吐效率最高达到现有主流方案的2.53倍。更重要的是，在长达100秒的长视频测试中，画面的动态自然度从原本的36.63暴涨至91.45，角色崩坏问题得到显著改善，让真正实时的 **流式长视频生成** 离现实又近了一大步。"
-      }
-    },
-    {
-      "id": "33a50f86-c47a-48dc-a21d-ecba0d18140a",
-      "url": "https://techcrunch.com/2026/11/07/after-the-midterms-things-are-looking-rocky-for-elon-musk-and-data-centers/",
-      "source": "TechCrunch AI",
-      "category": "news",
-      "importance": 34,
-      "published_at": "2026-11-07T22:07:22Z",
-      "image_url": "https://techcrunch.com/wp-content/uploads/2025/05/GettyImages-2207245107-1.jpg?resize=1200,765",
-      "tags": [
-        "ai",
-        "data centers",
-        "elon musk",
-        "openai",
-        "regulation"
-      ],
-      "en": {
-        "title": "Elections Bring Trouble for Elon Musk and AI Data Centers as Voters Push Back",
-        "summary": "Recent election results show a strong public backlash against **data center expansion**, with voters passing restrictions and backing leaders who pledge to rein in these projects. This spells major headaches for tech giants and **Elon Musk**, whose political bets yielded little protection. In response to mounting pressure, companies like OpenAI are scrambling to rebuild trust by **ditching secrecy NDAs** and rebranding their facilities as 'compute campuses'.",
-        "long_summary": "## Political Backlash\nVoters across the United States have delivered a clear signal of discontent, voting heavily in favor of ballot measures that restrict or place moratoriums on new data centers. High-profile political shifts, such as in Texas, have installed officials who ran specifically on platforms to limit tech infrastructure. For tech leaders like **Elon Musk**, who poured massive funding into political campaigns, the shifting political map leaves massive business operations headquartered in regions now poised to aggressively regulate tech facilities.\n\n## Grassroots Resistance and Secrecy\nOpposition to data centers has become a widespread grassroots movement that crosses party lines. Local residents and officials are increasingly upset by the **secretive approval processes**, where hyperscale builders have routinely demanded non-disclosure agreements while concealing massive water and power consumption in ecologically fragile regions. The combined pressure of environmental strain and lack of transparency has turned what was once a local zoning issue into a potent political talking point.\n\n## Rebranding and Industry Reaction\nFeeling the regulatory heat, companies are suddenly altering their strategies. OpenAI recently released a new infrastructure policy, promising to drop strict non-disclosure agreements and operate with greater public transparency, while simultaneously trying to rebrand data centers as **compute campuses**. However, critics doubt that cosmetic name changes will ease public skepticism, especially as Wall Street simultaneously grows weary of ballooning capital expenditures on AI computing hardware."
-      },
-      "zh": {
-        "title": "选民集体说不，马斯克和AI数据中心要迎来大麻烦了",
-        "summary": "最新选举结果给科技巨头泼了盆冷水，多地选民不仅投票**否决数据中心扩建**，还选出了主张严加管制的官员。这让投下巨资搞政治押注的**马斯克非常尴尬**，他的大本营将面临更严监管。面对民间对耗水耗电的强烈反弹，OpenAI等巨头不得不紧急灭火，宣布**取消保密协议**并试图换个好听的新名字来平息众怒。",
-        "long_summary": "## 选民集体反水与政治变局\n多地选民在这次投票中集中爆发了对数据中心的抵触情绪，大量旨在限制或暂缓数据中心建设的提案顺利通过。部分新上任的官员甚至直接将限制这类设施当作核心竞选承诺。对于豪掷重金押注政坛的**马斯克来说很尴尬**，其企业大本营所在地如今政局突变，未来在当地扩建算力和基础设施将面临重重阻力。\n\n## 秘密建厂引发公愤\n公众对数据中心的抵触已经演变成跨党派的基层民意。科技巨头以往在拿地建厂时往往要求当地官员签署**极其严格的保密协议**，在水资源匮乏或环境敏感地区悄悄推进高耗能、高耗水的大型项目，严重缺乏信息公开。这种不透明的运作方式彻底激怒了当地居民，让数据中心从单纯的市政规划问题变成了烫手的政治风暴。\n\n## 行业被迫低头与换皮公关\n面对监管和舆论的巨大压力，AI公司不得不开始妥协。OpenAI近期紧急发布了所谓的算力园区政策蓝图，主动宣布不再强制要求签署保密协议，承诺提高建设透明度，甚至试图用**算力园区的新马甲**来替代名声变臭的数据中心。但业内分析普遍认为，换个好听的名字很难平息民众的不满，加上华尔街对无休止烧钱建算力逐渐失去耐心，AI基础设施的扩张正在迎来真正的硬着陆。"
+        "title": "Worktrunk：为并行 AI 代理工作流设计的 Git 工作树管理工具",
+        "summary": "⭐ 11,981 | Worktrunk 是一个命令行工具，它让 **Git 工作树** 的使用想像普通分支一样简单。它解决了为不同任务管理独立目录时繁琐的多步骤痛点，让你能极其顺畅地同时运行 **多个 AI 代理** 而互不干扰。",
+        "long_summary": "## 这是什么项目？\n\nWorktrunk 是一个用 Rust 编写的专用 **命令行工具**，旨在简化 Git 工作树的管理，特别适合需要运行诸如 Claude Code 或 Codex 等并行 AI 代理工作流的开发者。Git 原生的工作树功能允许你为同一个仓库拥有多个工作目录，防止不同代理互相干扰，但原生的 Git 命令非常笨拙，需要多次输入分支名称并手动切换目录。\n\n## 核心功能与工作流\n\nWorktrunk 将整个过程简化为几个直观的命令。通过诸如 `wt switch` 的 **核心命令**，你可以一键创建新分支、设置工作树并直接切进去。它还支持各种高级特性，比如工作流自动化钩子、自动生成 LLM 提交信息、流畅的合并工作流、带 CI 状态预览的交互式选择器，以及在高级文件系统上跨工作树共享构建缓存。\n\n## 如何安装\n\n你可以通过主流的包管理器在 macOS、Linux 和 Windows 上轻松安装 Worktrunk。例如，Mac 和 Linux 用户可以通过 **Homebrew** 运行 `brew install worktrunk && wt config shell install` 来安装。Windows 用户可以通过 Winget 安装为 `git-wt`，以避免与 Windows 终端的命令冲突。"
       }
     }
   ]
