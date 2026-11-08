@@ -5,7 +5,7 @@ import argparse
 import json
 import os
 import re
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from urllib.parse import urlparse
 
 import psycopg2
@@ -95,21 +95,70 @@ def normalize_category(value, tags=None, title="", source=""):
 
 
 def select_balanced_rows(rows, limit, max_open_source):
-    """Keep the public brief news-led while retaining a small open-source signal."""
+    """Limit GitHub Trending volume without suppressing open-source industry news."""
     selected = []
-    open_source_count = 0
+    github_count = 0
     for row in rows:
         category = normalize_category(
             row["category"], row.get("tags"), row.get("title") or "", row.get("source_name") or ""
         )
-        if category == "open_source":
-            if open_source_count >= max_open_source:
+        if category == "open_source" and row.get("source_name") == "GitHub Trending":
+            if github_count >= max_open_source:
                 continue
-            open_source_count += 1
+            github_count += 1
         selected.append(row)
         if len(selected) >= limit:
             break
     return selected
+
+
+def load_previous_items(path, max_age_hours=48):
+    """Load recent published items so a single sparse run does not erase coverage."""
+    if not os.path.exists(path):
+        return []
+    try:
+        with open(path, "r", encoding="utf-8") as handle:
+            items = json.load(handle).get("items", [])
+    except (OSError, TypeError, json.JSONDecodeError):
+        return []
+
+    cutoff = datetime.now(timezone.utc) - timedelta(hours=max_age_hours)
+    recent = []
+    for item in items:
+        try:
+            published = datetime.fromisoformat(str(item.get("published_at", "")).replace("Z", "+00:00"))
+            if published.tzinfo is None:
+                published = published.replace(tzinfo=timezone.utc)
+        except (TypeError, ValueError):
+            continue
+        if published >= cutoff:
+            recent.append(item)
+    return recent
+
+
+def merge_recent_items(current, previous, limit, max_github):
+    """Merge, deduplicate, rank, and apply a source-specific GitHub cap."""
+    deduped = {}
+    for item in previous + current:
+        key = item.get("url") or item.get("id")
+        if key:
+            deduped[key] = item  # Current items arrive last and win.
+
+    def rank(item):
+        published = str(item.get("published_at") or "")
+        return int(item.get("importance") or 0), published
+
+    merged = []
+    github_count = 0
+    for item in sorted(deduped.values(), key=rank, reverse=True):
+        if item.get("source") == "GitHub Trending":
+            if github_count >= max_github:
+                continue
+            github_count += 1
+        merged.append(item)
+        if len(merged) >= limit:
+            break
+    return merged
 
 
 def main():
@@ -118,7 +167,10 @@ def main():
     parser.add_argument("--limit", type=int, default=60)
     parser.add_argument("--discover-images", type=int, default=12)
     parser.add_argument("--max-open-source", type=int, default=2)
+    parser.add_argument("--carry-forward-hours", type=int, default=48)
     args = parser.parse_args()
+
+    previous_items = load_previous_items(args.output, args.carry_forward_hours)
 
     db_url = os.environ.get("INBRIEF_SUPABASE_DB_URL")
     if not db_url:
@@ -135,7 +187,7 @@ def main():
                 FROM articles a
                 LEFT JOIN rss_sources rs ON rs.id = a.rss_source_id
                 WHERE COALESCE(a.published_at, a.created_at) >= NOW() - INTERVAL '14 days'
-                ORDER BY (a.importance_score - CASE WHEN a.category IN ('opensource', 'open_source') THEN 25 ELSE 0 END) DESC,
+                ORDER BY (a.importance_score - CASE WHEN a.category IN ('opensource', 'open_source') AND rs.name = 'GitHub Trending' THEN 25 ELSE 0 END) DESC,
                          COALESCE(rs.importance_score, 0) DESC,
                          COALESCE(a.published_at, a.created_at) DESC
                 LIMIT %s
@@ -174,6 +226,8 @@ def main():
                 "long_summary": row["long_summary_zh"] or "",
             },
         })
+
+    items = merge_recent_items(items, previous_items, args.limit, args.max_open_source)
 
     payload = {
         "brand": "Polyemergence",
