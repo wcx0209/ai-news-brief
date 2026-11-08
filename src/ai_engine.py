@@ -7,7 +7,7 @@ import time
 
 TOPIC_CATEGORIES = {
     'models', 'company', 'startups', 'research',
-    'open_source', 'policy', 'business', 'society'
+    'open_source', 'interviews', 'policy', 'business', 'society'
 }
 
 

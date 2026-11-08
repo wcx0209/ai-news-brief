@@ -16,7 +16,7 @@ from bs4 import BeautifulSoup
 
 TOPIC_CATEGORIES = {
     "models", "company", "startups", "research",
-    "open_source", "policy", "business", "society",
+    "open_source", "interviews", "policy", "business", "society",
 }
 
 
@@ -77,6 +77,8 @@ def normalize_category(value, tags=None, title="", source=""):
         return "open_source"
 
     haystack = " ".join([title or "", source or "", " ".join(parse_tags(tags))]).lower()
+    if re.search(r"interview|podcast|conversation|访谈|对谈|播客", haystack):
+        return "interviews"
     if re.search(r"policy|regulat|law|government|election|治理|监管|政策|法规", haystack):
         return "policy"
     if re.search(r"research|paper|study|benchmark|simulation|论文|研究|评测|基准", haystack):

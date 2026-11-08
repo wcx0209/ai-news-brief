@@ -38,9 +38,9 @@ fetching:
     max_per_run: 0
     max_posts_per_keyword: 0
   youtube:
-    max_per_run: 0
-    delay_min: 0
-    delay_max: 0
+    max_per_run: 2
+    delay_min: 15
+    delay_max: 25
   github_trending:
     enabled: true
     max_repos: 2

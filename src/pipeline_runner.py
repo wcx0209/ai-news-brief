@@ -34,6 +34,11 @@ BROAD_EDITORIAL_SOURCES = {
     'iFanr 爱范儿',
     'The Guardian AI',
     'Ars Technica AI',
+    'Dwarkesh Patel',
+    'No Priors',
+    'Latent Space',
+    'Sequoia Capital',
+    'Redpoint AI',
 }
 
 AI_TITLE_PATTERN = re.compile(
@@ -313,7 +318,7 @@ def _process_single_entry(entry, sources, source_map, user_db, ai_engine, vector
         full_text, video_id = _fetch_youtube_content(url, page=browser_page, browser_context=browser_context, log_prefix=log_prefix)
 
         if not full_text:
-            logging.info(f"{log_prefix}Skipping YouTube video without English subtitles: {title}")
+            logging.info(f"{log_prefix}Skipping YouTube video without usable subtitles: {title}")
             fetch_stats.record_skip(rss_url, rss_desc, 'youtube_no_transcript')
     elif entry.get('is_twitter'):
         with counter_lock:

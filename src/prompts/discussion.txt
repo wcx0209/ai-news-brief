@@ -35,7 +35,7 @@
       - 钓鱼引流帖：原帖本身没有提供实质内容，主要靠"评论/回复就发你资料、私信领取、求点赞/求关注后再给"等手段诱导他人回复或互动来获取资源。
       - 加密货币推广帖：主要目的是宣传、推销、喊单某种加密货币 / 代币 / 空投 / 交易所 / Web3 项目（即便蹭了 AI 概念也算）。
   5. **标签**：最多5个相关关键词（小写）
-  6. **内容分类**（`category`）：只选择一个最主要的类别：`models`、`company`、`startups`、`research`、`open_source`、`policy`、`business`、`society`。不要输出列表，不要创造其他类别。
+  6. **内容分类**（`category`）：只选择一个最主要的类别：`models`、`company`、`startups`、`research`、`open_source`、`interviews`、`policy`、`business`、`society`。不要输出列表，不要创造其他类别。
   7. **中国合规审查**（`china_blocked`）：判断文章内容在中国大陆传播是否可能违规。涉及以下情形返回 true：政治敏感话题、煽动分裂国家、色情暴力恐怖主义、散布谣言危害国家安全、或其他明显违反中国互联网法规的内容。正常科技/AI资讯返回 false。
 
 # Constraints（严格遵守！违反任何一条都是不可接受的）
@@ -62,6 +62,6 @@ Output Format (JSON only):
     "confidence_score": <0-100>,
     "momentum_score": <0-100>,
     "tags": ["tag1", "tag2", "tag3"],
-    "category": "models|company|startups|research|open_source|policy|business|society",
+    "category": "models|company|startups|research|open_source|interviews|policy|business|society",
     "china_blocked": false
 }}

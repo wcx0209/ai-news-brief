@@ -51,6 +51,14 @@ SOURCES = [
     ("https://www.wired.com/feed/tag/ai/latest/rss", "WIRED AI", "AI technology, business, and society reporting", "news", 85),
     ("https://feeds.arstechnica.com/arstechnica/technology-lab", "Ars Technica AI", "Technical AI products, research, and industry analysis", "news", 83),
     ("https://huggingface.co/api/daily_papers", "Hugging Face Daily Papers", "Community-ranked research", "news", 65),
+
+    # High-signal AI interviews and long-form conversations. Keep this set small:
+    # video transcripts are expensive to collect and should complement, not crowd out, news.
+    ("https://www.youtube.com/feeds/videos.xml?channel_id=UCZa18YV7qayTh-MRIrBhDpA", "Dwarkesh Patel", "Long-form interviews with AI researchers, founders, and policymakers", "interviews", 88),
+    ("https://www.youtube.com/feeds/videos.xml?channel_id=UCSI7h9hydQ40K5MJHnCrQvw", "No Priors", "Interviews with AI founders, researchers, and investors", "interviews", 86),
+    ("https://www.youtube.com/feeds/videos.xml?channel_id=UCxBcwypKK-W3GHd_RZ9FZrQ", "Latent Space", "AI engineering interviews and technical conversations", "interviews", 84),
+    ("https://www.youtube.com/feeds/videos.xml?channel_id=UCWrF0oN6unbXrWsTN7RctTw", "Sequoia Capital", "Training Data interviews on AI companies, products, and markets", "interviews", 82),
+    ("https://www.youtube.com/feeds/videos.xml?channel_id=UCUl-s_Vp-Kkk_XVyDylNwLA", "Redpoint AI", "Unsupervised Learning interviews with AI builders and researchers", "interviews", 82),
 ]
 
 

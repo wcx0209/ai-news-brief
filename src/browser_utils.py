@@ -109,8 +109,9 @@ def _create_browser(target_channel: str = None, force_visible: bool = False, pro
     launch_error = None
     display_browser = False
     
-    # Always show browser window for easier debugging
-    is_headless = False
+    # Scheduled collectors run headless. Interactive retries may explicitly ask
+    # for a visible browser when a platform truly requires a human login.
+    is_headless = not force_visible
     logging.info(f"Browser Headless Mode: {is_headless}")
 
     for ch in channels_to_try:
@@ -201,7 +202,8 @@ def _check_logins_needed(context, needs_reddit: bool, needs_youtube: bool, needs
         if not reddit_cookies:
             return True
     
-    if needs_youtube:
+    youtube_login_required = os.environ.get('INBRIEF_YOUTUBE_REQUIRE_LOGIN', '').lower() in ('1', 'true', 'yes')
+    if needs_youtube and youtube_login_required:
         google_cookies = [
             c for c in context.cookies()
             if '.google.com' in c.get('domain', '')

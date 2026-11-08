@@ -67,7 +67,7 @@ class RSSFetcher:
         name = feed_config['name']
         source_id = feed_config.get('id')
         
-        api_key = os.environ.get('YOUTUBE_API_KEY')
+        api_key = os.environ.get('YOUTUBE_API_KEY') or os.environ.get('INBRIEF_YOUTUBE_API_KEY')
         if not api_key:
             return None  # Fall back to RSS
         
