@@ -1,5 +1,5 @@
 /*
-  Content-Security-Policy: default-src 'self'; script-src 'self' 'sha256-VVvwX/yGxnNAjJ6Oop4GIbzUxS2a+xCjLlP8yvIYOzo=' 'sha256-GbX9jMi4Njdm9oCfWo4GgAJLqi9r4rs/Lrgp4MQvzuQ='; style-src 'self'; img-src 'self' data: https:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests
+  Content-Security-Policy: default-src 'self'; script-src 'self' https://www.googletagmanager.com 'sha256-VVvwX/yGxnNAjJ6Oop4GIbzUxS2a+xCjLlP8yvIYOzo=' 'sha256-GbX9jMi4Njdm9oCfWo4GgAJLqi9r4rs/Lrgp4MQvzuQ='; style-src 'self'; img-src 'self' data: https:; font-src 'self'; connect-src 'self' https://www.google-analytics.com https://analytics.google.com https://region1.google-analytics.com; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests
   Strict-Transport-Security: max-age=31536000
   X-Content-Type-Options: nosniff
   X-Frame-Options: DENY
@@ -11,6 +11,9 @@
   Cache-Control: public, max-age=31536000, immutable
 
 /app.js
+  Cache-Control: public, max-age=31536000, immutable
+
+/analytics.js
   Cache-Control: public, max-age=31536000, immutable
 
 /styles.css
