@@ -952,6 +952,9 @@ class UserDatabase:
 
     def cleanup_old_articles(self, retention_days: int) -> int:
         """Clean up articles older than retention period."""
+        if retention_days <= 0:
+            logging.info("Article retention is permanent; cleanup skipped")
+            return 0
         cutoff_date = (datetime.now(timezone.utc) - timedelta(days=retention_days)).isoformat()
         
         with self._get_connection() as conn:
@@ -1039,6 +1042,8 @@ class UserDatabase:
     
     def get_expired_article_ids(self, retention_days: int) -> List[str]:
         """Get article IDs that are older than retention period."""
+        if retention_days <= 0:
+            return []
         cutoff_date = (datetime.now(timezone.utc) - timedelta(days=retention_days)).isoformat()
         
         with self._get_connection() as conn:

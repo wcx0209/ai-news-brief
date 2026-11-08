@@ -70,7 +70,7 @@ def _passes_broad_source_ai_filter(source_name, title):
 
 
 def cleanup_old_articles():
-    """Clean up articles older than retention period and sync vector store."""
+    """Apply configured retention while allowing permanent article history."""
     logging.info("Starting Old Articles Cleanup...")
     
     config = ConfigLoader.get_instance()
@@ -79,20 +79,23 @@ def cleanup_old_articles():
     tag_stats_retention_days = cleanup_config.get('tag_stats_retention_days', 90)
 
     user_db = UserDatabase()
-    vector_store = VectorStore()
-    
-    # 先获取要删除的文章 ID
-    expired_ids = user_db.get_expired_article_ids(retention_days)
-    
-    # 删除数据库中的过期文章
-    deleted_count = user_db.cleanup_old_articles(retention_days)
-    
-    # 同步删除向量库中的向量
-    if expired_ids:
-        vector_store.delete_articles(expired_ids)
-        logging.info(f"Synced vector store: deleted {len(expired_ids)} vectors")
-    
-    logging.info(f"Cleaned up {deleted_count} old articles (retention: {retention_days} days)")
+    if retention_days > 0:
+        vector_store = VectorStore()
+
+        # 先获取要删除的文章 ID
+        expired_ids = user_db.get_expired_article_ids(retention_days)
+
+        # 删除数据库中的过期文章
+        deleted_count = user_db.cleanup_old_articles(retention_days)
+
+        # 同步删除向量库中的向量
+        if expired_ids:
+            vector_store.delete_articles(expired_ids)
+            logging.info(f"Synced vector store: deleted {len(expired_ids)} vectors")
+
+        logging.info(f"Cleaned up {deleted_count} old articles (retention: {retention_days} days)")
+    else:
+        logging.info("Article retention is permanent; skipping article, URL, and vector cleanup")
 
     # 清理过期的热点标签统计
     user_db.cleanup_old_tag_stats(tag_stats_retention_days)

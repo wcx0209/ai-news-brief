@@ -60,5 +60,5 @@ fetching:
     - "technologyreview.com"
 
 cleanup:
-  article_retention_days: 7              # 文章保留天数，超过则清理
+  article_retention_days: 0              # 0 = 永久保留文章与向量历史
   tag_stats_retention_days: 90           # 热点标签统计保留天数，超过则清理

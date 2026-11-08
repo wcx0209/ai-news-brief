@@ -188,6 +188,7 @@ def main():
     parser.add_argument("--discover-images", type=int, default=12)
     parser.add_argument("--max-open-source", type=int, default=2)
     parser.add_argument("--carry-forward-hours", type=int, default=48)
+    parser.add_argument("--max-age-hours", type=int, default=48)
     args = parser.parse_args()
 
     previous_items = load_previous_items(args.output, args.carry_forward_hours)
@@ -208,13 +209,13 @@ def main():
                        a.created_at, rs.name AS source_name
                 FROM articles a
                 LEFT JOIN rss_sources rs ON rs.id = a.rss_source_id
-                WHERE COALESCE(a.published_at, a.created_at) >= NOW() - INTERVAL '14 days'
+                WHERE COALESCE(a.published_at, a.created_at) >= NOW() - (%s * INTERVAL '1 hour')
                 ORDER BY (a.importance_score - CASE WHEN a.category IN ('opensource', 'open_source') AND rs.name = 'GitHub Trending' THEN 25 ELSE 0 END) DESC,
                          COALESCE(rs.importance_score, 0) DESC,
                          COALESCE(a.published_at, a.created_at) DESC
                 LIMIT %s
                 """,
-                (max(args.limit * 3, args.limit),),
+                (max(1, args.max_age_hours), max(args.limit * 3, args.limit)),
             )
             rows = select_balanced_rows(cursor.fetchall(), args.limit, args.max_open_source)
 

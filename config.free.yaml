@@ -48,5 +48,6 @@ fetching:
   playwright_domains: []
 
 cleanup:
-  article_retention_days: 14
+  # Zero means keep the complete article and vector history permanently.
+  article_retention_days: 0
   tag_stats_retention_days: 90

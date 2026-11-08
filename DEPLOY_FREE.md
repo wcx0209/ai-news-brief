@@ -5,20 +5,20 @@ This setup keeps the public site static and places all credentials in GitHub Act
 ## Architecture
 
 ```text
-Public RSS + Hacker News + GitHub Trending
+Public RSS + Hacker News + YouTube + GitHub Trending
                    ↓
-        GitHub Actions (daily, UTC 00:15)
+    GitHub Actions (06:00 / 18:00 UTC)
                    ↓
        Gemini OpenAI-compatible endpoint
                    ↓
-     Ephemeral Postgres + pgvector service
+       Supabase Postgres + pgvector
                    ↓
         web/public/data/latest.json
                    ↓
         Cloudflare Pages static frontend
 ```
 
-The browser never connects to Postgres and never receives an API key. The database exists only for the duration of each workflow run; the published JSON is the durable output.
+The browser never connects to Postgres and never receives a database URL or API key. Postgres permanently retains the complete article and vector history; the published JSON contains only the latest 48-hour reading window.
 
 ## 1. Gemini
 
@@ -38,8 +38,8 @@ Keep the repository public if you want standard GitHub-hosted Actions to remain 
 
 Run **Polyemergence daily brief** manually once. A successful run will:
 
-1. start an isolated pgvector database and create the schema;
-2. seed the free RSS catalog;
+1. connect to Supabase Postgres and create or update the schema;
+2. connect to the persistent Supabase database and seed the free source catalog;
 3. collect and summarize new items;
 4. export `web/public/data/latest.json`;
 5. commit the refreshed feed.
@@ -61,10 +61,10 @@ Connect `polyemergence.com` after the first successful deployment. The static fr
 
 ## Free-tier fit
 
-- One daily commit uses roughly 30 of Cloudflare Pages' 500 Free-plan monthly builds.
+- Two daily commits use roughly 60 of Cloudflare Pages' 500 Free-plan monthly builds.
 - The site is far below the Free-plan 20,000-file limit.
 - Public repositories can use standard GitHub-hosted Actions without metered minutes.
-- The workflow uses a temporary pgvector service, so there is no hosted database bill or database account to maintain.
+- Supabase's Free plan can host the persistent pgvector database while it remains within the current free limits.
 - Gemini offers a limited free developer tier; model and rate limits can change.
 
 ## Optional sources
