@@ -11,34 +11,16 @@ Public RSS + Hacker News + GitHub Trending
                    ↓
        Gemini OpenAI-compatible endpoint
                    ↓
-          Supabase Postgres + pgvector
+     Ephemeral Postgres + pgvector service
                    ↓
         web/public/data/latest.json
                    ↓
         Cloudflare Pages static frontend
 ```
 
-The browser never connects to Postgres and never receives an API key.
+The browser never connects to Postgres and never receives an API key. The database exists only for the duration of each workflow run; the published JSON is the durable output.
 
-## 1. Supabase
-
-Create a Free project, then enable pgvector in the SQL editor:
-
-```sql
-create extension if not exists vector;
-```
-
-Copy the direct Postgres connection string. For GitHub Actions, prefer the session pooler string if direct IPv6 connectivity is unavailable.
-
-Create a repository secret:
-
-```text
-INBRIEF_SUPABASE_DB_URL=postgresql://...
-```
-
-The collector creates its own tables. The free configuration retains articles for 14 days to control database growth.
-
-## 2. Gemini
+## 1. Gemini
 
 Create a Gemini API key in Google AI Studio, then add:
 
@@ -50,13 +32,13 @@ The project uses Google's OpenAI-compatible endpoint and `gemini-3.8-flash`. Cha
 
 Only public news content is sent for summarization. Do not send private or licensed full-text material that your terms do not permit.
 
-## 3. GitHub Actions
+## 2. GitHub Actions
 
 Keep the repository public if you want standard GitHub-hosted Actions to remain free without consuming private-repository minutes.
 
 Run **Polyemergence daily brief** manually once. A successful run will:
 
-1. create the database schema;
+1. start an isolated pgvector database and create the schema;
 2. seed the free RSS catalog;
 3. collect and summarize new items;
 4. export `web/public/data/latest.json`;
@@ -64,7 +46,7 @@ Run **Polyemergence daily brief** manually once. A successful run will:
 
 The scheduled run is 08:15 Singapore time.
 
-## 4. Cloudflare Pages
+## 3. Cloudflare Pages
 
 Create a Pages project using Git integration and choose this repository.
 
@@ -82,7 +64,7 @@ Connect `polyemergence.com` after the first successful deployment. The static fr
 - One daily commit uses roughly 30 of Cloudflare Pages' 500 Free-plan monthly builds.
 - The site is far below the Free-plan 20,000-file limit.
 - Public repositories can use standard GitHub-hosted Actions without metered minutes.
-- Supabase Free currently includes a 500 MB Postgres database; the 14-day retention policy limits growth.
+- The workflow uses a temporary pgvector service, so there is no hosted database bill or database account to maintain.
 - Gemini offers a limited free developer tier; model and rate limits can change.
 
 ## Optional sources

@@ -16,9 +16,23 @@ jobs:
   collect:
     runs-on: ubuntu-latest
     timeout-minutes: 45
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     env:
       INBRIEF_CONFIG_PATH: config.free.yaml
-      INBRIEF_SUPABASE_DB_URL: ${{ secrets.INBRIEF_SUPABASE_DB_URL }}
+      INBRIEF_SUPABASE_DB_URL: postgresql://postgres:postgres@localhost:5432/postgres
       INBRIEF_LLM_API_KEY: ${{ secrets.GEMINI_API_KEY }}
       INBRIEF_LLM_BASE_URL: https://generativelanguage.googleapis.com/v1beta/openai/
       INBRIEF_LLM_MODEL_NAME: gemini-3.8-flash
@@ -41,7 +55,6 @@ jobs:
 
       - name: Check required secrets
         run: |
-          test -n "$INBRIEF_SUPABASE_DB_URL" || (echo "Missing INBRIEF_SUPABASE_DB_URL" && exit 1)
           test -n "$INBRIEF_LLM_API_KEY" || (echo "Missing GEMINI_API_KEY" && exit 1)
 
       - name: Install collector
