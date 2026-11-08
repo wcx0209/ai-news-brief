@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <script defer src="/analytics.js?v=1"></script>
   <title>AI News &amp; Industry Intelligence | Polyemergence</title>
-  <meta name="description" content="Daily AI news and analysis covering models, companies, startups, research, open source, interviews, policy, business, and society.">
+  <meta name="description" content="Daily AI news and analysis covering models, companies, startups, research, academia, open source, interviews, policy, business, and society.">
   <meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1">
   <meta name="theme-color" content="#111111">
   <link rel="canonical" href="https://polyemergence.com/en/">
@@ -17,7 +17,7 @@
   <meta property="og:locale" content="en_US">
   <meta property="og:locale:alternate" content="zh_CN">
   <meta property="og:title" content="AI News &amp; Industry Intelligence | Polyemergence">
-  <meta property="og:description" content="Daily AI news across models, companies, startups, research, open source, interviews, policy, business, and society.">
+  <meta property="og:description" content="Daily AI news across models, companies, startups, research, academia, open source, interviews, policy, business, and society.">
   <meta property="og:url" content="https://polyemergence.com/en/">
   <meta property="og:image" content="https://polyemergence.com/assets/social-preview.png">
   <meta name="twitter:card" content="summary_large_image">
@@ -29,12 +29,12 @@
   <link rel="manifest" href="/manifest.webmanifest">
   <link rel="preconnect" href="https://images.unsplash.com" crossorigin>
   <link rel="preload" href="/data/latest.json" as="fetch" crossorigin="anonymous">
-  <link rel="stylesheet" href="/styles.css?v=20261108-16">
+  <link rel="stylesheet" href="/styles.css?v=20261109-17">
   <script type="application/ld+json">
   {"@context":"https://schema.org","@graph":[
     {"@type":"NewsMediaOrganization","@id":"https://polyemergence.com/#organization","name":"Polyemergence","alternateName":"多重涌现","url":"https://polyemergence.com/","logo":{"@type":"ImageObject","url":"https://polyemergence.com/assets/mark.svg"},"description":"Independent AI news and industry intelligence across technology, business, policy and society."},
     {"@type":"WebSite","@id":"https://polyemergence.com/#website","url":"https://polyemergence.com/","name":"Polyemergence","publisher":{"@id":"https://polyemergence.com/#organization"},"inLanguage":["en","zh-Hans"]},
-    {"@type":"CollectionPage","@id":"https://polyemergence.com/en/#page","url":"https://polyemergence.com/en/","name":"AI News & Industry Intelligence","description":"Daily AI news across models, companies, startups, research, open source, interviews, policy, business, and society.","isPartOf":{"@id":"https://polyemergence.com/#website"},"about":["Artificial intelligence","AI news","AI interviews","AI industry","Machine learning","Large language models"]}
+    {"@type":"CollectionPage","@id":"https://polyemergence.com/en/#page","url":"https://polyemergence.com/en/","name":"AI News & Industry Intelligence","description":"Daily AI news across models, companies, startups, research, academia, open source, interviews, policy, business, and society.","isPartOf":{"@id":"https://polyemergence.com/#website"},"about":["Artificial intelligence","AI news","AI academia","AI interviews","AI industry","Machine learning","Large language models"]}
   ]}
   </script>
 </head>
@@ -57,7 +57,7 @@
       <div class="hero-copy">
         <p class="eyebrow" data-copy="eyebrow">DAILY AI NEWS · INDUSTRY SIGNALS · ANALYSIS</p>
         <h1 id="intro-title" data-copy="tagline">What’s next,<br>made visible.</h1>
-        <p data-copy="promise">Daily AI intelligence across models, companies, startups, research, open source, interviews, policy, business, and society.</p>
+        <p data-copy="promise">Daily AI intelligence across models, companies, startups, research, academia, open source, interviews, policy, business, and society.</p>
         <div class="update-line"><span class="live-label">LIVE</span><span id="update-status">Loading today’s brief…</span></div>
       </div>
       <div class="hero-ticker" id="hero-ticker" aria-label="Latest AI news and signals"></div>
@@ -67,7 +67,7 @@
       <div id="demo-notice" class="demo-notice" hidden></div><div id="lead-story" class="lead-story" aria-live="polite"></div><div id="story-grid" class="story-grid"></div><div id="empty-state" class="empty-state" hidden></div>
     </section>
     <section class="method" id="about" aria-labelledby="method-title">
-      <div><p class="section-index">02</p><h2 id="method-title" data-copy="methodTitle">From signal to consequence.</h2><p class="method-formula" data-copy="methodFormula">Importance = 35% Signal + 35% Structure + 30% Consequence. Confidence and momentum remain separate.</p></div>
+      <div><p class="section-index">02</p><h2 id="method-title" data-copy="methodTitle">From signal to consequence.</h2><p class="method-formula" data-copy="methodFormula">Importance = 35% Signal + 35% Structure + 30% Consequence. Confidence and momentum remain separate.</p><p class="method-academia" data-copy="methodAcademia">Academic items require Importance ≥70 and Confidence ≥65. No more than two are published per daily brief; the quota is never padded.</p></div>
       <ol><li><span>01</span><strong data-copy="methodSignal">Signal</strong><p data-copy="methodSignalText">Novelty · timing · verification</p></li><li><span>02</span><strong data-copy="methodStructure">Structure</strong><p data-copy="methodStructureText">System change · durable pattern</p></li><li><span>03</span><strong data-copy="methodConsequence">Consequence</strong><p data-copy="methodConsequenceText">Business · policy · society</p></li></ol>
     </section>
     <section class="feedback" id="feedback" aria-labelledby="feedback-title">
@@ -83,6 +83,6 @@
   </main>
   <dialog class="install-dialog" id="install-dialog" aria-labelledby="install-title"><form method="dialog"><button class="install-dialog-close" value="cancel" aria-label="Close">×</button><div class="install-dialog-mark"><img src="/assets/app-icon.svg" alt="" width="72" height="72"></div><p class="section-index">POLYEMERGENCE</p><h2 id="install-title" data-copy="installTitle">Add to your Home Screen</h2><p data-copy="installIntro">Open Polyemergence like an app, directly from your phone.</p><ol id="install-steps"></ol><button class="install-dialog-done" value="cancel" data-copy="installDone">Got it</button></form></dialog>
   <footer><div class="footer-brand"><img id="footer-logo" src="/assets/logo-en-reverse.svg" alt="Polyemergence" width="360"></div><div class="footer-copy"><p data-copy="footer">Independent AI intelligence for a changing world.</p><p class="company-note">Published by a Singapore-based technology startup focused on data and investment.</p><p class="footer-meta"><a href="/en/open-source/">Open-source notices</a></p></div></footer>
-  <script src="/app.js?v=20261108-18" defer></script>
+  <script src="/app.js?v=20261109-19" defer></script>
 </body>
 </html>

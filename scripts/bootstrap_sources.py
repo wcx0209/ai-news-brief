@@ -50,7 +50,17 @@ SOURCES = [
     ("https://www.theverge.com/rss/ai-artificial-intelligence/index.xml", "The Verge AI", "High-impact AI product, company, and policy reporting", "news", 86),
     ("https://www.wired.com/feed/tag/ai/latest/rss", "WIRED AI", "AI technology, business, and society reporting", "news", 85),
     ("https://feeds.arstechnica.com/arstechnica/technology-lab", "Ars Technica AI", "Technical AI products, research, and industry analysis", "news", 83),
-    ("https://huggingface.co/api/daily_papers", "Hugging Face Daily Papers", "Community-ranked research", "news", 65),
+    # Academic AI: primary paper feeds and university research communities.
+    # These sources use a dedicated academic prompt. Publication is capped at
+    # two high-confidence items in the public feed; source prestige affects
+    # confidence only, never the Polyemergence importance score.
+    ("https://huggingface.co/api/daily_papers", "Hugging Face Daily Papers", "Community-ranked AI papers with code and public artifacts", "academia", 72),
+    ("https://rss.arxiv.org/rss/cs.AI", "arXiv Artificial Intelligence", "Primary preprints in artificial intelligence", "academia", 76),
+    ("https://rss.arxiv.org/rss/cs.LG", "arXiv Machine Learning", "Primary preprints in machine learning", "academia", 76),
+    ("https://rss.arxiv.org/rss/cs.CL", "arXiv Computation and Language", "Primary preprints in language models and computational linguistics", "academia", 76),
+    ("https://bair.berkeley.edu/blog/feed.xml", "Berkeley AI Research", "First-party research explanations from the Berkeley AI Research Lab", "academia", 90),
+    ("https://blog.ml.cmu.edu/feed/", "Carnegie Mellon ML Blog", "First-party machine-learning research from Carnegie Mellon", "academia", 90),
+    ("https://www.csail.mit.edu/rss.xml", "MIT CSAIL", "First-party AI and computer-science research from MIT CSAIL", "academia", 90),
 
     # Venture capital and startup ecosystem: first-party market theses, founder
     # guidance, and interviews. These are broad feeds, so the pipeline applies

@@ -169,6 +169,7 @@ main { overflow: hidden; }
 .method strong { display: block; margin-top: 66px; font-size: 25px; }
 .method li p { color: var(--fog); line-height: 1.4; }
 .method-formula { max-width: 520px; margin: 32px 0 0; color: var(--fog); font: 650 12px/1.6 ui-monospace, monospace; }
+.method-academia { max-width: 520px; margin: 16px 0 0; padding-left: 12px; border-left: 2px solid var(--orange); color: #b8b8b8; font: 650 11px/1.6 ui-monospace, monospace; }
 .method-score.is-compact + h3 { margin-top: 18px; }
 
 .feedback { display: grid; grid-template-columns: 1fr 1fr; gap: 70px; padding-block: 92px 110px; background: var(--paper); border-top: 13px solid var(--orange); }

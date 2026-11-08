@@ -6,7 +6,7 @@ import threading
 import time
 
 TOPIC_CATEGORIES = {
-    'models', 'company', 'startups', 'research',
+    'models', 'company', 'startups', 'research', 'academia',
     'open_source', 'interviews', 'policy', 'business', 'society'
 }
 

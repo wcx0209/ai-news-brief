@@ -15,7 +15,7 @@ from bs4 import BeautifulSoup
 
 
 TOPIC_CATEGORIES = {
-    "models", "company", "startups", "research",
+    "models", "company", "startups", "research", "academia",
     "open_source", "interviews", "policy", "business", "society",
 }
 
@@ -99,6 +99,8 @@ def normalize_category(value, tags=None, title="", source=""):
         return "interviews"
     if re.search(r"policy|regulat|law|government|election|治理|监管|政策|法规", haystack):
         return "policy"
+    if re.search(r"arxiv|academic|university|bair|csail|论文预印本|学术", haystack):
+        return "academia"
     if re.search(r"research|paper|study|benchmark|simulation|论文|研究|评测|基准", haystack):
         return "research"
     if re.search(r"open.source|github|开源|开放权重", haystack):
@@ -114,10 +116,12 @@ def normalize_category(value, tags=None, title="", source=""):
     return "company"
 
 
-def select_balanced_rows(rows, limit, max_open_source):
-    """Limit GitHub Trending volume without suppressing open-source industry news."""
+def select_balanced_rows(rows, limit, max_open_source, max_academia,
+                         min_academia_importance, min_academia_confidence):
+    """Apply source/category caps while keeping the strongest eligible rows."""
     selected = []
     github_count = 0
+    academia_count = 0
     for row in rows:
         category = normalize_category(
             row["category"], row.get("tags"), row.get("title") or "", row.get("source_name") or ""
@@ -126,6 +130,14 @@ def select_balanced_rows(rows, limit, max_open_source):
             if github_count >= max_open_source:
                 continue
             github_count += 1
+        if category == "academia":
+            if int(row.get("importance_score") or 0) < min_academia_importance:
+                continue
+            if int(row.get("confidence_score") or 0) < min_academia_confidence:
+                continue
+            if academia_count >= max_academia:
+                continue
+            academia_count += 1
         selected.append(row)
         if len(selected) >= limit:
             break
@@ -156,8 +168,9 @@ def load_previous_items(path, max_age_hours=48):
     return recent
 
 
-def merge_recent_items(current, previous, limit, max_github):
-    """Merge, deduplicate, rank, and apply a source-specific GitHub cap."""
+def merge_recent_items(current, previous, limit, max_github, max_academia,
+                       min_academia_importance, min_academia_confidence):
+    """Merge, rank, and reapply publication gates to carried-forward items."""
     deduped = {}
     for item in previous + current:
         key = item.get("url") or item.get("id")
@@ -170,11 +183,21 @@ def merge_recent_items(current, previous, limit, max_github):
 
     merged = []
     github_count = 0
+    academia_count = 0
     for item in sorted(deduped.values(), key=rank, reverse=True):
         if item.get("source") == "GitHub Trending":
             if github_count >= max_github:
                 continue
             github_count += 1
+        if item.get("category") == "academia":
+            confidence = int((item.get("scores") or {}).get("confidence") or 0)
+            if int(item.get("importance") or 0) < min_academia_importance:
+                continue
+            if confidence < min_academia_confidence:
+                continue
+            if academia_count >= max_academia:
+                continue
+            academia_count += 1
         merged.append(item)
         if len(merged) >= limit:
             break
@@ -187,6 +210,9 @@ def main():
     parser.add_argument("--limit", type=int, default=60)
     parser.add_argument("--discover-images", type=int, default=12)
     parser.add_argument("--max-open-source", type=int, default=2)
+    parser.add_argument("--max-academia", type=int, default=2)
+    parser.add_argument("--min-academia-importance", type=int, default=70)
+    parser.add_argument("--min-academia-confidence", type=int, default=65)
     parser.add_argument("--carry-forward-hours", type=int, default=48)
     parser.add_argument("--max-age-hours", type=int, default=48)
     args = parser.parse_args()
@@ -217,7 +243,11 @@ def main():
                 """,
                 (max(1, args.max_age_hours), max(args.limit * 3, args.limit)),
             )
-            rows = select_balanced_rows(cursor.fetchall(), args.limit, args.max_open_source)
+            rows = select_balanced_rows(
+                cursor.fetchall(), args.limit, args.max_open_source,
+                args.max_academia, args.min_academia_importance,
+                args.min_academia_confidence,
+            )
 
     if not rows and os.path.exists(args.output):
         print(f"No curated articles; preserving existing feed at {args.output}")
@@ -257,7 +287,11 @@ def main():
             },
         })
 
-    items = merge_recent_items(items, previous_items, args.limit, args.max_open_source)
+    items = merge_recent_items(
+        items, previous_items, args.limit, args.max_open_source,
+        args.max_academia, args.min_academia_importance,
+        args.min_academia_confidence,
+    )
     for item in items:
         scores = item.get("scores") or {}
         item["scores"] = {

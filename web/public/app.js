@@ -3,11 +3,11 @@ const COPY = {
     brand: "POLYEMERGENCE", navNews: "Brief", navSignals: "Signals", navInsight: "Method", navFeedback: "Feedback",
     edition: "GLOBAL EDITION", latest: "LATEST INTELLIGENCE",
     seoTitle: "AI News & Industry Intelligence | Polyemergence",
-    seoDescription: "Daily AI news and analysis covering models, companies, startups, research, open source, interviews, policy, business, and society.",
+    seoDescription: "Daily AI news and analysis covering models, companies, startups, research, academia, open source, interviews, policy, business, and society.",
     eyebrow: "DAILY AI NEWS · INDUSTRY SIGNALS · ANALYSIS", tagline: "What’s next,<br>made visible.",
-    promise: "Daily AI intelligence across models, companies, startups, research, open source, interviews, policy, business, and society.",
+    promise: "Daily AI intelligence across models, companies, startups, research, academia, open source, interviews, policy, business, and society.",
     loading: "Loading today’s brief…", updated: "Updated", stories: "stories", dailyBrief: "Daily Brief",
-    filters: { all: "All", models: "Models", company: "Company", startups: "Startups", research: "Research", open_source: "Open Source", interviews: "Interviews", policy: "Policy", business: "Business", society: "Society" }, importance: "Importance",
+    filters: { all: "All", models: "Models", company: "Company", startups: "Startups", research: "Research", academia: "Academia", open_source: "Open Source", interviews: "Interviews", policy: "Policy", business: "Business", society: "Society" }, importance: "Importance",
     scoreSignal: "Signal", scoreStructure: "Structure", scoreConsequence: "Consequence", scoreConfidence: "Confidence", scoreMomentum: "Momentum",
     read: "Read original", noStories: "No stories in this section yet.", error: "The live feed is unavailable. Showing the last bundled briefing.",
     demo: "Demo feed — run the scheduled collector to publish the live briefing.",
@@ -15,6 +15,7 @@ const COPY = {
     methodStructure: "Structure", methodStructureText: "System change · durable pattern",
     methodConsequence: "Consequence", methodConsequenceText: "Business · policy · society",
     methodFormula: "Importance = 35% Signal + 35% Structure + 30% Consequence. Confidence and momentum remain separate.",
+    methodAcademia: "Academic items require Importance ≥70 and Confidence ≥65. No more than two are published per daily brief; the quota is never padded.",
     feedbackIndex: "READER SIGNAL", feedbackTitle: "Help sharpen<br>the signal.",
     feedbackIntro: "Found an error, a missing source, or a story we should follow? Send a private note to the editorial desk.",
     feedbackTopic: "What is this about?", feedbackCorrection: "Story correction", feedbackSource: "Source suggestion",
@@ -32,11 +33,11 @@ const COPY = {
     brand: "多重涌现", navNews: "简报", navSignals: "信号", navInsight: "方法", navFeedback: "反馈",
     edition: "全球版", latest: "最新情报",
     seoTitle: "AI 新闻与人工智能行业情报 | 多重涌现",
-    seoDescription: "每日聚合 AI 模型、公司、创业、研究、开源、访谈、政策、商业与社会领域的重要新闻。",
+    seoDescription: "每日聚合 AI 模型、公司、创业、研究、学术、开源、访谈、政策、商业与社会领域的重要新闻。",
     eyebrow: "AI 新闻 · 人工智能行业动态 · 趋势洞察", tagline: "看见<br>下一步。",
-    promise: "每日追踪模型、公司、创业、研究、开源、访谈、政策、商业与社会领域的重要 AI 新闻。",
+    promise: "每日追踪模型、公司、创业、研究、学术、开源、访谈、政策、商业与社会领域的重要 AI 新闻。",
     loading: "正在载入今日简报…", updated: "更新于", stories: "条内容", dailyBrief: "每日简报",
-    filters: { all: "全部", models: "模型", company: "公司", startups: "创业", research: "研究", open_source: "开源", interviews: "访谈", policy: "政策", business: "商业", society: "社会" }, importance: "重要性",
+    filters: { all: "全部", models: "模型", company: "公司", startups: "创业", research: "研究", academia: "学术", open_source: "开源", interviews: "访谈", policy: "政策", business: "商业", society: "社会" }, importance: "重要性",
     scoreSignal: "信号", scoreStructure: "结构", scoreConsequence: "影响", scoreConfidence: "可信度", scoreMomentum: "热度",
     read: "阅读原文", noStories: "这个栏目暂时没有内容。", error: "实时数据暂时不可用，正在显示最近一次简报。",
     demo: "当前为演示数据——运行定时采集任务后将自动发布实时内容。",
@@ -44,6 +45,7 @@ const COPY = {
     methodStructure: "结构", methodStructureText: "系统变化 · 持续趋势",
     methodConsequence: "影响", methodConsequenceText: "商业 · 政策 · 社会",
     methodFormula: "重要性 = 35% 信号 + 35% 结构 + 30% 影响；可信度与热度独立呈现。",
+    methodAcademia: "学术内容需同时达到重要性 ≥70、可信度 ≥65；每期最多发布两条，不足则不补位。",
     feedbackIndex: "读者信号", feedbackTitle: "帮助我们<br>校准信号。",
     feedbackIntro: "发现错误、遗漏的重要信源，或值得持续追踪的线索？请私下告诉编辑。",
     feedbackTopic: "反馈类型", feedbackCorrection: "内容纠错", feedbackSource: "推荐信源",
@@ -61,7 +63,7 @@ const COPY = {
 
 const routeLocale = location.pathname.split("/").filter(Boolean)[0];
 const state = { locale: routeLocale === "zh" ? "zh" : routeLocale === "en" ? "en" : (navigator.language.startsWith("zh") ? "zh" : "en"), category: "all", feed: null };
-const categories = ["all", "models", "company", "startups", "research", "open_source", "interviews", "policy", "business", "society"];
+const categories = ["all", "models", "company", "startups", "research", "academia", "open_source", "interviews", "policy", "business", "society"];
 const $ = (selector) => document.querySelector(selector);
 const $$ = (selector) => [...document.querySelectorAll(selector)];
 
@@ -110,6 +112,7 @@ function categoryFor(item) {
   const text = `${textFor(item).title} ${item.source || ""} ${(item.tags || []).join(" ")}`.toLowerCase();
   if (/interview|podcast|conversation|访谈|对谈|播客/.test(text)) return "interviews";
   if (/policy|regulat|law|government|election|治理|监管|政策|法规/.test(text)) return "policy";
+  if (/arxiv|academic|university|bair|csail|论文预印本|学术/.test(text)) return "academia";
   if (/research|paper|study|benchmark|simulation|论文|研究|评测|基准/.test(text)) return "research";
   if (/open.source|github|开源|开放权重/.test(text)) return "open_source";
   if (/startup|venture|seed round|series [a-f]|初创|创业|融资轮/.test(text)) return "startups";
@@ -164,6 +167,14 @@ function coverGeometry(category) {
         <circle class="cover-stroke cover-fill-dark" cx="250" cy="150" r="72"/>
         <circle class="cover-orange" cx="395" cy="75" r="62"/>
         <circle class="cover-stroke cover-fill-dark" cx="220" cy="390" r="72"/>
+      </g>`,
+    academia: `
+      <g transform="translate(575 105)">
+        <path class="cover-line" d="M20 105L225 15l205 90-205 90z"/>
+        <path class="cover-line cover-line-heavy" d="M78 145v190c80 62 214 62 294 0V145"/>
+        <path class="cover-line" d="M430 105v245"/>
+        <circle class="cover-orange" cx="430" cy="378" r="38"/>
+        <rect class="cover-orange" x="172" y="224" width="106" height="106"/>
       </g>`,
     open_source: `
       <g transform="translate(610 105)">
