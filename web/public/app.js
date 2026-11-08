@@ -129,9 +129,9 @@ function setLocale(locale) {
   const description = document.querySelector('meta[name="description"]');
   if (description) description.content = COPY[state.locale].seoDescription;
   const logoName = state.locale === "zh" ? "logo-zh-reverse.svg" : "logo-en-reverse.svg";
-  $("#brand-logo").src = `./assets/${logoName}`;
+  $("#brand-logo").src = `/assets/${logoName}`;
   $("#brand-logo").alt = COPY[state.locale].brand;
-  $("#footer-logo").src = `./assets/${logoName}`;
+  $("#footer-logo").src = `/assets/${logoName}`;
   $("#footer-logo").alt = COPY[state.locale].brand;
   $$('[data-locale-button]').forEach(link => {
     if (link.dataset.localeButton === state.locale) link.setAttribute("aria-current", "page");
