@@ -14,6 +14,12 @@ import requests
 from bs4 import BeautifulSoup
 
 
+TOPIC_CATEGORIES = {
+    "models", "company", "startups", "research",
+    "open_source", "policy", "business", "society",
+}
+
+
 def safe_http_url(value):
     if not value:
         return None
@@ -63,12 +69,40 @@ def iso(value):
     return value.astimezone(timezone.utc).isoformat().replace("+00:00", "Z") if value else None
 
 
+def normalize_category(value, tags=None, title="", source=""):
+    category = str(value or "").strip().lower().replace("-", "_").replace(" ", "_")
+    if category in TOPIC_CATEGORIES:
+        return category
+    if category == "opensource":
+        return "open_source"
+
+    haystack = " ".join([title or "", source or "", " ".join(parse_tags(tags))]).lower()
+    if re.search(r"policy|regulat|law|government|election|治理|监管|政策|法规", haystack):
+        return "policy"
+    if re.search(r"research|paper|study|benchmark|simulation|论文|研究|评测|基准", haystack):
+        return "research"
+    if re.search(r"open.source|github|开源|开放权重", haystack):
+        return "open_source"
+    if re.search(r"startup|venture|seed round|series [a-f]|初创|创业|融资轮", haystack):
+        return "startups"
+    if re.search(r"model|llm|gpt|claude|gemini|qwen|deepseek|模型|推理", haystack):
+        return "models"
+    if re.search(r"funding|revenue|earnings|acqui|data center|chip|enterprise|融资|营收|收购|数据中心|芯片|企业", haystack):
+        return "business"
+    if re.search(r"jobs|labor|education|culture|public|environment|社会|就业|教育|文化|环境|公众", haystack):
+        return "society"
+    return "company"
+
+
 def select_balanced_rows(rows, limit, max_open_source):
     """Keep the public brief news-led while retaining a small open-source signal."""
     selected = []
     open_source_count = 0
     for row in rows:
-        if row["category"] == "opensource":
+        category = normalize_category(
+            row["category"], row.get("tags"), row.get("title") or "", row.get("source_name") or ""
+        )
+        if category == "open_source":
             if open_source_count >= max_open_source:
                 continue
             open_source_count += 1
@@ -101,7 +135,7 @@ def main():
                 FROM articles a
                 LEFT JOIN rss_sources rs ON rs.id = a.rss_source_id
                 WHERE COALESCE(a.published_at, a.created_at) >= NOW() - INTERVAL '14 days'
-                ORDER BY (a.importance_score - CASE WHEN a.category = 'opensource' THEN 25 ELSE 0 END) DESC,
+                ORDER BY (a.importance_score - CASE WHEN a.category IN ('opensource', 'open_source') THEN 25 ELSE 0 END) DESC,
                          COALESCE(rs.importance_score, 0) DESC,
                          COALESCE(a.published_at, a.created_at) DESC
                 LIMIT %s
@@ -122,7 +156,9 @@ def main():
             "id": row["id"],
             "url": source_url,
             "source": row["source_name"] or "Unknown source",
-            "category": row["category"] or "news",
+            "category": normalize_category(
+                row["category"], row["tags"], row["title"] or "", row["source_name"] or ""
+            ),
             "importance": int(row["importance_score"] or 0),
             "published_at": iso(row["published_at"] or row["created_at"]),
             "image_url": image_url,

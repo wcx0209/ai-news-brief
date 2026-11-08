@@ -5,6 +5,7 @@ import concurrent.futures
 import threading
 import os
 import re
+import json
 from datetime import datetime, timezone
 from calendar import timegm
 
@@ -220,6 +221,54 @@ class RSSFetcher:
                      f"(week {week_tag}, top {top_n} by upvotes+stars, github-backed only)")
         return {'entries': entries, 'error': None, 'feed_config': feed_config}
 
+    def _fetch_bytedance_seed(self, feed_config):
+        """Build feed entries from ByteDance Seed's embedded article-list JSON."""
+        routes = ("foundation", "audio", "visual")
+        articles = {}
+        try:
+            from curl_cffi import requests as cffi_requests
+            for route in routes:
+                page_url = f"https://seed.bytedance.com/en/blog_list/{route}"
+                response = cffi_requests.get(page_url, impersonate="chrome", timeout=self.timeout)
+                response.raise_for_status()
+                page = response.text
+                marker = '"article_list":'
+                marker_index = page.find(marker)
+                if marker_index < 0:
+                    continue
+                payload, _ = json.JSONDecoder().raw_decode(page[marker_index + len(marker):])
+                for item in payload:
+                    content = item.get('ArticleSubContentEn') or item.get('ArticleSubContentZh') or {}
+                    meta = item.get('ArticleMeta') or {}
+                    title_key = content.get('TitleKey')
+                    title = content.get('Title') or content.get('ShortTitle')
+                    if not title_key or not title:
+                        continue
+                    link = f"https://seed.bytedance.com/en/blog/{title_key}"
+                    published_ms = meta.get('PublishDate') or meta.get('UpdateTime')
+                    try:
+                        published_at = datetime.fromtimestamp(
+                            float(published_ms) / 1000, tz=timezone.utc
+                        ).isoformat()
+                    except (TypeError, ValueError, OSError):
+                        published_at = datetime.now(timezone.utc).isoformat()
+                    articles[link] = {
+                        'title': title,
+                        'link': link,
+                        'summary': content.get('Abstract') or '',
+                        'source': feed_config['name'],
+                        'source_id': feed_config.get('id'),
+                        'published_at': published_at,
+                        'orig_entry': item,
+                    }
+        except Exception as exc:
+            logging.warning(f"ByteDance Seed fetch failed: {exc}")
+            return {'entries': [], 'error': str(exc), 'feed_config': feed_config}
+
+        entries = sorted(articles.values(), key=lambda entry: entry['published_at'], reverse=True)
+        logging.info(f"Fetched {len(entries)} entries from {feed_config['name']}")
+        return {'entries': entries, 'error': None, 'feed_config': feed_config}
+
     # Domains that require TLS fingerprint impersonation to bypass WAF
     DIFFICULT_RSS_DOMAINS = [
         'marktechpost.com',
@@ -245,6 +294,7 @@ class RSSFetcher:
         is_reddit = 'reddit.com' in url
         # Check if this is the Hugging Face Daily Papers JSON API
         is_hf_papers = 'huggingface.co/api/daily_papers' in url
+        is_bytedance_seed = 'seed.bytedance.com' in url
         # Check if this is a YouTube feed
         is_youtube = 'youtube.com' in url or 'youtu.be' in url
         # Check if this is a The Verge feed
@@ -257,6 +307,9 @@ class RSSFetcher:
         # Hugging Face Daily Papers come from a JSON API, not RSS
         if is_hf_papers:
             return self._fetch_hf_daily_papers(feed_config)
+
+        if is_bytedance_seed:
+            return self._fetch_bytedance_seed(feed_config)
 
         # For YouTube, try API first (more stable than RSS)
         if is_youtube:

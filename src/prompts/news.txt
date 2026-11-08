@@ -27,7 +27,8 @@
       
       **AI相关性前置过滤**：如果文章与 AI（人工智能）没有关系，则直接给出 0 分。
    5. **标签**：最多5个相关关键词（小写）
-   6. **中国合规审查**（`china_blocked`）：判断文章内容在中国大陆传播是否可能违规。涉及以下情形返回 true：政治敏感话题、煽动分裂国家、色情暴力恐怖主义、散布谣言危害国家安全、或其他明显违反中国互联网法规的内容。正常科技/AI资讯返回 false。
+   6. **内容分类**（`category`）：只选择一个最主要的类别：`models`（模型发布、能力与评测）、`company`（成熟公司动态、组织与产品）、`startups`（初创企业与创业生态）、`research`（论文、方法与基准）、`open_source`（开放权重、代码与开源工具）、`policy`（法律、监管、治理与安全）、`business`（融资、交易、芯片、算力、企业采购与财务）、`society`（就业、教育、文化、环境与公众影响）。不要输出列表，不要创造其他类别。
+   7. **中国合规审查**（`china_blocked`）：判断文章内容在中国大陆传播是否可能违规。涉及以下情形返回 true：政治敏感话题、煽动分裂国家、色情暴力恐怖主义、散布谣言危害国家安全、或其他明显违反中国互联网法规的内容。正常科技/AI资讯返回 false。
 
 # Constraints
    - **严禁虚构**：所有信息必须源自原文，不得捏造事实。
@@ -46,5 +47,6 @@ Output Format (JSON only):
     "long_summary_zh": "中文长摘要（深度解读），原文信息不足时返回空字符串...",
     "importance_score": <根据上述维度计算的0-100分数>,
     "tags": ["tag1", "tag2", "tag3"],
+    "category": "models|company|startups|research|open_source|policy|business|society",
     "china_blocked": false
 }}

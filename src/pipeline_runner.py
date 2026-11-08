@@ -363,7 +363,7 @@ def _process_single_entry(entry, sources, source_map, user_db, ai_engine, vector
     
     # Summarization
     logging.info(f"{log_prefix}Summarizing content: {title[:50]}... (category: {source_category})")
-    summary_en, summary_zh, long_summary_en, long_summary_zh, ai_importance_score, tags, title_en, title_zh, china_blocked = ai_engine.summarize_content(full_text, title=title, category=source_category)
+    summary_en, summary_zh, long_summary_en, long_summary_zh, ai_importance_score, tags, title_en, title_zh, content_category, china_blocked = ai_engine.summarize_content(full_text, title=title, category=source_category)
 
     if china_blocked:
         logging.warning(f"{log_prefix}China compliance blocked. Skipping. URL: {url}")
@@ -453,7 +453,7 @@ def _process_single_entry(entry, sources, source_map, user_db, ai_engine, vector
         'summary_zh': final_summary_zh,
         'long_summary_en': long_summary_en,
         'long_summary_zh': long_summary_zh,
-        'category': source_category or 'news',
+        'category': content_category,
         'importance_score': importance_score,
         'tags': tags,
         'content_hash': content_hash,
@@ -555,6 +555,9 @@ def _fetch_and_process_source(source: dict, rss_fetcher, sources, source_map,
             logging.warning(f"{log_prefix}RSS source failed: [{result['error']}] {url}")
             return 0
         entries = result.get('entries', [])
+        # Some maintained or generated RSS feeds are ordered oldest-first.
+        # Always curate the newest item instead of trusting provider order.
+        entries.sort(key=lambda entry: entry.get('published_at') or '', reverse=True)
         # 兼容用户手动配置 reddit.com/search.rss 的旧场景
         if 'reddit.com/search.rss' in url:
             max_posts = fetching_config.get('reddit', {}).get('max_posts_per_keyword', 10)

@@ -167,7 +167,7 @@ def fetch_github_trending(user_db, ai_engine, vector_store, fetch_stats: 'FetchS
     
     # 今日是否已采集：检查 opensource 文章中 published_at 落在今日的数量。
     # 命中复用会刷新 published_at，所以即使没有新增行也能反映"今天跑过"。
-    if user_db.get_articles_count_by_category_published_today('opensource') > 0:
+    if user_db.get_articles_count_by_category_published_today('open_source') > 0:
         logging.info("[GitHub] Already fetched GitHub Trending today, skipping")
         return 0
 
@@ -241,7 +241,7 @@ def fetch_github_trending(user_db, ai_engine, vector_store, fetch_stats: 'FetchS
 
         # 复用已有记录：URL 命中则只刷新 star/排名/时间，跳过 LLM 流程
         existing = user_db.get_article_by_url(repo_url)
-        if existing and existing.get('category') == 'opensource':
+        if existing and existing.get('category') == 'open_source':
             importance_score = max(1, 101 - rank)
             base_en = _star_prefix_re.sub('', existing.get('summary_en') or '')
             base_zh = _star_prefix_re.sub('', existing.get('summary_zh') or '')
@@ -287,7 +287,7 @@ def fetch_github_trending(user_db, ai_engine, vector_store, fetch_stats: 'FetchS
         
         try:
             summary_en, summary_zh, long_summary_en, long_summary_zh, \
-                ai_importance, tags, title_en, title_zh, china_blocked = \
+                ai_importance, tags, title_en, title_zh, _content_category, china_blocked = \
                 ai_engine.summarize_content(full_text, title=title, category='opensource')
         except Exception as e:
             logging.error(f"[GitHub] LLM summarization failed for {owner}/{repo_name}: {e}")
@@ -337,7 +337,7 @@ def fetch_github_trending(user_db, ai_engine, vector_store, fetch_stats: 'FetchS
             'summary_zh': f"⭐ {stars:,} | {summary_zh}" if summary_zh else summary_zh,
             'long_summary_en': long_summary_en,
             'long_summary_zh': long_summary_zh,
-            'category': 'opensource',
+            'category': 'open_source',
             'importance_score': importance_score,
             'tags': tags,
             'content_hash': None,
@@ -351,7 +351,7 @@ def fetch_github_trending(user_db, ai_engine, vector_store, fetch_stats: 'FetchS
                 summary=summary_en or summary_zh,
                 tags=tags,
                 source='GitHub Trending',
-                category='opensource'
+                category='open_source'
             )
             try:
                 from knowledge_ingest import ingest_async
@@ -372,7 +372,7 @@ def fetch_github_trending(user_db, ai_engine, vector_store, fetch_stats: 'FetchS
     
     # === Step 3: 清理掉榜项目（不在本次榜单中的旧 opensource 文章） ===
     current_urls = [r['url'] for r in repos]
-    stale_ids = user_db.delete_articles_by_category_excluding_urls('opensource', current_urls)
+    stale_ids = user_db.delete_articles_by_category_excluding_urls('open_source', current_urls)
     if stale_ids:
         vector_store.delete_articles(stale_ids)
         logging.info(f"[GitHub] Cleared {len(stale_ids)} stale opensource articles + vectors")

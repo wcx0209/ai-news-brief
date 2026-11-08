@@ -5,6 +5,20 @@ import logging
 import threading
 import time
 
+TOPIC_CATEGORIES = {
+    'models', 'company', 'startups', 'research',
+    'open_source', 'policy', 'business', 'society'
+}
+
+
+def normalize_topic_category(value, source_category=None):
+    category = str(value or '').strip().lower().replace('-', '_').replace(' ', '_')
+    if category in TOPIC_CATEGORIES:
+        return category
+    if source_category == 'opensource':
+        return 'open_source'
+    return 'company'
+
 class AIEngine:
     
     def __init__(self, config):
@@ -145,7 +159,7 @@ Reminder: You MUST output valid JSON in the exact format specified in your instr
             )
 
         if last_data is None:
-            return '', '', '', '', 0, [], '', '', False
+            return '', '', '', '', 0, [], '', '', normalize_topic_category(None, category), False
 
         tags = last_data.get('tags', [])
         if len(tags) > 5:
@@ -159,6 +173,7 @@ Reminder: You MUST output valid JSON in the exact format specified in your instr
             tags,
             last_data.get('title_en', ''),
             last_data.get('title_zh', ''),
+            normalize_topic_category(last_data.get('category'), category),
             last_data.get('china_blocked', False)
         )
 
