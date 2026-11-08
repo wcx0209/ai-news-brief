@@ -1,10 +1,62 @@
 {
   "brand": "Polyemergence",
-  "generated_at": "2026-11-08T06:28:46.467279Z",
-  "count": 9,
+  "generated_at": "2026-11-08T06:47:42.311912Z",
+  "count": 12,
   "items": [
     {
-      "id": "2f469ba5-761e-47ec-afbd-475930664c53",
+      "id": "e1c3cca5-bd8a-44fd-8e6f-7727f3b0f4ff",
+      "url": "https://github.com/thedotmack/claude-mem",
+      "source": "GitHub Trending",
+      "category": "open_source",
+      "importance": 100,
+      "published_at": "2026-11-08T06:43:56.720515Z",
+      "image_url": "https://repository-images.githubusercontent.com/1048065319/62ccff98-4c97-4bab-97b7-ed6e1995cfba",
+      "tags": [
+        "claude-code",
+        "ai-agent",
+        "typescript",
+        "mcp",
+        "developer-tools"
+      ],
+      "en": {
+        "title": "thedotmack/claude-mem: Persistent Context Across Sessions for Every Agent",
+        "summary": "⭐ 114,600 | Your AI coding agent forgets everything between sessions, forcing you to repeat instructions. Claude-Mem solves this by running a **background observer** that takes notes on what your agent does, compresses it using AI, and injects **relevant context** back into future sessions. It works seamlessly with Claude Code, Cursor, and many other popular agents.",
+        "long_summary": "## Detailed Features\nClaude-Mem is designed to solve the common frustration of AI agents forgetting past interactions. It automatically captures every tool call, file read, and edit during a session. A secondary observer agent processes this activity into **concise observations**, ensuring that your next session picks up right where you left off without burning excessive tokens.\n\n## System Architecture & Search\nThe system relies on a token-efficient three-step workflow utilizing Model Context Protocol (MCP) tools: **search**, timeline, and get_observations. It stores structured sessions and observations in a local SQLite database, while leveraging Chroma for semantic vector search. A local worker service managed by Bun coordinates the background hooks and powers the web viewer interface.\n\n## Installation & Usage\nGetting started is simple. You can install the tool globally and set up your preferred agents by running **npx claude-mem** in your terminal. Once installed, it runs completely in the background without requiring manual intervention, keeping your project history structured and readily available across different development sessions."
+      },
+      "zh": {
+        "title": "thedotmack/claude-mem：为每个 AI 代理提供跨会话的持久化上下文记忆",
+        "summary": "⭐ 114,600 | 你的 AI 编程助手在每次新会话开始时都会“失忆”，导致你不得不反复重复指令。Claude-Mem 通过在后台运行一个**观察者代理**来记录它干了啥、用 AI 压缩重点，并在未来的会话中**自动注入**相关的上下文。它能完美兼容 Claude Code、Cursor 等各种主流编程助手。",
+        "long_summary": "## 详细功能介绍\nClaude-Mem 专门用来解决 AI 助手在会话之间“健忘”的痛点。它能在会话期间自动捕获每一个工具调用、文件读取和代码修改。后台的观察者代理会将这些活动处理成**精简的观察记录**，确保你的下一个会话能从上次中断的地方无缝衔接，同时不会消耗过多的 Token。\n\n## 系统架构与搜索机制\n该系统采用了一套基于 MCP（模型上下文协议）的高效三步工作流：**搜索**、时间线和获取详细观测。它将结构化的会话和观测数据存储在本地的 SQLite 数据库中，同时借助 Chroma 实现语义向量搜索。一个由 Bun 管理的本地后台服务负责协调钩子并驱动网页端查看器。\n\n## 安装与使用说明\n上手使用非常简单。你只需在终端中运行 **npx claude-mem** 命令即可完成安装并配置你常用的 AI 助手。安装完成后，它会在后台全自动运行，无需人工干预，让你的项目开发历史井井有条并在不同会话间持续传承。"
+      }
+    },
+    {
+      "id": "66b751d0-e9fe-40cd-a0ac-d7d28f58fb82",
+      "url": "https://github.com/max-sixty/worktrunk",
+      "source": "GitHub Trending",
+      "category": "open_source",
+      "importance": 99,
+      "published_at": "2026-11-08T06:44:33.135855Z",
+      "image_url": "https://repository-images.githubusercontent.com/1078528927/6196f2ac-248f-42f5-abb5-d18768111b3b",
+      "tags": [
+        "git",
+        "ai-agents",
+        "cli",
+        "developer-tools",
+        "rust"
+      ],
+      "en": {
+        "title": "Worktrunk: A Git Worktree CLI Built for Parallel AI Agents",
+        "summary": "⭐ 11,982 | Worktrunk is a command-line tool that makes **Git worktrees** as simple as regular branches. It solves the annoying complexity of managing multiple directories, letting you effortlessly run **parallel AI agents** like Claude Code at the same time without them stepping on each other's toes.",
+        "long_summary": "## What is Worktrunk?\nWorktrunk is a CLI tool designed to streamline **Git worktree** management, especially tailored for workflows involving multiple parallel AI agents. Native Git worktrees are powerful because they give each task its own working directory, but the setup commands are notoriously clunky. Worktrunk cuts through this friction by mapping worktrees directly to **branch names** and automating the boring stuff.\n\n## Core Commands and Features\nWith just a few intuitive commands, Worktrunk turns a multi-step chore into a breeze. You can use `wt switch` to create and jump into a worktree instantly, `wt list` to get a clean status overview of all ongoing tasks, and `wt merge` or `wt remove` to clean up afterwards. Beyond the basics, it offers killer features like **LLM commit messages**, automated hooks, interactive pickers, and shared build caches that save massive disk space and time.\n\n## Installation and Getting Started\nInstalling Worktrunk is super straightforward. You can grab it via **Homebrew** on macOS and Linux using `brew install worktrunk`, or via Cargo, Winget, and Arch Linux package managers. Once installed, just run `wt config shell install` to enable directory-switching magic, and you are ready to spin up multiple parallel AI agents with commands like `wt switch -x claude -c feature-a`."
+      },
+      "zh": {
+        "title": "Worktrunk：专为并行 AI 助手设计的 Git 工作区管理神器",
+        "summary": "⭐ 11,982 | Worktrunk 是一个命令行小工具，它能像管理普通分支一样轻松管理 **Git 工作区**。它彻底解决了多目录操作繁琐的痛点，让你能同时爽快地运行多个 **并行 AI 助手**，再也不用担心它们互相打架了。",
+        "long_summary": "## 这是个什么工具？\nWorktrunk 是一个专门用来简化 **Git 工作区** 管理的命令行工具，特别适合需要同时开多个 AI 助手干活的开发场景。Git 原生的工作区功能虽然好用，能让每个任务拥有独立的目录，但操作命令实在太反人类了。Worktrunk 直接把工作区和 **分支名称** 绑定在了一起，帮你省去了各种繁琐的手动配置。\n\n## 核心功能与亮点\n通过几个简单的命令，Worktrunk 就能把原本复杂的操作变得像喝水一样自然。你可以用 `wt switch` 秒建并切换工作区，用 `wt list` 一目了然地查看所有任务的当前状态，或者用 `wt merge` 和 `wt remove` 一键合并与清理。除了基础功能，它还支持 **AI 自动提交信息**、工作流钩子、交互式选择器，甚至能共享构建缓存，帮你省下大量宝贵的硬盘空间。\n\n## 如何安装与快速上手\n安装非常简单，Mac 和 Linux 用户直接用 **Homebrew** 执行 `brew install worktrunk` 就能搞定，同时也支持 Cargo、Winget 等多种安装方式。装好后记得运行一下配置命令，接着你就可以用一行命令同时拉起好几个 AI 助手帮你并行写代码啦！"
+      }
+    },
+    {
+      "id": "d8bf4201-baae-4201-8679-1eaf4c682c16",
       "url": "https://www.lemonde.fr/en/opinion/article/2026/11/07/the-ai-bubble-faces-reality_6774319_23.html",
       "source": "Le Monde AI",
       "category": "business",
@@ -12,25 +64,51 @@
       "published_at": "2026-11-07T11:45:04Z",
       "image_url": "https://img.lemde.fr/2026/11/05/0/0/3479/2319/1440/960/60/0/56f4340_ftp-1-nd2bqzcmvwg8-2026-11-05t204726z-760504397-rc2shoag649g-rtrmadp-3-usa-stocks.JPG",
       "tags": [
-        "stock market",
         "ai bubble",
-        "economy",
+        "nasdaq",
+        "wall street",
         "regulation",
-        "wall street"
+        "data centers"
       ],
       "en": {
-        "title": "Wall Street suffers historic AI-driven tech stock crash",
-        "summary": "The Nasdaq suffered its worst session in months, wiping out over **$2.5 trillion** in market value as fears over an **AI speculative bubble** resurfaced. This historic drop was triggered by political shifts and growing public backlash against the **massive resource consumption** of AI data centers, reminding investors that the technology must face physical constraints.",
-        "long_summary": "## Market Crash and Political Triggers\nOn Thursday, the Nasdaq plunged by 5.5%, marking its worst session since April 2025 and wiping out over $2.5 trillion in market value. This sudden correction followed the Democratic Party's midterm election victory, which heightened fears of **tighter regulation** over AI development and stricter local opposition to data centers.\n\n## Physical and Financial Realities\nThe explosive growth of AI has been fueled by stratospheric valuations and massive debt-driven funding. However, the technology faces mounting hurdles, including the **enormous consumption** of electricity and water by data centers, which have sparked local pushback and highlighted questions about long-term profitability.\n\n## Economic Implications\nAI has recently become a primary engine of U.S. economic growth, supported by heavy infrastructure investments and stock market wealth effects. A lasting loss of confidence could trigger a **vicious cycle**, turning AI from an economic driver into a major vulnerability for the broader economy."
+        "title": "Wall Street suffers historic AI-driven tech plunge",
+        "summary": "The Nasdaq suffered its worst session in months, **wiping out** over $2.5 trillion in market value as fears grew over an **AI bubble**. This massive drop was triggered by political shifts and mounting concerns over the **huge resource consumption** of data centers, reminding investors that AI growth faces real-world physical and regulatory limits.",
+        "long_summary": "## Market Crash and Political Triggers\nOn Thursday, the Nasdaq plummeted by 5.5 percent, marking its largest single-day point loss in history. This **historic drop** was catalyzed by the Democratic Party's victory in the midterm elections, which heightened fears of **tighter regulation** over artificial intelligence and data centers due to their massive electricity and water consumption.\n\n## The Reality of Speculation\nBefore this correction, AI company valuations soared based on blind optimism rather than rational growth assessments. Investors poured massive amounts of borrowed money into computing infrastructure, ignoring mounting obstacles and **uncertain profitability**. \n\n## Broader Economic Risks\nBecause AI has recently become a major engine of the US economy, driving both corporate investments and consumer spending, a lasting loss of market confidence could trigger a **vicious cycle**. The correction is a much-needed reality check, proving that AI's future depends not just on billions of dollars, but on public acceptance and physical constraints."
       },
       "zh": {
-        "title": "华尔街科技股遭遇历史性暴跌，AI泡沫面临现实考验",
-        "summary": "纳斯达克指数遭遇数月来最大单日跌幅，蒸发超过 **2.5万亿美元** 市值，引发市场对 **人工智能投机泡沫** 破裂的担忧。这场暴跌由政治变局和公众对AI数据中心 **巨量资源消耗** 的强烈反对共同触发，给盲目狂热的投资者敲响了警钟。",
-        "long_summary": "## 市场崩盘与政治导火索\n美东时间周四，纳斯达克指数暴跌5.5%，创下2025年4月以来最惨淡的一天，单日蒸发市值超过2.5万亿美元。民主党在中期选举中的大胜成为了导火索，让市场意识到未来可能会面临更严格的 **人工智能监管**，各地民众对数据中心的抵触情绪也日益高涨。\n\n## 现实约束与资金狂热\n此前，AI行业的估值全靠对未来的疯狂押注和巨额借贷支撑。但随着发展深入，数据中心带来的 **惊人水电消耗** 引发了当地居民的强烈反对，加上投资回报率不明朗，高昂的现实成本正逐渐浮出水面，泡沫开始显现脆弱性。\n\n## 对宏观经济的影响\n在短短几个月内，AI已经成为美国经济增长的重要支柱。如果资本信心持续崩溃，引发资金撤退和项目延期，AI很可能会从经济发动机变成美国经济的 **阿喀琉斯之踵**，带来难以估量的连锁反应。"
+        "title": "华尔街遭遇AI泡沫破裂带来的历史性暴跌",
+        "summary": "纳斯达克指数创下了几个月来最惨的一天，一天之内**蒸发市值**超过2.5万亿美元，引发了市场对**AI泡沫**要破裂的强烈担忧。这次大跌是由政治变动以及公众对数据中心**巨大资源消耗**的反对所触发的，给狂热的投资者敲响了警钟，提醒大家AI发展正面临现实中的物理和监管极限。",
+        "long_summary": "## 股市暴跌与政治导火索\n周四纳斯达克指数暴跌5.5%，创下了历史上单日点数跌幅之最。这次**历史性暴跌**的导火索是中期选举结果，它加剧了市场对人工智能面临**更严监管**的担忧。由于数据中心消耗大量的水和电力，地方反对声音日益高涨，让政策收紧的风险变得更加现实。\n\n## 投机狂热与现实差距\n在此次修正之前，AI公司的估值完全建立在盲目乐观而非理性的成长评估之上。投资者借来巨额资金疯狂涌入计算基础设施，却忽视了不断增加的建设阻力和**盈利的不确定性**。\n\n## 更广泛的经济风险\n由于AI最近已经成为美国经济的主要引擎之一，不仅推动了企业投资，还刺激了消费支出，因此市场信心的长期丧失可能会引发**恶性循环**。这次市场修正是一次及时的现实检验，证明了AI的未来不仅取决于砸下去的几十亿资金，更取决于公众的接受度和物理约束。"
       }
     },
     {
-      "id": "fd62e883-9a7e-4242-b8e9-e1c376f3b8bb",
+      "id": "ecb738bc-cbe5-4eb8-a88e-db67bd51bae1",
+      "url": "https://www.qbitai.com/2026/11/508264.html",
+      "source": "QbitAI 量子位",
+      "category": "company",
+      "importance": 88,
+      "published_at": "2026-11-07T05:01:17Z",
+      "image_url": "https://www.qbitai.com/wp-content/uploads/imgs/qbitai-logo-1.png",
+      "tags": [
+        "agent",
+        "deepseek",
+        "silicon valley",
+        "super-agent",
+        "ai harness"
+      ],
+      "en": {
+        "title": "Silicon Valley Chinese Team Beats DeepSeek to Launch Next-Gen Agent Harness",
+        "summary": "As DeepSeek proposes the concept of a **Super-agent**, a Silicon Valley Chinese team named AFK AI has already put a similar architecture into practice with their product **Comma**. By utilizing a single router and multiple independent workers, the system manages tasks across platforms, bypasses human attention bottlenecks, and brings long-term memory to AI agents.",
+        "long_summary": "The article explores the growing industry consensus around next-generation Agent Harnesses, specifically highlighting the convergence between DeepSeek's new Super-agent concept and the architecture built by Silicon Valley startup AFK AI in their product, Comma.\n\nTraditionally, humans struggle to manage multiple AI chat sessions simultaneously due to a hard limit on personal attention. To solve this, both teams propose a 'single router with multiple workers' architecture. In this setup, a permanent main session handles overall coordination, while isolated sub-agents work in the background across various platforms like WeChat, Linear, and GitHub.\n\nFurthermore, Comma tackles the challenge of agent memory and persistence. By storing long-term states outside the model context and continuously learning from user feedback to update smaller models, the system operates 24/7. This transition moves human interaction from micromanaging execution processes to simply overseeing final results."
+      },
+      "zh": {
+        "title": "抢跑DeepSeek！硅谷华人把下一代Agent Harness造出来了",
+        "summary": "在大洋彼岸热议DeepSeek提出的超级智能体概念之际，一家硅谷华人团队早在半年前就将类似的架构落地到了产品**Comma**中。该系统通过主脑统筹和多任务并行执行，成功打破了人类注意力瓶颈，让AI能够跨平台**自主处理海量任务**。",
+        "long_summary": "这篇文章聚焦于下一代AI智能体调度架构的演进，探讨了DeepSeek提出的超级智能体理念与硅谷华人团队AFK AI旗下产品Comma之间的不谋而合。\n\n当前，人类同时跟进多个AI会话时会面临注意力上限的痛点。为了解决这一问题，行业顶尖玩家不约而同地指向了**主脑加多执行者**的底层架构。这意味着用户只需面对一个长期存在的主对话，由系统在后台调度多个独立的子智能体跨平台并行工作，无论是处理游戏开发、整理周报还是对接项目管理工具，都能一手包办。\n\n在解决任务并发的同时，该系统还攻克了智能体长期记忆与全天候值守的难题。通过将状态保存在模型上下文之外，并利用人类反馈不断迭代专属小模型，AI得以在实际使用中**越用越聪明**。这种人机交互方式的转变，标志着人类终于从繁琐的盯盘过程中抽身，真正转向了只管结果的顶层决策。"
+      }
+    },
+    {
+      "id": "46de3c4d-f362-41ca-be79-4b0bfb3d718f",
       "url": "https://atmarkit.itmedia.co.jp/ait/articles/2611/08/news001.html",
       "source": "ITmedia AI+",
       "category": "company",
@@ -46,17 +124,42 @@
       ],
       "en": {
         "title": "GitHub, Google, and Siemens Share 15 Design Patterns for AI Agent Systems",
-        "summary": "GitHub, Google, and Siemens have pulled together 15 **design patterns** for building multi-agent AI systems, showing how to make different AI tools **work together** reliably instead of relying on just one.",
-        "long_summary": "As AI agents move beyond simple single-task assistants, coordinating multiple agents effectively has become a major challenge. GitHub, Google, and Siemens have recently published 15 core design patterns drawn from real-world engineering experience. GitHub focuses on schema-driven execution and model context protocols to keep agent outputs predictable. Google highlights patterns like sub-pipelines and reviewer loops, where tasks are broken down and checked iteratively by separate agents. Meanwhile, Siemens tackles enterprise-scale challenges, such as using Knowledge Fabric to integrate fragmented codebases and documents. Together, these patterns offer a comprehensive playbook for building reliable, production-ready multi-agent systems."
+        "summary": "GitHub, Google, and Siemens have pulled together **15 practical design patterns** for building multi-agent AI systems. These patterns help developers manage complex tasks, ensure reliable data flow, and **prevent AI agents from making mistakes** in real-world applications.",
+        "long_summary": "As AI agents move beyond simple chat bots into complex multi-agent systems, developers face massive challenges in task coordination and reliability. GitHub, Google, and Siemens have released detailed insights and architectural patterns to tackle these issues.\n\n## GitHub's Approach to Structured Control\nGitHub focuses on strict schemas and structured data flows. By enforcing strict JSON outputs, contract validation, and leveraging the Model Context Protocol (MCP), GitHub ensures that different agents can pass information smoothly without misinterpreting instructions.\n\n## Google and Siemens' Insights on Error Recovery\nGoogle and Siemens highlight patterns for handling failures and large-scale data integration. Google's 'Knowledge Fabric' and Siemens' code-generation projects demonstrate how breaking big jobs into smaller steps, maintaining human-in-the-loop validation, and implementing automatic retries are essential for robust agent operations."
       },
       "zh": {
-        "title": "GitHub、谷歌与西门子联合公开：AI多Agent系统的15个实用设计模式",
-        "summary": "GitHub、谷歌和西门子联合梳理出了15个搭建AI多Agent系统的**设计模式**，教你如何让多个AI像团队一样**高效配合**，解决单兵作战的各种难题。",
-        "long_summary": "随着AI技术从单兵作战走向团队协作，怎么让多个AI Agent（智能体）配合得更好成了大难题。最近，GitHub、谷歌和西门子三家巨头把各自在工程实践中的宝贵经验打包，总结出了15个核心的**设计模式**。GitHub主要分享了如何通过规范的数据格式和控制协议，让AI干活时更听话、更少出乱子；谷歌则重点介绍了任务拆解、多步流水线以及互相检查的**工作流设计**，防止AI犯迷糊；西门子则结合工业实际，展示了如何把零散的代码和文档组织起来，让AI在庞大的企业知识库中精准找到答案。这套方法论为开发者打造靠谱的AI协作系统提供了极具价值的参考。"
+        "title": "GitHub、Google与西门子联合整理：AI智能体系统的15个设计模式",
+        "summary": "GitHub、Google和西门子联合整理出了**15个实用设计模式**，专门用来教大家怎么设计多个AI协同工作的系统。这些套路能帮开发者搞定复杂任务、保证数据传输出错少，还能**防止AI在实际干活时频频翻车**。",
+        "long_summary": "随着AI智能体从简单的聊天工具变成复杂的协同系统，怎么让多个AI有条不紊地一起干活成了大难题。GitHub、Google和西门子最近公开了它们在实践中总结出的宝贵经验，整理出了一套系统化的设计方案。\n\n## GitHub的规范化控制与数据流\nGitHub主要关注怎么用**严格的格式规范**来管好AI。通过强制要求JSON格式输出、使用契约验证以及借助MCP（Model Context Protocol）工具，GitHub确保了多个AI在传话和交接任务时不会出现误解，大大减少了出错的可能。\n\n## Google与西门子的容错机制与大厂经验\nGoogle和西门子则把重点放在了怎么应对错误和处理复杂的工程项目上。比如西门子在处理庞大的遗留代码时，通过把大任务切成小块、在关键节点加入**人工审查**以及设置自动重试机制，让AI在实际干活时变得更加靠谱和安全。"
       }
     },
     {
-      "id": "c1e79dbe-d30e-4b55-870d-8e84d4a18b6a",
+      "id": "8bab775b-e93b-441a-abb5-5f69c151a70d",
+      "url": "http://www.geekpark.net/news/373650",
+      "source": "GeekPark 极客公园",
+      "category": "startups",
+      "importance": 85,
+      "published_at": "2026-11-08T02:40:20Z",
+      "image_url": "https://imgslim.geekpark.net/uploads/image/file/50/80/50805abde885298a4a723780c0bf5adb.jpg",
+      "tags": [
+        "personal agent",
+        "ai startups",
+        "ai products",
+        "business strategy"
+      ],
+      "en": {
+        "title": "Can startup founders still find a way out in Personal Agent?",
+        "summary": "Personal Agent has sparked a debate on whether it's just a game for tech giants, leaving no room for startups. However, its true value lies in growing **beyond the base model**, allowing products to build lasting trust and deep user understanding rather than just reselling AI tokens.",
+        "long_summary": "## The Shift Beyond Base Models\nWhile tech giants leverage their massive capital, compute, and ecosystems to subsidize Personal Agents and harvest training data, startups face severe financial and technical bottlenecks, such as high cloud resource costs and unstable execution environments. However, the future of Personal AI may not be a winner-take-all market. Because human preferences are diverse and users are reluctant to hand over all personal data to a single corporation, Personal AI resembles a **consumer brand** rather than a monopoly platform.\n\n## Finding a Viable Path\nStartups can carve out a survival path by avoiding the generic trap and focusing on specific, high-value vertical scenarios. By turning tools into trusted partners, founders can build sustainable businesses if they carefully balance their resources and execution strategies instead of blindly burning cash for user scale."
+      },
+      "zh": {
+        "title": "创业者做 Personal Agent，有没有一线生机？",
+        "summary": "Personal Agent 把 AI 创业带到了新阶段，让很多人觉得这是大厂的游戏，创业者没戏。但它的核心价值在于能**长在基模外**，通过深度理解用户和建立长期信任，让创业公司有机会沉淀出不依赖大模型的自身资产。",
+        "long_summary": "## 巨头的优势与创业者的困境\n科技巨头拥有充沛的算力、流量和资金，可以把 Personal Agent 视为战略投入，通过补贴来收集宝贵的长任务执行轨迹。相比之下，创业公司由于需要向外购买模型和云资源，常常面临财务模型崩溃和基础设施不稳定的压力，甚至容易沦为模型厂商的打工仔。\n\n## 赢家不通吃的垂直生机\nPersonal AI 的未来大概率不是赢家通吃。因为人的偏好各不相同，用户也不太可能把所有隐私全盘托付给单一巨头。创业者完全可以避开大而全的通用战场，选择在具体的垂直场景里切入，从一个好用的工具逐步走向用户的**思考伙伴**，在精细化运营中找到自己的生存空间。"
+      }
+    },
+    {
+      "id": "a97454e6-1d29-4913-8412-9e2aa16bb933",
       "url": "https://aws.amazon.com/blogs/machine-learning/sagemaker-inference-now-supports-multi-instance-gpu-to-maximize-gpu-utilization-for-model-endpoints/",
       "source": "AWS Machine Learning",
       "category": "company",
@@ -65,24 +168,50 @@
       "image_url": "https://d2908q01vomqb2.cloudfront.net/f1f836cb4ea6efb2a0b1b99f41ad8b103eff4b59/2026/11/05/ML-22216-featured-image.png",
       "tags": [
         "sagemaker",
-        "aws",
         "gpu",
         "nvidia",
-        "cost-optimization"
+        "ai inference",
+        "aws"
       ],
       "en": {
         "title": "Amazon SageMaker now supports Multi-Instance GPU to cut AI costs",
-        "summary": "Amazon SageMaker Inference now supports **NVIDIA Multi-Instance GPU (MIG)**, allowing users to split a single physical GPU into **isolated partitions**. This update helps businesses run multiple models on one GPU without performance interference, maximizing hardware utilization and **cutting AI deployment costs**.",
-        "long_summary": "## Background and Limitations\nDeploying AI models to cloud GPUs traditionally required requesting at least one whole accelerator, leading to wasted resources. Smaller models couldn't fully utilize a massive GPU, forcing users to either waste money on unused capacity or struggle with complex **self-managed Kubernetes** clusters to achieve hardware partitioning.\n\n## How It Works\nAmazon SageMaker now integrates NVIDIA MIG natively, removing the need for underlying platform management. Users can define a **partition layout** directly in their endpoint configuration and assign models to specific slices using inference components. This provides **hardware-level isolation**, ensuring predictable latency and strict fault containment.\n\n## Performance and Value\nBenchmarks comparing an H100 GPU partition against a whole A100 GPU showed that a newer GPU slice can deliver **higher throughput** and lower latency at a significantly lower cost for high-concurrency workloads. This gives businesses more flexibility to right-size their AI infrastructure."
+        "summary": "Amazon SageMaker Inference now supports NVIDIA Multi-Instance GPU (MIG) partitioning, allowing users to divide a single physical GPU into independent slices. This helps **lower inference costs** and **maximize GPU utilization** by running multiple models on one device with hardware-level isolation.",
+        "long_summary": "## Background and Limitations\nPreviously, when deploying AI models to GPU endpoints on Amazon SageMaker, the smallest unit you could request was a whole accelerator. This forced companies into a dilemma: smaller models wasted massive amounts of unused GPU memory and compute, while older full GPUs struggled with growing workloads. Many enterprises had to resort to self-managed Kubernetes stacks just to get hardware partitioning.\n\n## How MIG Works\nAmazon SageMaker now natively integrates NVIDIA MIG, letting users split a single physical GPU into up to seven isolated instances. Each partition gets dedicated compute units, memory, and cache with strict **hardware-level isolation**. This ensures predictable latency, prevents one crashing model from taking down others, and eliminates cold starts since models stay permanently loaded.\n\n## Performance and Cost Benefits\nTesting showed that a single partition on a newer H100 GPU delivered significantly better performance and lower latency than a whole older A100 GPU while being **18 to 34 percent cheaper** per million output tokens for high-concurrency and long-context tasks. SageMaker manages the configuration and scaling automatically, removing the heavy platform engineering work."
       },
       "zh": {
-        "title": "亚马逊 SageMaker 现已支持 GPU 切片，帮你省下大笔 AI 部署费",
-        "summary": "亚马逊 SageMaker 推理服务现在支持**英伟达 GPU 切片技术**，能把一块完整的显卡拆成**几个独立小块**。这个更新让企业能在单张显卡上同时跑多个 AI 模型，不仅互不干扰，还能大幅**压低云端部署成本**。",
-        "long_summary": "## 背景与痛点\n过去在云端部署 AI 模型时，最少只能租用一整块显卡。对于许多吃不了这么多显存的中小型模型来说，这就造成了极大的浪费。用户要么为用不到的算力买单，要么只能自己去折腾复杂的**集群运维**来做显卡切片。\n\n## 运作方式\n亚马逊 SageMaker 现在直接内置了英伟达的 GPU 切片功能，省去了用户自己搭建平台的麻烦。你只需要在配置里设定好**切片方案**，就能把不同的模型安排到不同的显卡小格子里。这种切片是在硬件层面隔离开的，既保证了**运行速度稳定**，又不会发生故障互相波及的情况。\n\n## 性能与价值\n实测表明，用一块更先进显卡切出来的小格子去跑模型，不仅**吞吐量更高**，而且在处理高并发任务时比老显卡更划算。这为企业精打细算、按需分配算力提供了极大的便利。"
+        "title": "亚马逊 SageMaker 支持多实例 GPU，帮企业省钱提效",
+        "summary": "亚马逊 SageMaker 现在支持英伟达的多实例 GPU 分割技术，允许把一块完整的显卡拆成多个独立的小份。这项功能解决了过去小模型只能独占整张卡造成的资源浪费，能帮企业**大幅降低成本**并**提高显卡利用率**。",
+        "long_summary": "## 背景与痛点\n以往在亚马逊 SageMaker 上部署 AI 模型时，最少只能申请一整张显卡。这导致很多中小型模型根本用不完所有的算力和显存，白白浪费了资源；而如果遇到并发需求变高，老旧的整卡又往往不够用。过去企业如果想把一张显卡拆成多份来用，只能自己去搭建和维护复杂的 Kubernetes 集群，非常折腾。\n\n## 技术原理与优势\n现在 SageMaker 直接内置了英伟达的多实例 GPU 技术，能把一块物理显卡安全地拆成最多七个独立的小卡。每个小卡都有自己专属的算力和显存，做到了**硬件级别的隔离**。这样一来，不仅不同模型之间不会互相干扰、崩了一个不影响另一个，而且模型可以一直保持加载状态，彻底消除了冷启动的延迟。\n\n## 实际效果与成本\n测试表明，用更新、更强显卡的一个切片去跑模型，不仅在速度和响应时间上全面超越了老旧的整张显卡，而且在处理大并发和长文本时，每百万输出 tokens 的**成本能降低 18% 到 34%**。最重要的是，这一切都由 SageMaker 自动搞定，用户再也不用自己去维护底层平台了。"
       }
     },
     {
-      "id": "26a82916-362b-4f47-8fa9-7083d07af4cc",
+      "id": "63cd654d-9fe6-4d98-b0e7-139324be19c4",
+      "url": "https://huggingface.co/blog/allenai/toyblocks",
+      "source": "Hugging Face",
+      "category": "research",
+      "importance": 83,
+      "published_at": "2026-11-06T14:00:48Z",
+      "image_url": "https://cdn-uploads.huggingface.co/production/uploads/638e39b249de7ae552d977b5/OAJMu2jr7i5jVAbmsKdZW.jpeg",
+      "tags": [
+        "robotics",
+        "simulation",
+        "reinforcement learning",
+        "multimodal models",
+        "open source"
+      ],
+      "en": {
+        "title": "ToyBlocks: A controlled world for robot learning and evaluation",
+        "summary": "Researchers have introduced **ToyBlocks**, an open simulation framework designed to help robots learn and practice manipulation tasks like stacking and sorting. By using a controlled virtual environment with realistic physics, the system can automatically generate massive amounts of training data without human remote control. This allows scientists to easily test how different AI models handle spatial reasoning, plan multi-step actions, and eventually transfer those skills to **real-world robots**.",
+        "long_summary": "## 背景与动机\nRobots are rapidly learning physical tasks, but traditional training often relies on narrow demonstrations that make it hard to trace why a model fails. To solve this, researchers built ToyBlocks as the first **FoundationWorld**—a controlled, simulated environment aimed at studying robotics in a simplified setting where conditions can be easily tweaked and repeated.\n\n## 核心细节与测试\nToyBlocks uses Nvidia's Isaac Lab and reinforcement learning to automatically generate skills like pushing and flipping blocks. It scales data generation by running hundreds of plans in parallel on a single GPU. Researchers tested various AI setups, including low-level action models (VLAs), high-level vision-language models like Molmo 2, and agentic systems powered by Claude, evaluating their ability to generalize to unseen spatial layouts and **spell words with blocks**.\n\n## 实际影响与未来\nCrucially, policies trained entirely in ToyBlocks were deployed zero-shot on a physical Franka robot, showing similar success rates between simulation and reality. The framework is now **fully open-sourced**, providing massive datasets and simulation assets to help the global research community advance robot learning."
+      },
+      "zh": {
+        "title": "ToyBlocks：一个专为机器人学习与评估打造的虚拟训练场",
+        "summary": "研究人员推出了名为 **ToyBlocks** 的开源仿真框架，专门用来帮助机器人学习抓取、堆叠和分类等日常操作。通过建立一个物理规则逼真的虚拟环境，该系统可以自动生成海量训练数据，省去了人工远程遥控的麻烦。这让科学家们能够轻松测试不同的AI模型如何进行空间推理、规划长步骤动作，并最终把这些技能顺利应用到 **真实世界的机器人** 身上。",
+        "long_summary": "## 背景与动机\n机器人正在快速学习各种物理操作，但传统的训练方式往往比较局限，很难弄清楚模型为什么会失败。为了解决这个问题，研究人员打造了 ToyBlocks，作为首个“基础世界”（FoundationWorld）——这是一个受控的模拟环境，能让科学家在简化且可控的条件下研究机器人行为，随时复现和调整测试条件。\n\n## 核心细节与测试\nToyBlocks 利用英伟达的 Isaac Lab 和强化学习技术，自动生成推动、翻转方块等基础技能，并通过单张显卡并行运行数百个任务来高效产生数据。研究团队利用该框架测试了多种AI架构，包括底层动作模型、像 Molmo 2 这样的大型视觉语言模型，以及由 Claude 驱动的智能体系统，重点评估了它们在空间泛化、多步骤规划以及**拼字任务**上的表现。\n<div></div>\n## 实际影响与未来\n最重要的是，完全在 ToyBlocks 仿真中训练出来的策略被直接部署到了真实的机械臂上，并在虚拟与现实中展现出高度一致的成功率。目前，该框架已经**完全开源**，并附带了海量的数据集和仿真资产，旨在帮助全球研究人员推动通用机器人技术的进步。"
+      }
+    },
+    {
+      "id": "553ab7ba-b985-4861-a3a6-30c4e34f2777",
       "url": "https://blogs.nvidia.com/blog/telco-open-source-tools-research-6g-networks/",
       "source": "NVIDIA Generative AI",
       "category": "company",
@@ -90,25 +219,25 @@
       "published_at": "2026-11-06T16:00:35Z",
       "image_url": "https://blogs.nvidia.com/wp-content/uploads/2026/11/Screenshot-2026-11-05-at-8.30.25-PM-scaled.png",
       "tags": [
-        "6g",
         "nvidia",
-        "artificial intelligence",
-        "wireless networks",
-        "open source"
+        "6g",
+        "ai",
+        "open source",
+        "wireless networks"
       ],
       "en": {
-        "title": "NVIDIA Open Source Tools Help Researchers Build 6G Networks",
-        "summary": "NVIDIA's open source wireless tools, Aerial and Sionna, have seen rapid growth over the past year, surpassing **1 million downloads** globally. Researchers are using these platforms to develop AI-native 6G networks that help robots **react faster**, improve signal reception, save power, and accelerate network simulations.",
-        "long_summary": "Over the past year, adoption of NVIDIA's AI Aerial and Sionna software has surged 10x, with over **8,000 academic institutions** using the platforms. Researchers worldwide are leveraging these open source tools to build AI-native 6G networks designed to handle connectivity, computing, and sensing simultaneously.\n\nAt King’s College London, researchers connected a robot arm to an NVIDIA Jetson running Sionna, cutting task completion time by up to **52.6%** through goal-oriented semantic communications. Meanwhile, SoftBank and ETH Zurich demonstrated that AI-powered receivers can significantly improve signal recovery under heavy interference. Additionally, the University of Leeds used a portable 5G setup to reduce base station power consumption by **45.6%**, while CTTC accelerated network simulation runtimes from hours to just minutes using GPU acceleration."
+        "title": "How NVIDIA Open Source Tools Are Helping Researchers Build Next-Generation 6G Networks",
+        "summary": "NVIDIA's open source 5G and 6G tools, including Aerial and Sionna, have surged past **1 million downloads** globally as researchers use them to develop AI-native networks. These platforms are enabling breakthroughs like **faster-reacting robots** and smarter signal reception to shape the future of wireless connectivity.",
+        "long_summary": "Over the past year, global developer adoption of NVIDIA AI Aerial and Sionna has grown 10x, with over 8,000 research and academic institutions now using these open source platforms. Researchers are tackling key wireless challenges by combining simulation and AI training with real-world experiments.\n\nAt King’s College London, researchers used NVIDIA Sionna to enable **goal-oriented semantic communications**, allowing a robot arm to transmit compact descriptions instead of full images, which reduced task completion time by up to 52.6%. Meanwhile, SoftBank and ETH Zurich demonstrated that AI-powered receivers can significantly improve signal recovery under heavy interference.\n\nAdditionally, researchers at the University of Leeds used a portable 5G setup to **reduce base station power consumption** by 45.6% using demand forecasting, while CTTC accelerated network simulation runtimes from three hours down to 10-20 minutes using GPU acceleration. These innovations point toward a future where 6G networks deliver seamless connectivity, computing, and sensing for billions of devices."
       },
       "zh": {
-        "title": "英伟达开源工具助力研究人员打造下一代 6G 网络",
-        "summary": "英伟达的开源无线工具 Aerial 和 Sionna 在过去一年里迎来爆发式增长，全球下载量突破 **100 万次**。研究人员正在利用这些平台开发具备 AI 能力的 6G 网络，帮助机器人**反应更快**、提升信号接收能力、节省电力并加速网络模拟测试。",
-        "long_summary": "在过去一年里，英伟达 AI Aerial 和 Sionna 软件的全球开发者采用率增长了 10 倍，吸引了全球超过 **8000 家研究和学术机构**使用。世界各地的研究人员正利用这些开源工具，构建旨在同时处理连接、计算和感知的 AI 原生 6G 网络。\n\n在应用方面，伦敦国王学院的研究人员将机器人手臂连接到运行 Sionna 的英伟达边缘计算设备上，通过只传输关键物体的语义信息，将机器人任务完成时间缩短了最多 **52.6%**。软银集团和苏黎世联邦理工学院则通过集成神经网络接收器，显著改善了复杂干扰环境下的信号接收质量。此外，利兹大学利用便携式 5G 设备将基站功耗降低了 **45.6%**，而加泰罗尼亚电信技术中心则通过 GPU 加速，将复杂的网络模拟时间从数小时缩短至十几分钟。"
+        "title": "英伟达开源工具如何帮助研究人员打造下一代6G网络",
+        "summary": "英伟达的5G和6G开源工具（如Aerial和Sionna）全球下载量已突破**100万次**，世界各地的研究人员正用它们来开发人工智能原生的网络。这些平台正在带来重大突破，比如让**机器人反应更快**以及实现更智能的信号接收，从而塑造无线连接的未来。",
+        "long_summary": "在过去的一年里，全球开发者对英伟达AI Aerial和Sionna软件的使用量增长了10倍，已有超过8000家研究和学术机构正在使用这些开源平台。研究人员通过将模拟仿真、AI训练与真实世界的无线实验结合，正在攻克多项无线通信的行业难题。\n\n在伦敦国王学院，研究人员利用英伟达Sionna实现了**目标导向的语义通信**，让机器人手臂只需传输精简的对象描述而不是整张图片，从而将任务完成时间缩短了多达52.6%。同时，软银集团和苏黎世联邦理工学院的研究表明，人工智能接收器可以在严重的干扰下大幅提升信号恢复能力。\n\n此外，利兹大学的研究人员利用便携式5G设备通过需求预测将**基站功耗降低了45.6%**，加泰罗尼亚电信技术中心则利用GPU加速将网络模拟运行时间从3小时缩短至10到20分钟。这些创新共同指向了一个未来，即6G网络将为数十亿设备提供无缝的连接、计算和感知能力。"
       }
     },
     {
-      "id": "2b1382e7-96bb-4d66-a83a-de88b87e5329",
+      "id": "e23265f5-3c45-476e-b5d5-2816f3f31bbc",
       "url": "https://www.theverge.com/tech/1029489/nyt-cooking-ai-assistant-review",
       "source": "The Verge AI",
       "category": "company",
@@ -116,25 +245,25 @@
       "published_at": "2026-11-07T15:50:00Z",
       "image_url": "https://platform.theverge.com/wp-content/uploads/sites/2/2026/11/268844_NY_Times_Cooking_App_JTuohy_0006.jpg?quality=90&strip=all&crop=0%2C10.732984293194%2C100%2C78.534031413613&w=1200",
       "tags": [
+        "ai cooking",
         "nyt cooking",
-        "ai assistant",
-        "recipe adaptation",
-        "food tech",
-        "smart kitchen"
+        "recipe assistant",
+        "smart kitchen",
+        "food tech"
       ],
       "en": {
         "title": "NYT Cooking’s AI assistant saved my weeknight chicken, but almost ruined my cake",
-        "summary": "I tested NYT Cooking's new AI assistant for ingredient swaps and recipe changes. It gave practical cooking guidance based on user comments and saved me a trip to the store. However, it can make mistakes like halving butter incorrectly, proving that AI is a **helpful sous chef** rather than the head chef.",
-        "long_summary": "The new AI assistant integrated into NYT Cooking is designed to help users adapt recipes on the fly, answering questions about ingredient substitutions, scaling, and equipment changes. Unlike generic AI recipes, it draws from the publication's trusted database and user comments. During testing, it successfully helped modify a chicken and rice dish with available fridge items and converted a Bundt cake recipe into muffins. However, confusion can arise when switching between original and modified recipes within the app, highlighting the need for users to double-check quantities to avoid kitchen disasters."
+        "summary": "I tested the new AI-powered tool from NYT Cooking on ingredient swaps and recipe scaling. It helped me **modify recipes** on the fly when I lacked ingredients, but it also nearly messed up my baking measurements. As a **handy kitchen helper**, it is useful for quick fixes, but you still need to keep a close eye on it.",
+        "long_summary": "The NYT Cooking app has introduced an AI assistant designed to help users customize recipes on the fly, offering substitutions for missing ingredients, scaling portions, and converting measurements directly within the recipe page. During hands-on testing, the AI successfully adapted a chicken and rice recipe based on available fridge items, validated spice swaps, and even politely declined a ridiculous request to put beef in a dessert trifle. However, baking proved trickier, as confusion between the original recipe and the AI-modified version nearly led to using too little butter in a cake.\n\nWhile recipe purists may scoff at altering expert-tested dishes, the AI essentially automates the process of digging through hundreds of reader comments for substitution tips. It outperforms smart home voice assistants like Alexa in displaying modified text on screen, though physical navigation with garlicky fingers remains a messy challenge. Ultimately, the AI works well as a **digital sous chef**, saving trips to the grocery store for missing items, provided the human cook stays in charge as the head chef."
       },
       "zh": {
-        "title": "纽约时报烹饪AI助手能帮我拯救晚饭的鸡肉，却差点毁了我的蛋糕",
-        "summary": "我测试了《纽约时报》烹饪应用的AI助手，用来替换食材和修改食谱。它根据用户评论给出了实用的做饭建议，帮我省去了跑超市的麻烦。不过它也会犯错，比如差点把蛋糕黄油用量算错，这说明AI只是个**得力的副厨**，而不是大厨。",
-        "long_summary": "《纽约时报》烹饪应用最近推出的AI助手，旨在帮用户随时随地修改食谱，解决食材替换、分量调整和厨具不够等问题。和那些不靠谱的纯AI食谱不同，它结合了该媒体的专业食谱库和海量用户评论。在实际测试中，它成功帮我用冰箱里现有的食材改造了一道鸡肉饭，还把复杂的环形蛋糕食谱改成了简单的玛芬蛋糕。不过，如果在应用里频繁切换原版和修改版食谱，一不小心容易搞混。这提醒我们在做饭时，还是要仔细核对用料，免得闹出笑话。"
+        "title": "纽约时报烹饪AI助手能帮你想晚饭，但差点毁了我的蛋糕",
+        "summary": "我实测了《纽约时报》烹饪应用的AI新功能，用来临时换食材和调整分量。它能帮我快速**修改食谱**，把冰箱里现有的鸡肉变成一盘好菜，但在烘焙时差点搞错黄油分量。作为一个**厨房小帮手**，它用起来确实省事，但你可千万别完全甩手不管。",
+        "long_summary": "《纽约时报》的烹饪应用最近上线了一款AI助手，专门帮用户在看食谱时直接现场魔改。不管是缺了某种食材想换掉、需要按人数缩放分量，还是转换计量单位，它都能在页面上直接搞定。在实际测试中，这个AI成功根据冰箱里剩的食材改造了一道鸡肉饭，还很机智地拒绝了把碎牛肉放进甜点里的奇葩要求。不过，烘焙就没那么顺利了，因为在原版和AI修改版之间切来切去，差点让它把蛋糕的黄油用量给算错。\n\n虽然有些追求原汁原味的烹饪爱好者对这种AI改食谱的做法不屑一顾，但它实际上帮大家省去了在几百条读者评论里翻找替代食材的麻烦。比起只能靠语音播报的智能音箱，它直接在屏幕上显示修改后食谱的做法明显更直观。总的来说，这个AI是个称职的**数字帮厨**，能帮你省下跑一趟超市的时间，前提是你自己得把好关，别当甩手掌柜。"
       }
     },
     {
-      "id": "10776b94-0900-48eb-a8d8-47d0fcb4c4df",
+      "id": "4cbaeaf6-d966-45ac-b9c8-f0d3eebba81d",
       "url": "https://techcrunch.com/2026/11/07/after-the-midterms-things-are-looking-rocky-for-elon-musk-and-data-centers/",
       "source": "TechCrunch AI",
       "category": "policy",
@@ -145,74 +274,22 @@
         "data centers",
         "elon musk",
         "openai",
-        "midterm elections",
-        "regulations"
+        "us midterms",
+        "ai regulation"
       ],
       "en": {
-        "title": "Midterm elections bring roadblocks for Elon Musk and AI data centers",
-        "summary": "The recent midterm elections resulted in a major pushback against **AI data centers**, with voters rejecting expansion projects and electing politicians who promised tighter restrictions. Tech giants like **OpenAI** are already scrambling to change their secretive policies and rebrand data centers as compute campuses to appease the public.",
-        "long_summary": "Following the historic Democratic victory in the midterms, the tech industry is facing a wave of political and public backlash. Tech billionaire Elon Musk, who donated half a billion dollars to Republicans, now finds his companies headquartered in a deeply blue state with little to show for his investment. Across the country, voters rejected ballot measures that would have sped up data center construction and instead passed restrictions. Critics argue that public anger was fueled by the secretive nature of tech companies, which often forced local officials to sign non-disclosure agreements while building massive facilities in water-scarce areas. In response, OpenAI has released a new compute campus policy blueprint promising more transparency and no more NDAs, though industry observers remain skeptical about whether rebranding data centers will actually solve the underlying power and environmental concerns."
+        "title": "US Midterms Spell Trouble for Tech Giants and Data Centers",
+        "summary": "Democrats' big wins in the midterm elections and local votes against data centers mean **tougher times ahead** for tech companies. Even heavy donors like **Elon Musk** are facing a newly elected political landscape that wants to restrict data centers. In response, AI firms like **OpenAI** are already rushing to change their secret ways and rebrand data centers as compute campuses.",
+        "long_summary": "## Election Impact\nThe recent midterm elections have brought significant political shifts, notably in states like Texas where newly elected leaders campaigned on restricting data centers. Tech analysts point out that despite massive political donations, figures like **Elon Musk** find themselves with businesses headquartered in regions moving in the opposite political direction.\n\n## Grassroots Pushback\nPublic opposition to data centers has turned into a powerful grassroots movement. Citizens are frustrated by the **secretive approval processes** and non-disclosure agreements forced on local officials, especially in environmentally sensitive areas facing water shortages.\n\n## Industry Response\nIn the face of mounting political pressure, AI companies are starting to bend. **OpenAI** recently released a new policy blueprint promising transparency, dropping non-disclosure requirements, and even trying to rebrand traditional data centers as **compute campuses** to soften their public image."
       },
       "zh": {
-        "title": "美国中期选举后，埃隆·马斯克和AI数据中心要遇到麻烦了",
-        "summary": "最近的中期选举给AI数据中心迎头痛击，选民们纷纷投票拒绝扩建项目，并选出了承诺加强监管的政客。像**OpenAI**这样的大厂已经坐立不安，开始紧急修改以往遮遮掩掩的政策，甚至把数据中心改名叫“计算园区”来平息民愤。",
-        "long_summary": "随着民主党在美国中期选举中取得历史性胜利，科技行业正面临着一波政治和公众的强烈反弹。曾经砸下巨资支持共和党的埃隆·马斯克，如今发现自己的公司总部竟然落在一个极度变蓝的州里，几十亿砸下去几乎打了水漂。在全国范围内，选民们纷纷投票反对加快数据中心建设的提案，反而通过了各种限制性法规。分析认为，公众的怒火主要是被科技公司的秘密作风点燃的，这些公司在严重缺水的地方大兴土木时，经常要求地方官员签保密协议。为了应对这种压力，OpenAI最近发布了新的策略蓝图，承诺提高透明度并不再要求签保密协议，但业内人士对这种试图把数据中心“换个马甲”的做法能否真正解决能源和环保难题持怀疑态度。"
+        "title": "美国中期选举后，科技巨头和数据中心要头疼了",
+        "summary": "美国中期选举后民主党的大胜，加上各地投票反对建设数据中心，意味着科技公司**好日子到头了**。就连砸重金支持共和党的大佬**马斯克**，现在也得面对一个急于限制数据中心的新政治环境。为了应对压力，像**OpenAI**这样的AI公司已经开始放弃暗箱操作，甚至试图把数据中心改名叫算力园区来挽回形象。",
+        "long_summary": "## 选举带来的政治压力\n近期美国中期选举带来了明显的政治格局变化，比如得克萨斯州等地的全新领导人正是靠着限制数据中心的口号赢得选举。科技观察人士指出，尽管此前砸下巨资进行政治捐款，但像**马斯克**这样的大佬发现，自己的公司总部反而落在了政治风向大变的地区。\n\n## 基层民众强烈反对\n民众对数据中心的厌烦已经演变成了一股强大的民间力量。大家极为不满企业在推进项目时的**暗箱操作**，以及强迫地方官员签署保密协议的做法，尤其是在那些面临水资源短缺的生态敏感地区。\n\n## 科技行业的应对\n面对扑面而来的监管压力和政治阻力，AI公司开始做出妥协。**OpenAI**最近发布了一份新政策蓝图，承诺放弃保密要求并保持透明，甚至试图把传统的数据中心重新包装成**算力园区**，希望能改善公众对它们的负面印象。"
       }
     },
     {
-      "id": "8c609451-9baa-4fc2-934c-b88bf2dbc376",
-      "url": "https://github.com/thedotmack/claude-mem",
-      "source": "GitHub Trending",
-      "category": "open_source",
-      "importance": 100,
-      "published_at": "2026-11-08T06:25:24.085948Z",
-      "image_url": "https://repository-images.githubusercontent.com/1048065319/62ccff98-4c97-4bab-97b7-ed6e1995cfba",
-      "tags": [
-        "typescript",
-        "ai-agent",
-        "claude-code",
-        "developer-tools",
-        "memory"
-      ],
-      "en": {
-        "title": "thedotmack/claude-mem: Persistent Context Across Sessions for Every Agent",
-        "summary": "⭐ 114,595 | Your coding agent forgets everything between sessions and starts from scratch every time. **Claude-Mem** solves this by running a background observer that **captures session activity**, compresses it with AI, and injects relevant context back into your future sessions. It works seamlessly with Claude Code, Codex, Cursor, and many more, saving you tokens and preventing repeated mistakes.",
-        "long_summary": "## Introduction\n\n**Claude-Mem** is an innovative tool designed to solve a universal frustration in AI-assisted coding: **agent amnesia**. Every time you start a new session, your coding agent forgets past conversations, files read, and mistakes already fixed. Claude-Mem acts as a persistent memory layer, running a secondary agent beside your main coding assistant to take notes, summarize activities, and inject vital context into future sessions.\n\n## How It Works & Core Features\n\nThe system operates through a clever **three-step workflow**. When your agent works, hooks hand over tool calls to a local worker. An observer model turns this activity into concise observations. When a new session begins, your agent receives a compact index instead of a bloated history, fetching full details only when necessary through efficient MCP search tools.\n\n- **Token Efficiency**: It saves up to 10x tokens by using a progressive disclosure strategy.\n- **Wide Compatibility**: Works with Claude Code, OpenClaw, Codex, Gemini, Cursor, Copilot CLI, and many other agents.\n- **Privacy Control**: You can wrap sensitive information in private tags to keep secrets out of storage.\n\n## Installation & Quick Start\n\nGetting started is straightforward using Node.js. Run the interactive installer in your terminal to set up the worker service and configure your preferred AI agents:\n\n```bash\nnpx claude-mem install\n```\n\nFor specific agents like OpenCode or T3 Code, you can pass an explicit IDE flag during installation, such as `npx claude-mem install --ide opencode`.\n\n## System Requirements & Configuration\n\nClaude-Mem requires **Node.js 20.19+ or 22.12+**, along with Bun and SQLite. Settings can be easily customized in your local configuration file located at `~/.claude-mem/settings.json`, allowing you to adjust workflow modes, language preferences, and injection behaviors."
-      },
-      "zh": {
-        "title": "thedotmack/claude-mem：为每个AI代理提供跨会话的持久化上下文记忆",
-        "summary": "⭐ 114,595 | 你的AI编程助手在每次新会话开始时都会“失忆”，把之前聊过的内容忘得精光。**Claude-Mem** 完美解决了这个痛点，它在后台安排了一个“观察员”，默默**记录工作点滴**，用AI进行智能压缩，并在下次开工时自动把关键背景喂给AI。它支持主流的 Claude Code、Cursor 等各种代理工具，帮你省下大量Token并告别重复踩坑。",
-        "long_summary": "## 项目介绍\n\n**Claude-Mem** 旨在解决AI辅助编程中让人头疼的“健忘症”问题。每次开启新会话时，你的AI助手都会把之前读过的文件、做过的修改和修复好的错误忘得一干二净。而 Claude-Mem 通过在后台运行一个**观察员代理**，默默记录所有活动并用AI进行压缩，让你的AI助手拥有了跨会话的持久化记忆。\n\n## 工作原理与核心功能\n\n该系统采用了一套精巧的**三步工作流**。当你的AI写代码时，本地的监听服务会捕获工具调用，观察员会将其提炼成精简的观察记录。到了下一个会话，系统会自动注入一个紧凑的索引，让AI只在需要时才去查阅详细信息。\n\n- **省时省Token**：通过渐进式披露策略，比直接丢一堆历史记录**节省高达10倍Token**。\n- **广泛兼容**：支持 Claude Code、OpenClaw、Codex、Gemini、Cursor 以及其他十几种主流编程代理工具。\n- **隐私保护**：支持通过标签把敏感机密包裹起来，**绝对不被存储**。\n\n## 安装与快速开始\n\n安装非常简单，只需在装有 Node.js 的电脑终端中运行官方的交互式安装命令即可：\n\n```bash\nnpx claude-mem install\n```\n\n如果你想为特定的开发工具单独配置，可以通过 `--ide` 参数指定，比如 `npx claude-mem install --ide opencode`。\n\n## 系统要求与配置\n\n运行该项目需要 **Node.js 20.19+ 或 22.12+** 环境，并会自动处理 Bun 和 SQLite 依赖。所有的个性化设置都可以通过修改 `~/.claude-mem/settings.json` 文件来完成，轻松调整语言、工作模式等参数。"
-      }
-    },
-    {
-      "id": "6937e4bf-f4bd-453a-a147-339d822789bd",
-      "url": "https://github.com/max-sixty/worktrunk",
-      "source": "GitHub Trending",
-      "category": "open_source",
-      "importance": 99,
-      "published_at": "2026-11-08T06:25:59.807089Z",
-      "image_url": "https://repository-images.githubusercontent.com/1078528927/6196f2ac-248f-42f5-abb5-d18768111b3b",
-      "tags": [
-        "git",
-        "cli",
-        "ai-agents",
-        "rust",
-        "developer-tools"
-      ],
-      "en": {
-        "title": "Worktrunk: A Git worktree CLI for parallel AI agent workflows",
-        "summary": "⭐ 11,981 | Worktrunk is a command-line tool designed to **make git worktrees as easy as branches**. It solves the clumsy user experience of native git worktrees, enabling developers to seamlessly run and manage multiple AI agents in parallel without their changes conflicting.",
-        "long_summary": "## Background and Problem\n\nModern AI coding assistants like Claude Code and Codex can handle complex tasks autonomously, making it possible for developers to supervise **5-10+ agents in parallel**. While Git's native worktree feature gives each agent an isolated working directory, the command-line experience is clunky and requires typing branch names and paths multiple times.\n\n## Core Features and Workflow\n\nWorktrunk bridges this gap by treating worktrees as easily as standard branches. It offers simple core commands to switch, create, list, and clean up worktrees instantly. Advanced features include **workflow automation hooks**, AI-generated commit messages from diffs, an interactive picker with streaming CI status, and shared build caches that let multiple worktrees share dependencies like `node_modules` without re-copying.\n\n## Installation and Quick Start\n\nYou can easily install Worktrunk via Homebrew, Cargo, Pacman, or Conda. Once installed, commands like `wt switch --create feature-auth` will automatically set up the branch and directory. When you are done, you can merge your changes locally using `wt merge main` or clean up the environment with a single command."
-      },
-      "zh": {
-        "title": "Worktrunk：为并行 AI 代理工作流设计的 Git 工作树管理工具",
-        "summary": "⭐ 11,981 | Worktrunk 是一个专门用来**简化 git 工作树管理**的命令行工具。它解决了原生 git 操作繁琐的痛点，让开发者能够顺畅地同时运行和管理多个 AI 代理，而不用担心代码改动互相打架。",
-        "long_summary": "## 背景与痛点\n\n像 Claude Code 和 Codex 这样现代的 AI 编程助手能够独立处理复杂的任务，这让开发者同时监督 **5 到 10 个以上的 AI 代理** 成为可能。虽然 Git 自带的工作树功能可以为每个代理提供独立的目录，但官方的操作体验非常繁琐，每次创建都要反复敲写很长的命令。\n\n## 核心功能与工作流\n\nWorktrunk 的出现就是为了让工作树的使用**像切换分支一样简单**。它提供了一套清爽的命令来快速创建、切换、查看和清理工作树。此外，它还带来了许多贴心的进阶功能，比如**自动化工作流钩子**、根据代码差异自动生成提交信息、带有 CI 状态的交互式选择器，以及可以让多个工作树共享 `node_modules` 等依赖的构建缓存机制。\n\n## 安装与快速上手\n\n你可以通过 Homebrew、Cargo、Pacman 或 Conda 轻松安装它。安装完成后，只需输入 `wt switch --create feature-auth` 就能瞬间搞定分支和目录的创建。任务完成后，你可以使用 `wt merge main` 直接在本地安全合并，或者用一条命令轻松清理战场。"
-      }
-    },
-    {
-      "id": "c0f00449-cff9-4a21-8943-8433ffc71464",
+      "id": "cc1ed8f7-811a-45b0-a68c-4964d8b7a7a0",
       "url": "https://huggingface.co/papers/2611.04277",
       "source": "Hugging Face Daily Papers",
       "category": "research",
@@ -222,19 +299,18 @@
       "tags": [
         "ai agents",
         "reinforcement learning",
-        "training method",
-        "execution harness",
-        "model generalization"
+        "model training",
+        "execution harness"
       ],
       "en": {
-        "title": "Harness-S: Training Smarter AI Agents Using a Team of Auxiliary Execution Environments",
-        "summary": "Researchers have introduced **Harness-S**, a new method to help AI agents learn better. Instead of relying on a single testing environment, it uses a pool of alternative execution setups to rescue failed attempts and **transfers those skills** into the main AI model, making it much more capable under the original testing conditions.",
-        "long_summary": "Training AI agents usually relies on a fixed execution environment, known as a harness, which often leads to rigid learning and frequent failures. This paper observes that different harness variants fix different problems, acting in complementary ways. Based on this, the authors developed Harness-S, which builds a reusable pool of specialized sibling harnesses. \n\nWhen all initial attempts under the original base harness fail, the system selects suitable auxiliary harnesses using an **adaptive router** powered by LLMs. Successful trajectories from these alternative setups are then used to replace the failed reinforcement learning rollouts. \n\nExperiments across multiple benchmarks like AppWorld and SWE-Gym show that models trained with this method **significantly outperform** standard training approaches when evaluated back on the original harness, proving that the helpful behaviors learned from auxiliary setups are successfully absorbed by the AI policy itself."
+        "title": "Harness-S: Training Smarter AI Agents Using Sibling Execution Environments",
+        "summary": "Researchers have introduced **Harness-S**, a clever training method to make AI agents more reliable. Instead of looking for a single perfect execution environment, it creates a pool of specialized \"sibling\" environments to help **rescue failed tasks**. When the main environment fails, these helpers step in, and their success is eventually **taught back to the AI**, making the original system much stronger.",
+        "long_summary": "Training AI agents usually relies on a single execution harness, but different tweaks fix some problems while breaking others. Harness-S addresses this by developing a pool of specialized sibling harnesses that evolve along distinct repair directions. When initial attempts in the base harness fail, the system invokes this pool, uses auxiliary environments to generate successful trajectories, and **transfers these new capabilities** back into a single policy through reinforcement learning.\n\nAn Adaptive Harness Router selects the best variants using behavior profiles and LLM voting, dynamically adjusting as the AI learns. Tests across benchmarks like AppWorld, SWE-Gym, and DBBench show that models trained with Harness-S **substantially outperform** standard training methods when returning to the original base harness, proving that helper environments can effectively teach the core AI new tricks."
       },
       "zh": {
-        "title": "Harness-S：利用多辅助运行环境训练更聪明的AI智能体",
-        "summary": "研究人员推出了一种名为 **Harness-S** 的AI训练新方法。当AI在基础测试环境中失败时，它会借助一组**备用运行环境**来帮AI通关，并把这些救援经验重新教给主模型，让它在回到原来的环境时变得**更加聪明能干**。",
-        "long_summary": "训练AI智能体通常依赖单一的测试运行环境，但这种固定环境往往存在局限性，导致AI容易遇到瓶颈。研究发现，不同的环境变体可以修复不同类型的问题，彼此之间具有互补性。为此，研究团队推出了 Harness-S，它建立了一个包含多个专业辅助环境的**共享资源池**。\n\n当AI在原本的测试环境中遭遇连续失败时，系统会利用大模型驱动的**智能路由器**，挑选出最合适的备用环境来协助通关。接着，这些辅助环境中成功的操作数据会被用来替代失败的强化学习记录，指导主模型进行学习。\n\n在多个权威基准测试中的实验表明，采用这种方法训练出来的AI模型，在返回原始测试环境时表现**大幅超越**了传统训练方式，证明辅助环境中学会的技能被成功内化到了模型自身的基因中。"
+        "title": "Harness-S：利用“兄弟环境”帮 AI 变得更聪明",
+        "summary": "研究人员推出了一种名为 **Harness-S** 的新训练方法，能让 AI 助手变得更靠谱。它不去找一个完美的运行环境，而是准备了一堆不同特长的“兄弟环境”来**帮忙救场**。当主力环境搞不定时，这些助手就会上阵，最后把成功的经验**教给 AI**，让它在原本的环境里也能表现得更好。",
+        "long_summary": "训练 AI 助手通常依赖单一的运行环境，但微调往往是修好了这个漏洞又引发那个问题。Harness-S 提出了一套新思路：通过开发一组专长各异的“兄弟环境”来解决这个问题。当基础环境处理失败时，系统会召唤这些辅助环境来救场，产生成功的操作轨迹，并通过强化学习把这些**新能力教给 AI**。\n\n系统内置了一个智能路由器，利用行为画像和多个大模型的投票来挑选最合适的辅助环境，并随着 AI 的学习不断更新。在多个基准测试中的表现证明，使用 Harness-S 训练出来的模型在回到原基础环境时，**成绩大幅超越**传统训练方法，证明了辅助环境确实能有效提升 AI 的核心能力。"
       }
     }
   ]
