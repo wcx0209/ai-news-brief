@@ -24,6 +24,33 @@ from hackernews_fetcher import _fetch_hackernews_content
 from youtube_fetcher import _fetch_youtube_content
 
 
+# These publishers expose broad technology or business feeds (and even some
+# topic feeds occasionally contain incidental AI mentions). Require the title
+# itself to carry a clear AI signal before spending an LLM call on the story.
+BROAD_EDITORIAL_SOURCES = {
+    'SCMP China Tech',
+    'GeekPark 极客公园',
+    'TMTPost 钛媒体',
+    'iFanr 爱范儿',
+    'The Guardian AI',
+    'Ars Technica AI',
+}
+
+AI_TITLE_PATTERN = re.compile(
+    r'(?i)(?:\b(?:ai|a\.i\.|artificial intelligence|machine learning|deep learning|'
+    r'generative|llm|large language model|foundation model|agentic|chatbot|copilot|'
+    r'robot(?:ics)?|openai|anthropic|claude|gemini|deepseek|qwen|mistral|grok|xai|'
+    r'hugging face|nvidia|sora|midjourney|stable diffusion)\b|'
+    r'人工智能|大模型|机器学习|深度学习|生成式|智能体|机器人|算力|'
+    r'深度求索|通义千问|豆包|文心一言|混元|盘古|百川|智谱)',
+)
+
+
+def _passes_broad_source_ai_filter(source_name, title):
+    """Reject off-topic entries from broad editorial feeds using the headline."""
+    return source_name not in BROAD_EDITORIAL_SOURCES or bool(AI_TITLE_PATTERN.search(title or ''))
+
+
 def cleanup_old_articles():
     """Clean up articles older than retention period and sync vector store."""
     logging.info("Starting Old Articles Cleanup...")
@@ -96,6 +123,11 @@ def _process_single_entry(entry, sources, source_map, user_db, ai_engine, vector
         log_prefix = f"[desc={rss_desc}] "
 
     logging.debug(f"{log_prefix}Processing entry: {title[:80]}  ->  {url}")
+
+    if not _passes_broad_source_ai_filter(_rss_name, title):
+        logging.info(f"{log_prefix}Skipping broad-feed story without an AI signal in the title: {title}")
+        fetch_stats.record_skip(rss_url, rss_desc, 'broad_feed_not_ai')
+        return 0
 
     # URL Deduplication
     # HN posts: use comments_url as canonical URL for dedup (topic_url is only for content fetching)
