@@ -1,13 +1,13 @@
 const COPY = {
   en: {
-    brand: "POLYEMERGENCE", navNews: "News", navSignals: "Signals", navInsight: "Insight",
+    brand: "POLYEMERGENCE", navNews: "Brief", navSignals: "Signals", navInsight: "Method",
     edition: "GLOBAL EDITION", latest: "LATEST INTELLIGENCE",
     seoTitle: "AI News & Industry Intelligence | Polyemergence",
     seoDescription: "Daily AI news and analysis covering artificial intelligence models, startups, research, open source, policy and business trends.",
     eyebrow: "DAILY AI NEWS · INDUSTRY SIGNALS · ANALYSIS", tagline: "What’s next,<br>made visible.",
     promise: "Daily AI news and industry intelligence across models, startups, research, open source, policy, business, and society.",
     loading: "Loading today’s brief…", updated: "Updated", stories: "stories", dailyBrief: "Daily Brief",
-    filters: { all: "All", news: "News", discussion: "Discussion", video: "Video", opensource: "Open source" },
+    filters: { all: "All", news: "News", discussion: "Discussion", video: "Video", opensource: "Open source" }, importance: "Importance",
     read: "Read original", noStories: "No stories in this section yet.", error: "The live feed is unavailable. Showing the last bundled briefing.",
     demo: "Demo feed — run the scheduled collector to publish the live briefing.",
     methodTitle: "From signal to consequence.", methodSignal: "Signal", methodSignalText: "What changed?",
@@ -16,14 +16,14 @@ const COPY = {
     footer: "Independent AI intelligence for a changing world."
   },
   zh: {
-    brand: "多重涌现", navNews: "新闻", navSignals: "信号", navInsight: "洞察",
+    brand: "多重涌现", navNews: "简报", navSignals: "信号", navInsight: "方法",
     edition: "全球版", latest: "最新情报",
     seoTitle: "AI 新闻与人工智能行业情报 | 多重涌现",
     seoDescription: "每日聚合 AI 新闻、人工智能行业动态、大模型、开源项目、研究、政策与商业趋势。",
     eyebrow: "AI 新闻 · 人工智能行业动态 · 趋势洞察", tagline: "看见<br>下一步。",
     promise: "每日追踪大模型、创业、研究、开源、政策、商业与社会领域的重要 AI 新闻和行业趋势。",
     loading: "正在载入今日简报…", updated: "更新于", stories: "条内容", dailyBrief: "每日简报",
-    filters: { all: "全部", news: "新闻", discussion: "讨论", video: "视频", opensource: "开源" },
+    filters: { all: "全部", news: "新闻", discussion: "讨论", video: "视频", opensource: "开源" }, importance: "重要性",
     read: "阅读原文", noStories: "这个栏目暂时没有内容。", error: "实时数据暂时不可用，正在显示最近一次简报。",
     demo: "当前为演示数据——运行定时采集任务后将自动发布实时内容。",
     methodTitle: "从信号到影响。", methodSignal: "信号", methodSignalText: "发生了什么变化？",
@@ -43,6 +43,24 @@ function escapeHtml(value = "") {
   return String(value).replace(/[&<>'"]/g, char => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" }[char]));
 }
 
+function plainText(value = "") {
+  return String(value)
+    .replace(/\*\*([^*]+)\*\*/g, "$1")
+    .replace(/__([^_]+)__/g, "$1")
+    .replace(/`([^`]+)`/g, "$1")
+    .replace(/\*+/g, "")
+    .replace(/_{2,}/g, "");
+}
+
+function inlineMarkup(value = "") {
+  return escapeHtml(value)
+    .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
+    .replace(/__([^_]+)__/g, "<strong>$1</strong>")
+    .replace(/`([^`]+)`/g, "<code>$1</code>")
+    .replace(/\*+/g, "")
+    .replace(/_{2,}/g, "");
+}
+
 function safeUrl(value) {
   try { const url = new URL(value); return ["http:", "https:"].includes(url.protocol) ? url.href : "#"; }
   catch { return "#"; }
@@ -56,13 +74,23 @@ function formatDate(value) {
 
 function textFor(item) {
   const localized = item[state.locale] || item.en || item.zh || {};
-  return { title: localized.title || "Untitled", summary: localized.summary || localized.long_summary || "" };
+  return { title: plainText(localized.title || "Untitled"), summary: localized.summary || localized.long_summary || "" };
 }
 
-function imageMarkup(item) {
+function imageFit(item) {
+  if (["cover", "contain"].includes(item.image_fit)) return item.image_fit;
+  const source = String(item.source || "");
+  const image = String(item.image_url || "");
+  const editorialPhoto = /techcrunch|reuters|ap news|associated press|the verge|wired|bloomberg|venturebeat|cnbc|bbc|fortune|forbes/i;
+  const photoUrl = /gettyimages|unsplash|techcrunch\.com\/wp-content/i;
+  return editorialPhoto.test(source) || photoUrl.test(image) ? "cover" : "contain";
+}
+
+function imageMarkup(item, priority = false) {
   const image = safeUrl(item.image_url);
   const alt = textFor(item).title;
-  return image !== "#" ? `<img src="${escapeHtml(image)}" alt="${escapeHtml(alt)}" loading="lazy" referrerpolicy="no-referrer">` : "";
+  const loading = priority ? 'fetchpriority="high"' : 'loading="lazy"';
+  return image !== "#" ? `<img class="media-${imageFit(item)}" src="${escapeHtml(image)}" alt="${escapeHtml(alt)}" ${loading} referrerpolicy="no-referrer">` : "";
 }
 
 function renderHero(items) {
@@ -77,22 +105,24 @@ function renderHero(items) {
 function renderLead(item) {
   if (!item) { $("#lead-story").innerHTML = ""; return; }
   const text = textFor(item);
+  const importance = Number(item.importance || 0);
   $("#lead-story").innerHTML = `
     <div class="lead-copy">
-      <div class="story-kicker"><span>${escapeHtml(item.source)} · ${escapeHtml(formatDate(item.published_at))}</span><span class="score">${Number(item.importance || 0)}</span></div>
-      <div><h3>${escapeHtml(text.title)}</h3><p>${escapeHtml(text.summary)}</p><a class="read-link" href="${escapeHtml(safeUrl(item.url))}" target="_blank" rel="noopener noreferrer">${COPY[state.locale].read} ↗</a></div>
+      <div class="story-kicker"><span>${escapeHtml(item.source)} · ${escapeHtml(formatDate(item.published_at))}</span><span class="score" title="${COPY[state.locale].importance} ${importance}"><small>${COPY[state.locale].importance}</small>${importance}</span></div>
+      <div><h3>${escapeHtml(text.title)}</h3><p>${inlineMarkup(text.summary)}</p><a class="read-link" href="${escapeHtml(safeUrl(item.url))}" target="_blank" rel="noopener noreferrer">${COPY[state.locale].read} ↗</a></div>
     </div>
-    <div class="story-visual">${imageMarkup(item)}</div>`;
+    <div class="story-visual">${imageMarkup(item, true)}</div>`;
 }
 
 function renderCard(item) {
   const text = textFor(item);
   const tags = (item.tags || []).slice(0, 4).map(tag => `<span class="tag">${escapeHtml(tag)}</span>`).join("");
+  const importance = Number(item.importance || 0);
   return `<article class="story-card">
     <div class="card-visual">${imageMarkup(item)}<span class="card-plane" aria-hidden="true"></span></div>
     <div class="card-copy">
-    <div class="story-kicker"><span>${escapeHtml(item.source)}</span><span>${Number(item.importance || 0)}</span></div>
-    <h3>${escapeHtml(text.title)}</h3><p>${escapeHtml(text.summary)}</p>
+    <div class="story-kicker"><span>${escapeHtml(item.source)}</span><span>${COPY[state.locale].importance} ${importance}</span></div>
+    <h3>${escapeHtml(text.title)}</h3><p>${inlineMarkup(text.summary)}</p>
     <a class="read-link" href="${escapeHtml(safeUrl(item.url))}" target="_blank" rel="noopener noreferrer">${COPY[state.locale].read} ↗</a>
     <div class="tags">${tags}</div>
     </div>
@@ -116,7 +146,13 @@ function renderFeed() {
 }
 
 function renderFilters() {
-  $("#filters").innerHTML = categories.map(category => `<button type="button" data-category="${category}" aria-pressed="${category === state.category}">${COPY[state.locale].filters[category]}</button>`).join("");
+  const items = state.feed?.items || [];
+  const available = categories.filter(category => category === "all" || items.some(item => item.category === category));
+  if (!available.includes(state.category)) state.category = "all";
+  $("#filters").innerHTML = available.map(category => {
+    const count = category === "all" ? items.length : items.filter(item => item.category === category).length;
+    return `<button type="button" data-category="${category}" aria-pressed="${category === state.category}">${COPY[state.locale].filters[category]} <span>${count}</span></button>`;
+  }).join("");
   $$('[data-category]').forEach(button => button.addEventListener("click", () => { state.category = button.dataset.category; renderFilters(); renderFeed(); }));
 }
 
