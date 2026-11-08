@@ -4,6 +4,7 @@
 import argparse
 import json
 import os
+import re
 from datetime import datetime, timezone
 from urllib.parse import urlparse
 
@@ -126,6 +127,15 @@ def main():
     with open(args.output, "w", encoding="utf-8") as handle:
         json.dump(payload, handle, ensure_ascii=False, indent=2)
         handle.write("\n")
+
+    sitemap_path = os.path.join(os.path.dirname(os.path.dirname(args.output)), "sitemap.xml")
+    if os.path.exists(sitemap_path):
+        today = datetime.now(timezone.utc).date().isoformat()
+        with open(sitemap_path, "r", encoding="utf-8") as handle:
+            sitemap = handle.read()
+        sitemap = re.sub(r"<lastmod>\d{4}-\d{2}-\d{2}</lastmod>", f"<lastmod>{today}</lastmod>", sitemap)
+        with open(sitemap_path, "w", encoding="utf-8") as handle:
+            handle.write(sitemap)
     print(f"Exported {len(items)} articles to {args.output}")
 
 

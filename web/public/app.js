@@ -2,8 +2,10 @@ const COPY = {
   en: {
     brand: "POLYEMERGENCE", navNews: "News", navSignals: "Signals", navInsight: "Insight",
     edition: "GLOBAL EDITION", latest: "LATEST INTELLIGENCE",
-    eyebrow: "AI NEWS · SIGNALS · INSIGHT", tagline: "What’s next,<br>made visible.",
-    promise: "Important AI changes, connected across technology, business, policy, and society.",
+    seoTitle: "AI News & Industry Intelligence | Polyemergence",
+    seoDescription: "Daily AI news and analysis covering artificial intelligence models, startups, research, open source, policy and business trends.",
+    eyebrow: "DAILY AI NEWS · INDUSTRY SIGNALS · ANALYSIS", tagline: "What’s next,<br>made visible.",
+    promise: "Daily AI news and industry intelligence across models, startups, research, open source, policy, business, and society.",
     loading: "Loading today’s brief…", updated: "Updated", stories: "stories", dailyBrief: "Daily Brief",
     filters: { all: "All", news: "News", discussion: "Discussion", video: "Video", opensource: "Open source" },
     read: "Read original", noStories: "No stories in this section yet.", error: "The live feed is unavailable. Showing the last bundled briefing.",
@@ -16,8 +18,10 @@ const COPY = {
   zh: {
     brand: "多重涌现", navNews: "新闻", navSignals: "信号", navInsight: "洞察",
     edition: "全球版", latest: "最新情报",
-    eyebrow: "AI 新闻 · 信号 · 洞察", tagline: "看见<br>下一步。",
-    promise: "连接技术、商业、政策与社会，理解真正重要的 AI 变化。",
+    seoTitle: "AI 新闻与人工智能行业情报 | 多重涌现",
+    seoDescription: "每日聚合 AI 新闻、人工智能行业动态、大模型、开源项目、研究、政策与商业趋势。",
+    eyebrow: "AI 新闻 · 人工智能行业动态 · 趋势洞察", tagline: "看见<br>下一步。",
+    promise: "每日追踪大模型、创业、研究、开源、政策、商业与社会领域的重要 AI 新闻和行业趋势。",
     loading: "正在载入今日简报…", updated: "更新于", stories: "条内容", dailyBrief: "每日简报",
     filters: { all: "全部", news: "新闻", discussion: "讨论", video: "视频", opensource: "开源" },
     read: "阅读原文", noStories: "这个栏目暂时没有内容。", error: "实时数据暂时不可用，正在显示最近一次简报。",
@@ -29,7 +33,8 @@ const COPY = {
   }
 };
 
-const state = { locale: localStorage.getItem("polyemergence-locale") || (navigator.language.startsWith("zh") ? "zh" : "en"), category: "all", feed: null };
+const routeLocale = location.pathname.split("/").filter(Boolean)[0];
+const state = { locale: routeLocale === "zh" ? "zh" : routeLocale === "en" ? "en" : (navigator.language.startsWith("zh") ? "zh" : "en"), category: "all", feed: null };
 const categories = ["all", "news", "discussion", "video", "opensource"];
 const $ = (selector) => document.querySelector(selector);
 const $$ = (selector) => [...document.querySelectorAll(selector)];
@@ -56,7 +61,8 @@ function textFor(item) {
 
 function imageMarkup(item) {
   const image = safeUrl(item.image_url);
-  return image !== "#" ? `<img src="${escapeHtml(image)}" alt="" loading="lazy" referrerpolicy="no-referrer">` : "";
+  const alt = textFor(item).title;
+  return image !== "#" ? `<img src="${escapeHtml(image)}" alt="${escapeHtml(alt)}" loading="lazy" referrerpolicy="no-referrer">` : "";
 }
 
 function renderHero(items) {
@@ -119,23 +125,27 @@ function setLocale(locale) {
   localStorage.setItem("polyemergence-locale", state.locale);
   document.documentElement.lang = state.locale === "zh" ? "zh-Hans" : "en";
   document.documentElement.dataset.locale = state.locale;
-  document.title = state.locale === "zh" ? "多重涌现 — AI 新闻、信号与洞察" : "Polyemergence — AI News, Signals, Insight";
+  document.title = COPY[state.locale].seoTitle;
+  const description = document.querySelector('meta[name="description"]');
+  if (description) description.content = COPY[state.locale].seoDescription;
   const logoName = state.locale === "zh" ? "logo-zh-reverse.svg" : "logo-en-reverse.svg";
   $("#brand-logo").src = `./assets/${logoName}`;
   $("#brand-logo").alt = COPY[state.locale].brand;
   $("#footer-logo").src = `./assets/${logoName}`;
   $("#footer-logo").alt = COPY[state.locale].brand;
-  $$('[data-locale-button]').forEach(button => button.setAttribute("aria-pressed", String(button.dataset.localeButton === state.locale)));
+  $$('[data-locale-button]').forEach(link => {
+    if (link.dataset.localeButton === state.locale) link.setAttribute("aria-current", "page");
+    else link.removeAttribute("aria-current");
+  });
   $$('[data-copy]').forEach(node => node.innerHTML = COPY[state.locale][node.dataset.copy]);
   renderFilters(); renderFeed();
 }
 
-$$('[data-locale-button]').forEach(button => button.addEventListener("click", () => setLocale(button.dataset.localeButton)));
 $$('[data-filter-link]').forEach(link => link.addEventListener("click", () => { state.category = link.dataset.filterLink; renderFilters(); renderFeed(); }));
 
 async function loadFeed() {
   try {
-    const response = await fetch("./data/latest.json", { cache: "no-store" });
+    const response = await fetch("/data/latest.json", { cache: "no-store" });
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     state.feed = await response.json();
   } catch (error) {
