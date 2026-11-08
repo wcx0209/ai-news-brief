@@ -41,6 +41,16 @@ BROAD_EDITORIAL_SOURCES = {
     'Redpoint AI',
     '硅谷101',
     '十字路口 Crossing',
+    'Sequoia Capital Articles',
+    'Y Combinator Blog',
+    'a16z Podcast',
+    'Y Combinator',
+    'Bessemer Venture Partners',
+    'US NIST',
+    'European Commission Digital Strategy',
+    'UK AI Security Institute',
+    'UK Science and Technology',
+    'IMDA Singapore',
 }
 
 AI_TITLE_PATTERN = re.compile(

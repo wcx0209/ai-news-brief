@@ -99,6 +99,12 @@ https://github.com/user-attachments/assets/4c2a209e-46dd-422a-ae8f-82d92c73f68c
 | [Every Inc](https://www.youtube.com/@EveryInc) | AI 与工作方式 |
 | [Data Driven NYC](https://www.youtube.com/@DataDrivenNYC) | 数据/AI 演讲 |
 
+Polyemergence 的初始化信源还增加了创投与政策一手来源：红杉资本文章、
+Y Combinator 博客与视频、a16z 播客、Bessemer Venture Partners、美国
+NIST、欧盟委员会数字战略、英国 AI Security Institute、英国科技政策公告，
+以及新加坡 IMDA。综合型信源会先经过 AI 标题门槛，再进入 LLM 流程，
+无关的被投企业宣传和政府部门公告会被提前剔除。
+
 
 ### 🚀 开源 — GitHub Trending
 

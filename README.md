@@ -103,6 +103,14 @@ The production instance at [inbrief.info](https://inbrief.info) currently tracks
 | [Every Inc](https://www.youtube.com/@EveryInc) | AI & work essays |
 | [Data Driven NYC](https://www.youtube.com/@DataDrivenNYC) | Data/AI talks |
 
+The Polyemergence bootstrap set also adds first-party venture and policy
+sources: Sequoia Capital Articles, Y Combinator Blog and video, a16z Podcast,
+Bessemer Venture Partners, US NIST, the European Commission Digital Strategy,
+the UK AI Security Institute, UK science and technology announcements, and
+Singapore IMDA. Broad feeds pass an AI-specific headline gate before LLM
+processing, so unrelated portfolio promotions or departmental notices are
+discarded early.
+
 
 ### 🚀 Open source — GitHub Trending
 

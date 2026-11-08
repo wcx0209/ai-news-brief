@@ -52,6 +52,21 @@ SOURCES = [
     ("https://feeds.arstechnica.com/arstechnica/technology-lab", "Ars Technica AI", "Technical AI products, research, and industry analysis", "news", 83),
     ("https://huggingface.co/api/daily_papers", "Hugging Face Daily Papers", "Community-ranked research", "news", 65),
 
+    # Venture capital and startup ecosystem: first-party market theses, founder
+    # guidance, and interviews. These are broad feeds, so the pipeline applies
+    # the title-level AI gate before spending an LLM call on an item.
+    ("https://www.sequoiacap.com/feed/", "Sequoia Capital Articles", "Official investment perspectives on AI companies, markets, and infrastructure", "news", 86),
+    ("https://www.ycombinator.com/blog/rss.xml", "Y Combinator Blog", "Official startup, founder, and AI ecosystem updates", "news", 84),
+    ("https://feeds.simplecast.com/JGE3yC0V", "a16z Podcast", "Official technology and investment conversations from Andreessen Horowitz", "interviews", 80),
+
+    # Government technology and AI governance: official primary sources from
+    # high-impact regulatory jurisdictions. Broad departmental feeds remain
+    # subject to the same AI-title gate to exclude unrelated announcements.
+    ("https://www.nist.gov/news-events/news/rss.xml", "US NIST", "Official US AI standards, safety, evaluation, and technology policy updates", "news", 90),
+    ("https://digital-strategy.ec.europa.eu/en/rss.xml", "European Commission Digital Strategy", "Official EU AI Office, AI Act, digital policy, and regulatory updates", "news", 92),
+    ("https://www.gov.uk/government/organisations/ai-security-institute.atom", "UK AI Security Institute", "Official frontier AI safety research, evaluations, and policy updates", "news", 92),
+    ("https://www.gov.uk/government/organisations/department-for-science-innovation-and-technology.atom", "UK Science and Technology", "Official UK technology, innovation, and AI policy announcements", "news", 84),
+
     # High-signal AI interviews and long-form conversations. Keep this set small:
     # video transcripts are expensive to collect and should complement, not crowd out, news.
     ("https://www.youtube.com/feeds/videos.xml?channel_id=UCKV2yWPB3wn0RTZh3cTD8YA", "硅谷101", "Original Chinese long-form interviews on AI research, companies, infrastructure, and markets", "interviews", 92),
@@ -61,6 +76,9 @@ SOURCES = [
     ("https://www.youtube.com/feeds/videos.xml?channel_id=UCxBcwypKK-W3GHd_RZ9FZrQ", "Latent Space", "AI engineering interviews and technical conversations", "interviews", 84),
     ("https://www.youtube.com/feeds/videos.xml?channel_id=UCWrF0oN6unbXrWsTN7RctTw", "Sequoia Capital", "Training Data interviews on AI companies, products, and markets", "interviews", 82),
     ("https://www.youtube.com/feeds/videos.xml?channel_id=UCUl-s_Vp-Kkk_XVyDylNwLA", "Redpoint AI", "Unsupervised Learning interviews with AI builders and researchers", "interviews", 82),
+    ("https://www.youtube.com/feeds/videos.xml?channel_id=UCcefcZRL2oaA_uBNeo5UOWg", "Y Combinator", "Official AI startup, founder, and technical interviews", "interviews", 84),
+    ("https://www.youtube.com/feeds/videos.xml?channel_id=UCKuHAxZoh99t8uyPQhoDR3A", "Bessemer Venture Partners", "Official cloud, vertical AI, and startup market conversations", "interviews", 78),
+    ("https://www.youtube.com/feeds/videos.xml?channel_id=UCeW5IMmy5uUzEv3f4ijV2cg", "IMDA Singapore", "Official Singapore AI adoption, governance, and digital policy updates", "news", 88),
 ]
 
 
