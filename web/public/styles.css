@@ -78,6 +78,10 @@ main { overflow: hidden; }
 
 .story-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; background: var(--carbon); border: 2px solid var(--carbon); }
 .story-card { min-width: 0; background: var(--white); }
+.story-card:last-child:nth-child(3n + 1) { grid-column: 1 / -1; }
+.story-card:last-child:nth-child(3n + 2) { grid-column: span 2; }
+.story-card:last-child:is(:nth-child(3n + 1), :nth-child(3n + 2)) { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+.story-card:last-child:is(:nth-child(3n + 1), :nth-child(3n + 2)) .card-visual { height: 100%; min-height: 320px; }
 .card-visual { height: 210px; }
 .card-plane { position: absolute; top: 0; right: 0; width: 74px; height: 74px; background: var(--orange); clip-path: polygon(42% 0, 100% 0, 100% 100%); }
 .card-copy { padding: 26px; }
@@ -109,6 +113,10 @@ footer p { margin: 0; color: var(--fog); }
   .desktop-nav, .edition { display: none; }
   .hero-copy { padding-inline: 40px; }
   .story-grid { grid-template-columns: 1fr 1fr; }
+  .story-card:last-child:is(:nth-child(3n + 1), :nth-child(3n + 2)) { grid-column: auto; display: block; }
+  .story-card:last-child:is(:nth-child(3n + 1), :nth-child(3n + 2)) .card-visual { height: 210px; min-height: 0; }
+  .story-card:last-child:nth-child(odd) { grid-column: 1 / -1; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .story-card:last-child:nth-child(odd) .card-visual { height: 100%; min-height: 280px; }
   .method { grid-template-columns: 1fr; }
 }
 @media (max-width: 700px) {
@@ -128,6 +136,8 @@ footer p { margin: 0; color: var(--fog); }
   .lead-story { grid-template-columns: 1fr; }
   .story-visual { order: -1; min-height: 280px; }
   .story-grid, .method ol { grid-template-columns: 1fr; }
+  .story-card:last-child:nth-child(odd) { grid-column: auto; display: block; }
+  .story-card:last-child:nth-child(odd) .card-visual { height: 250px; min-height: 0; }
   .card-visual { height: 250px; }
   footer { grid-template-columns: 1fr; padding-inline: 20px; }
 }
