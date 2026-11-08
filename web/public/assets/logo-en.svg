@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 240" role="img" aria-labelledby="title">
+  <title id="title">Polyemergence English logo</title>
+  <g transform="translate(10 28) scale(1.02)">
+    <path d="M18 49 70 28Q80 24 80 36v108q0 12-10 8l-52-22Z" fill="#202124"/>
+    <path d="M53 38 109 16q11-4 11 9v130q0 13-11 9l-56-23Z" fill="#85878A" fill-opacity=".74"/>
+    <path d="M93 27 164 3q14-5 14 11v152q0 16-14 11l-71-27Z" fill="#FF5A24"/>
+  </g>
+  <line x1="220" y1="40" x2="220" y2="200" stroke="#111111" stroke-width="3"/>
+  <text x="270" y="151" fill="#111111" font-family="Arial, Helvetica, sans-serif" font-size="98" font-weight="800" letter-spacing="-4">POLYEMERGENCE</text>
+</svg>

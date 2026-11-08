@@ -27,6 +27,8 @@ class ConfigLoader:
 
     def load_config(self, config_path="config.yaml"):
         """Loads configuration from a YAML file."""
+        if config_path == "config.yaml":
+            config_path = os.environ.get("INBRIEF_CONFIG_PATH", config_path)
         if not os.path.isabs(config_path):
             base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
             config_path = os.path.join(base_dir, config_path)
@@ -53,6 +55,11 @@ class ConfigLoader:
         if os.environ.get("INBRIEF_LLM_BASE_URL"):
             if "llm" not in self._config: self._config["llm"] = {}
             self._config["llm"]["base_url"] = os.environ.get("INBRIEF_LLM_BASE_URL")
+
+        if os.environ.get("INBRIEF_LLM_MODEL_NAME"):
+            if "llm" not in self._config: self._config["llm"] = {}
+            self._config["llm"]["model_name"] = os.environ.get("INBRIEF_LLM_MODEL_NAME")
+            self._config["llm"]["scoring_model_name"] = os.environ.get("INBRIEF_LLM_MODEL_NAME")
 
         # Auth Settings
         if os.environ.get("INBRIEF_JWT_SECRET"):

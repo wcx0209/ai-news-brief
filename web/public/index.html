@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en" data-locale="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Polyemergence connects the signals shaping the next phase of AI.">
+  <meta name="theme-color" content="#111111">
+  <title>Polyemergence — AI News, Signals, Insight</title>
+  <link rel="icon" href="./favicon.svg" type="image/svg+xml">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="./" aria-label="Polyemergence home">
+      <img src="./assets/mark.svg" alt="" width="54" height="44">
+      <span class="brand-name" data-copy="brand">POLYEMERGENCE</span>
+    </a>
+    <nav class="desktop-nav" aria-label="Primary">
+      <a href="#brief" data-copy="navNews">News</a>
+      <a href="#brief" data-filter-link="discussion" data-copy="navSignals">Signals</a>
+      <a href="#about" data-copy="navInsight">Insight</a>
+    </nav>
+    <div class="language-switch" role="group" aria-label="Language">
+      <button type="button" data-locale-button="en" aria-pressed="true">EN</button>
+      <button type="button" data-locale-button="zh" aria-pressed="false">中</button>
+    </div>
+  </header>
+
+  <main>
+    <section class="intro" aria-labelledby="intro-title">
+      <div>
+        <p class="eyebrow" data-copy="eyebrow">AI NEWS · SIGNALS · INSIGHT</p>
+        <h1 id="intro-title" data-copy="tagline">What’s next,<br>made visible.</h1>
+      </div>
+      <div class="intro-meta">
+        <p data-copy="promise">Important AI changes, connected across technology, business, policy, and society.</p>
+        <div class="update-line">
+          <span class="pulse" aria-hidden="true"></span>
+          <span id="update-status">Loading today’s brief…</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="brief" id="brief" aria-labelledby="brief-title">
+      <div class="section-heading">
+        <div>
+          <p class="section-index">01</p>
+          <h2 id="brief-title" data-copy="dailyBrief">Daily Brief</h2>
+        </div>
+        <div class="filters" id="filters" role="group" aria-label="Filter stories"></div>
+      </div>
+      <div id="demo-notice" class="demo-notice" hidden></div>
+      <div id="lead-story" class="lead-story" aria-live="polite"></div>
+      <div id="story-grid" class="story-grid"></div>
+      <div id="empty-state" class="empty-state" hidden></div>
+    </section>
+
+    <section class="method" id="about" aria-labelledby="method-title">
+      <div>
+        <p class="section-index">02</p>
+        <h2 id="method-title" data-copy="methodTitle">From signal to consequence.</h2>
+      </div>
+      <ol>
+        <li><span>01</span><strong data-copy="methodSignal">Signal</strong><p data-copy="methodSignalText">What changed?</p></li>
+        <li><span>02</span><strong data-copy="methodStructure">Structure</strong><p data-copy="methodStructureText">What larger system is taking shape?</p></li>
+        <li><span>03</span><strong data-copy="methodConsequence">Consequence</strong><p data-copy="methodConsequenceText">Who is affected, and what comes next?</p></li>
+      </ol>
+    </section>
+  </main>
+
+  <footer>
+    <div class="footer-brand"><img src="./assets/mark-reverse.svg" alt="" width="44"><span data-copy="brand">POLYEMERGENCE</span></div>
+    <p data-copy="footer">Independent AI intelligence for a changing world.</p>
+    <p class="attribution">Data engine based on <a href="https://github.com/frankzch/ai-news-brief" rel="noopener noreferrer">AI News Brief</a> · MIT License</p>
+  </footer>
+
+  <script src="./app.js" defer></script>
+</body>
+</html>

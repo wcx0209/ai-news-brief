@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 180" role="img" aria-labelledby="title desc">
+  <title id="title">Polyemergence reverse mark</title>
+  <desc id="desc">White and gray latent layers culminate in a complete orange emergent layer.</desc>
+  <path d="M18 49 70 28Q80 24 80 36v108q0 12-10 8l-52-22Z" fill="#F7F5EE" fill-opacity=".42"/>
+  <path d="M53 38 109 16q11-4 11 9v130q0 13-11 9l-56-23Z" fill="#F7F5EE" fill-opacity=".72"/>
+  <path d="M93 27 164 3q14-5 14 11v152q0 16-14 11l-71-27Z" fill="#FF5A24"/>
+</svg>

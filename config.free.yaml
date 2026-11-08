@@ -1,0 +1,50 @@
+llm:
+  base_url: "https://generativelanguage.googleapis.com/v1beta/openai/"
+  api_key: ""
+  model_name: "gemini-3.8-flash"
+  scoring_model_name: "gemini-3.8-flash"
+
+schedule:
+  interval_hours: 24
+
+supabase:
+  db_url: ""
+
+fetching:
+  network_timeout: 60
+  ai_timeout: 90
+  max_input_chars: 30000
+  concurrency: 3
+  max_entries: 18
+  article_max_age_days: 2
+  hf_daily_top_n: 5
+  discussion:
+    min_likes: 40
+    min_replies: 15
+    max_age_days: 3
+    max_update_hours: 36
+    min_age_hours: 2
+    search_delay_min: 2
+    search_delay_max: 5
+    post_delay_min: 2
+    post_delay_max: 5
+  reddit:
+    max_per_run: 0
+    max_posts_per_keyword: 0
+  twitter:
+    enabled: false
+    max_per_run: 0
+    max_posts_per_keyword: 0
+  youtube:
+    max_per_run: 0
+    delay_min: 0
+    delay_max: 0
+  github_trending:
+    enabled: true
+    max_repos: 10
+    since: "weekly"
+  playwright_domains: []
+
+cleanup:
+  article_retention_days: 14
+  tag_stats_retention_days: 90

@@ -1,0 +1,10 @@
+{
+  "name": "Polyemergence",
+  "short_name": "Polyemergence",
+  "description": "AI news, signals, and insight.",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#f7f5ee",
+  "theme_color": "#111111",
+  "icons": [{ "src": "./favicon.svg", "sizes": "any", "type": "image/svg+xml" }]
+}
