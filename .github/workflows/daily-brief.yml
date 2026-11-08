@@ -3,7 +3,8 @@ name: Polyemergence daily brief
 on:
   workflow_dispatch:
   schedule:
-    - cron: "15 0 * * *" # 08:15 Singapore / 00:15 UTC
+    - cron: "0 6 * * *"  # 06:00 UTC / 14:00 Singapore
+    - cron: "0 18 * * *" # 18:00 UTC / 02:00 Singapore (next day)
 
 permissions:
   contents: write

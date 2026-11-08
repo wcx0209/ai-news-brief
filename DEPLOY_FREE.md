@@ -44,7 +44,7 @@ Run **Polyemergence daily brief** manually once. A successful run will:
 4. export `web/public/data/latest.json`;
 5. commit the refreshed feed.
 
-The scheduled run is 08:15 Singapore time.
+The scheduled runs are 06:00 and 18:00 UTC every day (14:00 and 02:00 Singapore time).
 
 ## 3. Cloudflare Pages
 
