@@ -51,14 +51,18 @@ BROAD_EDITORIAL_SOURCES = {
     'UK AI Security Institute',
     'UK Science and Technology',
     'IMDA Singapore',
+    'Tencent Newsroom',
+    'SK hynix Newsroom',
+    'Databricks',
+    'Vercel',
 }
 
 AI_TITLE_PATTERN = re.compile(
     r'(?i)(?:\b(?:ai|a\.i\.|artificial intelligence|machine learning|deep learning|'
     r'generative|llm|large language model|foundation model|agent(?:s|ic)?|chatbot|copilot|'
-    r'robot(?:ics)?|robotaxi(?:s)?|autonomous driving|self-driving|openai|coreai|anthropic|claude|gemini|deepseek|qwen|mistral|grok|xai|'
+    r'robot(?:ics)?|robotaxi(?:s)?|autonomous driving|self-driving|gpu|npu|hbm|ai accelerator|semiconductor|chip|openai|coreai|anthropic|claude|gemini|deepseek|qwen|mistral|grok|xai|'
     r'hugging face|nvidia|sora|midjourney|stable diffusion)\b|'
-    r'人工智能|大模型|机器学习|深度学习|生成式|智能体|机器人|人形机器人|算力|自动驾驶|无人驾驶|智能驾驶|具身智能|'
+    r'人工智能|大模型|机器学习|深度学习|生成式|智能体|机器人|人形机器人|算力|芯片|半导体|加速器|存储|自动驾驶|无人驾驶|智能驾驶|具身智能|'
     r'AI时代|AI 时代|Claude Code|Codex|AGI|模型训练|推理模型|数据中心|'
     r'深度求索|通义千问|豆包|文心一言|混元|盘古|百川|智谱)',
 )
@@ -67,6 +71,16 @@ AI_TITLE_PATTERN = re.compile(
 def _passes_broad_source_ai_filter(source_name, title):
     """Reject off-topic entries from broad editorial feeds using the headline."""
     return source_name not in BROAD_EDITORIAL_SOURCES or bool(AI_TITLE_PATTERN.search(title or ''))
+
+
+def _is_first_party_source(source):
+    """Return whether a configured source represents its subject directly."""
+    description = (source.get('description') or '').lower()
+    return (
+        '[first_party]' in description
+        or description.startswith('official ')
+        or ' first-party ' in f' {description} '
+    )
 
 
 def cleanup_old_articles():
@@ -131,6 +145,7 @@ def _process_single_entry(entry, sources, source_map, user_db, ai_engine, vector
                 break
     
     rss_info = source_map.get(entry_source_id, {})
+    is_first_party = _is_first_party_source(rss_info)
     rss_url = rss_info.get('url', 'unknown')
     _rss_desc = rss_info.get('description') or ''
     _rss_name = rss_info.get('name') or ''
@@ -470,20 +485,6 @@ def _process_single_entry(entry, sources, source_map, user_db, ai_engine, vector
         fetch_stats.record_failure(rss_url, rss_desc, 'incomplete_summary')
         return 0
 
-    # Vector DB semantic deduplication
-    similar_articles = vector_store.find_similar_articles(
-        summary=summary_en or summary_zh,
-        tags=tags,
-        threshold=0.85,
-        limit=1
-    )
-    if similar_articles:
-        dup = similar_articles[0]
-        logging.warning(f"{log_prefix}Skipping semantic duplicate (similarity={dup['similarity']:.3f}): {title}")
-        logging.warning(f"{log_prefix}  [Duplicate of] article_id={dup['id']}")
-        fetch_stats.record_skip(rss_url, rss_desc, 'vector_duplicate')
-        return 0
-    
     # 计算 LLM 输入输出字数
     llm_input_chars = min(len(full_text), 8000)
     llm_output_chars = len(summary_en) + len(summary_zh) + len(long_summary_en) + len(long_summary_zh) + len(title_en) + len(title_zh)
@@ -534,8 +535,55 @@ def _process_single_entry(entry, sources, source_map, user_db, ai_engine, vector
         'momentum_score': method_scores['momentum'],
         'tags': tags,
         'content_hash': content_hash,
-        'published_at': entry['published_at']
+        'published_at': entry['published_at'],
+        'source_published_at': entry['published_at'],
     }
+
+    # Vector DB semantic deduplication. A first-party announcement is allowed
+    # to replace an earlier media version of the same event while retaining the
+    # existing article id and archive URL.
+    similar_articles = vector_store.find_similar_articles(
+        summary=summary_en or summary_zh,
+        tags=tags,
+        threshold=0.85,
+        limit=1
+    )
+    if similar_articles:
+        dup = similar_articles[0]
+        first_party_names = {
+            source.get('name') for source in sources
+            if _is_first_party_source(source)
+        }
+        duplicate_source = (dup.get('metadata') or {}).get('source', '')
+        if (
+            is_first_party
+            and duplicate_source not in first_party_names
+            and user_db.replace_article_with_first_party(dup['id'], article_data)
+        ):
+            source_name = next(
+                (s['name'] for s in sources if s['id'] == source_id), ''
+            )
+            vector_store.delete_article(dup['id'])
+            vector_store.add_article(
+                article_id=dup['id'],
+                summary=summary_en or summary_zh,
+                tags=tags,
+                source=source_name,
+                category=source_category or 'news'
+            )
+            logging.info(
+                "%sPromoted duplicate article %s to first-party source %s",
+                log_prefix, dup['id'], source_name
+            )
+            fetch_stats.record_success(
+                rss_url, rss_desc, llm_input_chars, llm_output_chars
+            )
+            return 1
+        logging.warning(f"{log_prefix}Skipping semantic duplicate (similarity={dup['similarity']:.3f}): {title}")
+        logging.warning(f"{log_prefix}  [Duplicate of] article_id={dup['id']}")
+        fetch_stats.record_skip(rss_url, rss_desc, 'vector_duplicate')
+        return 0
+
     article_id = user_db.add_article(article_data)
 
     # 写入向量库
@@ -635,6 +683,14 @@ def _fetch_and_process_source(source: dict, rss_fetcher, sources, source_map,
         # Some maintained or generated RSS feeds are ordered oldest-first.
         # Always curate the newest item instead of trusting provider order.
         entries.sort(key=lambda entry: entry.get('published_at') or '', reverse=True)
+        # Filter broad newsrooms before applying the per-source item cap. If we
+        # slice first, three newer non-AI corporate posts can hide a first-party
+        # model or accelerator announcement further down the same feed.
+        if name in BROAD_EDITORIAL_SOURCES:
+            entries = [
+                entry for entry in entries
+                if _passes_broad_source_ai_filter(name, entry.get('title', ''))
+            ]
         # 兼容用户手动配置 reddit.com/search.rss 的旧场景
         if 'reddit.com/search.rss' in url:
             max_posts = fetching_config.get('reddit', {}).get('max_posts_per_keyword', 10)
@@ -770,7 +826,9 @@ def _process_browser_group(group_name, group_sources, rss_fetcher, sources, sour
     logging.info(f"[BrowserGroup:{group_name}] Finished: {processed} articles processed")
     return processed
 
-def fetch_articles_for_sources(sources: list, user_db: UserDatabase, ai_engine: AIEngine, vector_store: VectorStore, fetch_stats: 'FetchStats' = None) -> int:
+def fetch_articles_for_sources(sources: list, user_db: UserDatabase, ai_engine: AIEngine,
+                               vector_store: VectorStore, fetch_stats: 'FetchStats' = None,
+                               _split_first_party: bool = True) -> int:
     """
     Fetch and process articles for the given RSS sources.
     分组方式（按源 URL，不再上来全拉一遍 RSS 列表）：
@@ -783,6 +841,28 @@ def fetch_articles_for_sources(sources: list, user_db: UserDatabase, ai_engine: 
     """
     if not sources:
         return 0
+
+    # Process company/lab/government sources before media and discussion feeds.
+    # LSH and vector deduplication keep the first matching account of an event,
+    # so this ordering makes an official announcement the canonical story while
+    # still allowing independent reporting when it adds genuinely new material.
+    if _split_first_party:
+        first_party = [source for source in sources if _is_first_party_source(source)]
+        secondary = [source for source in sources if not _is_first_party_source(source)]
+        if first_party and secondary:
+            logging.info(
+                "First-party source phase: %d official sources before %d secondary sources",
+                len(first_party), len(secondary)
+            )
+            official_count = fetch_articles_for_sources(
+                first_party, user_db, ai_engine, vector_store,
+                fetch_stats=fetch_stats, _split_first_party=False
+            )
+            secondary_count = fetch_articles_for_sources(
+                secondary, user_db, ai_engine, vector_store,
+                fetch_stats=fetch_stats, _split_first_party=False
+            )
+            return official_count + secondary_count
 
     feeds_config = [{'url': s['url'], 'name': s['name'], 'id': s['id'], 'description': s.get('description', s['name'])} for s in sources]
     rss_fetcher = RSSFetcher(feeds_config)
@@ -798,7 +878,11 @@ def fetch_articles_for_sources(sources: list, user_db: UserDatabase, ai_engine: 
     min_upvotes = discussion_config.get('min_likes', 0)
     min_comments = discussion_config.get('min_replies', 0)
 
-    article_max_age_days = fetching_config.get('article_max_age_days', 7)
+    all_first_party = all(_is_first_party_source(source) for source in sources)
+    age_key = 'official_article_max_age_days' if all_first_party else 'article_max_age_days'
+    article_max_age_days = fetching_config.get(
+        age_key, fetching_config.get('article_max_age_days', 7)
+    )
     cutoff_date = datetime.now(timezone.utc) - timedelta(days=article_max_age_days)
     discussion_cutoff_date = datetime.now(timezone.utc) - timedelta(days=discussion_config.get('max_age_days', 3))
     discussion_update_cutoff = datetime.now(timezone.utc) - timedelta(hours=discussion_config.get('max_update_hours', 24))
@@ -938,17 +1022,35 @@ def run_pipeline():
         else:
             rss_sources.append(s)
     
-    # 3-5. RSS / Twitter / GitHub 三大采集管道并行。
-    # 彼此独立：写库靠 UserDatabase 的线程安全连接池，fetch_stats 自带锁，
-    # 各 pipeline 的浏览器使用不同的 playwright profile 子目录（reddit/youtube/other/twitter），
-    # 不会出现 Chrome user_data_dir 锁冲突。
+    # 3. Run first-party RSS/newsroom sources before every secondary pipeline.
+    # This guarantees that semantic deduplication keeps the vendor's own
+    # announcement instead of whichever media, social, or GitHub job wins a
+    # concurrency race.
+    first_party_rss = [source for source in rss_sources if _is_first_party_source(source)]
+    secondary_rss = [source for source in rss_sources if not _is_first_party_source(source)]
+    if first_party_rss:
+        logging.info(
+            "Running %d first-party sources before secondary pipelines",
+            len(first_party_rss)
+        )
+        processed = fetch_articles_for_sources(
+            first_party_rss, user_db, ai_engine, vector_store,
+            fetch_stats=fetch_stats, _split_first_party=False
+        )
+        logging.info("First-party RSS Pipeline Finished. Processed: %d", processed)
+
+    # 4-6. Secondary RSS / Twitter / GitHub pipelines run in parallel.
+    # They remain independent: UserDatabase uses a thread-safe connection pool,
+    # fetch_stats has its own lock, and each browser pipeline uses a separate
+    # Playwright profile.
     pipeline_jobs = []
-    if not rss_sources:
-        logging.info("No regular RSS sources found. Skipping RSS fetch.")
+    if not secondary_rss:
+        logging.info("No secondary RSS sources found. Skipping secondary RSS fetch.")
     else:
-        logging.info(f"Found {len(rss_sources)} regular RSS sources")
+        logging.info(f"Found {len(secondary_rss)} secondary RSS sources")
         pipeline_jobs.append(('RSS', lambda: fetch_articles_for_sources(
-            rss_sources, user_db, ai_engine, vector_store, fetch_stats=fetch_stats)))
+            secondary_rss, user_db, ai_engine, vector_store,
+            fetch_stats=fetch_stats, _split_first_party=False)))
 
     pipeline_jobs.append(('Twitter', lambda: fetch_twitter_posts(
         twitter_sources, user_db, ai_engine, vector_store, fetch_stats=fetch_stats)))
@@ -965,7 +1067,7 @@ def run_pipeline():
             except Exception as e:
                 logging.error(f"{name} pipeline failed: {e}", exc_info=True)
 
-    # 6. 统一输出所有采集管道的统计报告
+    # 7. 统一输出所有采集管道的统计报告
     fetch_stats.log_report()
     
     logging.info("All pipelines finished.")

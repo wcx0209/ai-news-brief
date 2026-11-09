@@ -153,7 +153,12 @@ def content_type(record, locale):
 
 def source_type(record, locale):
     host = urlparse(record["url"]).netloc.lower()
-    first_party = ("github.com", "arxiv.org", "huggingface.co", "openai.com", "anthropic.com", "deepmind.google", "blogs.nvidia.com")
+    first_party = (
+        "github.com", "github.blog", "arxiv.org", "huggingface.co", "openai.com",
+        "anthropic.com", "deepmind.google", "blogs.nvidia.com", "tencent.com",
+        "graphcore.ai", "sambanova.ai", "skhynix.com", "cloudflare.com",
+        "databricks.com", "pinecone.io", "wandb.ai", "vercel.com",
+    )
     if host.endswith(".gov") or host.endswith(".gov.sg") or "europa.eu" in host or any(domain in host for domain in first_party):
         return "First-party / official source" if locale == "en" else "第一方／官方来源"
     if "youtube.com" in host or "youtu.be" in host:
@@ -163,7 +168,8 @@ def source_type(record, locale):
 
 def trust_box(record, locale):
     c = COPY[locale]
-    published_local = record["published"].astimezone(LOCAL_TZ)
+    source_published = record.get("source_published") or record["published"]
+    published_local = source_published.astimezone(LOCAL_TZ)
     process = (
         "AI-assisted discovery, translation, summarisation, classification and scoring; standards and corrections are maintained by the editorial desk."
         if locale == "en" else
@@ -179,7 +185,7 @@ def trust_box(record, locale):
 <div><dt>{esc(c['content_type'])}</dt><dd>{esc(content_type(record, locale))}</dd></div>
 <div><dt>{esc(c['source_type'])}</dt><dd>{esc(source_type(record, locale))}</dd></div>
 <div><dt>{esc(c['source'])}</dt><dd><a href="{esc(record['url'])}" target="_blank" rel="noopener noreferrer">{esc(record['source'])} ↗</a></dd></div>
-<div><dt>{esc(c['published'])}</dt><dd><time datetime="{record['published'].isoformat()}">{published_local:%Y-%m-%d %H:%M} SGT</time></dd></div>
+<div><dt>{esc(c['published'])}</dt><dd><time datetime="{source_published.isoformat()}">{published_local:%Y-%m-%d %H:%M} SGT</time></dd></div>
 <div><dt>{esc(c['process'])}</dt><dd>{esc(process)}</dd></div>
 <div><dt>{esc(c['verification'])}</dt><dd>{esc(verification)}</dd></div>
 <div><dt>{esc(c['byline'])}</dt><dd>Polyemergence Editorial Desk · PolyEmergence Pte Ltd.</dd></div>
@@ -189,6 +195,7 @@ def trust_box(record, locale):
 
 def record_from_feed(item):
     published = parse_datetime(item.get("published_at"))
+    source_published = parse_datetime(item.get("source_published_at") or item.get("published_at"))
     tags = parse_tags(item.get("tags"))
     source = item.get("source") or "Unknown source"
     title = (item.get("en") or {}).get("title") or (item.get("zh") or {}).get("title") or ""
@@ -196,7 +203,8 @@ def record_from_feed(item):
     return {
         "id": item.get("id"), "url": safe_url(item.get("url")), "source": source,
         "category": normalize_category(item.get("category"), title, source, tags),
-        "published": published, "importance": int(item.get("importance") or 0),
+        "published": published, "source_published": source_published,
+        "importance": int(item.get("importance") or 0),
         "scores": {key: int(scores.get(key) or 0) for key in ("signal", "structure", "consequence", "confidence", "momentum")},
         "tags": tags,
         "en": {"title": (item.get("en") or {}).get("title") or title, "summary": (item.get("en") or {}).get("summary") or "", "full": (item.get("en") or {}).get("full_summary") or (item.get("en") or {}).get("summary") or ""},
@@ -224,6 +232,7 @@ def load_database():
                        a.importance_score, a.signal_score, a.structure_score,
                        a.consequence_score, a.confidence_score, a.momentum_score,
                        a.tags, a.category, COALESCE(a.published_at, a.created_at) AS published_at,
+                       COALESCE(a.source_published_at, a.published_at, a.created_at) AS source_published_at,
                        rs.name AS source_name
                 FROM articles a
                 LEFT JOIN rss_sources rs ON rs.id = a.rss_source_id
@@ -240,7 +249,9 @@ def load_database():
         records.append({
             "id": row["id"], "url": safe_url(row["url"]), "source": source,
             "category": normalize_category(row["category"], title, source, tags),
-            "published": parse_datetime(row["published_at"]), "importance": int(row["importance_score"] or 0),
+            "published": parse_datetime(row["published_at"]),
+            "source_published": parse_datetime(row["source_published_at"]),
+            "importance": int(row["importance_score"] or 0),
             "scores": {"signal": int(row["signal_score"] or 0), "structure": int(row["structure_score"] or 0), "consequence": int(row["consequence_score"] or 0), "confidence": int(row["confidence_score"] or 0), "momentum": int(row["momentum_score"] or 0)},
             "tags": tags,
             "en": {"title": row["title_en"] or row["title"] or "", "summary": row["summary_en"] or row["long_summary_en"] or "", "full": row["long_summary_en"] or row["summary_en"] or ""},
@@ -367,7 +378,8 @@ def render_article(output, locale, record):
     body = f'''<nav class="archive-period-nav"><a href="{archive_path(locale, day)}">← {day.isoformat()}</a><a href="/{locale}/archive/">{esc(c['all'])}</a></nav><section class="archive-list archive-article-page">{story_html(record, locale)}</section>'''
     structured = {
         "@context": "https://schema.org", "@type": "NewsArticle", "headline": title,
-        "description": description, "datePublished": record["published"].isoformat(),
+        "description": description,
+        "datePublished": (record.get("source_published") or record["published"]).isoformat(),
         "dateModified": record["published"].isoformat(), "inLanguage": c["lang"],
         "articleSection": CATEGORY_LABELS[locale][record["category"]],
         "keywords": record["tags"],

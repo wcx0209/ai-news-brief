@@ -6,8 +6,9 @@ import threading
 import os
 import re
 import json
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from calendar import timegm
+from urllib.parse import urljoin
 
 from config_loader import ConfigLoader
 
@@ -269,6 +270,71 @@ class RSSFetcher:
         logging.info(f"Fetched {len(entries)} entries from {feed_config['name']}")
         return {'entries': entries, 'error': None, 'feed_config': feed_config}
 
+    def _fetch_tencent_newsroom(self, feed_config):
+        """Build feed entries from Tencent's official Chinese newsroom.
+
+        Tencent exposes a structured newsroom but no stable RSS/Atom endpoint.
+        Keeping this adapter here lets first-party Hunyuan announcements enter
+        the same pipeline as RSS sources without relying on a media rewrite.
+        """
+        try:
+            from bs4 import BeautifulSoup
+            from curl_cffi import requests as cffi_requests
+
+            response = cffi_requests.get(
+                feed_config['url'], impersonate="chrome", timeout=self.timeout
+            )
+            response.raise_for_status()
+            soup = BeautifulSoup(response.text, 'html.parser')
+            entries = []
+            seen = set()
+            for article in soup.select('article'):
+                anchor = article.select_one('h2.blog-title a[href]')
+                if not anchor:
+                    continue
+                link = urljoin(
+                    feed_config['url'], (anchor.get('href') or '').strip()
+                )
+                title = anchor.get_text(' ', strip=True)
+                if not link or not title or link in seen:
+                    continue
+                seen.add(link)
+
+                published_at = datetime.now(timezone.utc).isoformat()
+                date_node = article.select_one('.tc-blogpost-date')
+                if date_node:
+                    raw_date = date_node.get_text(' ', strip=True)
+                    try:
+                        published_at = datetime.strptime(
+                            raw_date, '%Y年%m月%d日'
+                        ).replace(
+                            tzinfo=timezone(timedelta(hours=8))
+                        ).isoformat()
+                    except ValueError:
+                        logging.debug(
+                            "Tencent Newsroom date could not be parsed: %s", raw_date
+                        )
+
+                entries.append({
+                    'title': title,
+                    'link': link,
+                    'summary': '',
+                    'source': feed_config['name'],
+                    'source_id': feed_config.get('id'),
+                    'published_at': published_at,
+                    'orig_entry': {'title': title, 'link': link},
+                })
+
+            entries.sort(key=lambda entry: entry['published_at'], reverse=True)
+            logging.info(
+                "Fetched %d entries from %s official newsroom",
+                len(entries), feed_config['name']
+            )
+            return {'entries': entries, 'error': None, 'feed_config': feed_config}
+        except Exception as exc:
+            logging.warning("Tencent Newsroom fetch failed: %s", exc)
+            return {'entries': [], 'error': str(exc), 'feed_config': feed_config}
+
     # Domains that require TLS fingerprint impersonation to bypass WAF
     DIFFICULT_RSS_DOMAINS = [
         'marktechpost.com',
@@ -295,6 +361,7 @@ class RSSFetcher:
         # Check if this is the Hugging Face Daily Papers JSON API
         is_hf_papers = 'huggingface.co/api/daily_papers' in url
         is_bytedance_seed = 'seed.bytedance.com' in url
+        is_tencent_newsroom = 'tencent.com/zh-cn/newsroom' in url
         # Check if this is a YouTube feed
         is_youtube = 'youtube.com' in url or 'youtu.be' in url
         # Check if this is a The Verge feed
@@ -310,6 +377,9 @@ class RSSFetcher:
 
         if is_bytedance_seed:
             return self._fetch_bytedance_seed(feed_config)
+
+        if is_tencent_newsroom:
+            return self._fetch_tencent_newsroom(feed_config)
 
         # For YouTube, try API first (more stable than RSS)
         if is_youtube:

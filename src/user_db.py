@@ -135,6 +135,7 @@ class UserDatabase:
                     category TEXT DEFAULT 'news',
                     content_hash BIGINT,
                     published_at TIMESTAMPTZ,
+                    source_published_at TIMESTAMPTZ,
                     created_at TIMESTAMPTZ DEFAULT NOW(),
                     summary_en TEXT,
                     summary_zh TEXT,
@@ -151,6 +152,9 @@ class UserDatabase:
                 cursor.execute(
                     f'ALTER TABLE articles ADD COLUMN IF NOT EXISTS {score_column} INTEGER DEFAULT 0'
                 )
+            cursor.execute('''
+                ALTER TABLE articles ADD COLUMN IF NOT EXISTS source_published_at TIMESTAMPTZ
+            ''')
             cursor.execute('''
                 CREATE INDEX IF NOT EXISTS idx_articles_source 
                 ON articles(rss_source_id, published_at DESC)
@@ -552,8 +556,9 @@ class UserDatabase:
                      summary_en, summary_zh, long_summary_en, long_summary_zh,
                      title_en, title_zh,
                      importance_score, signal_score, structure_score, consequence_score,
-                     confidence_score, momentum_score, tags, category, content_hash, published_at)
-                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                     confidence_score, momentum_score, tags, category, content_hash,
+                     published_at, source_published_at)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                 ''', (
                     article_id,
                     article_data['rss_source_id'],
@@ -574,7 +579,8 @@ class UserDatabase:
                     tags,
                     article_data.get('category', 'news'),
                     content_hash,
-                    article_data.get('published_at')
+                    article_data.get('published_at'),
+                    article_data.get('source_published_at') or article_data.get('published_at')
                 ))
                 
                 # Increment tag daily stats (hot tags)
@@ -606,6 +612,64 @@ class UserDatabase:
         except psycopg2.IntegrityError:
             logging.debug(f"Article URL already exists: {article_data['url']}")
             return None
+
+    def replace_article_with_first_party(self, article_id: str,
+                                         article_data: Dict[str, Any]) -> bool:
+        """Replace a duplicate media record with its official-source version.
+
+        The stable article id is preserved so existing archive links remain
+        valid. Callers use this only after semantic matching of a first-party
+        announcement to a previously stored secondary-source story.
+        """
+        tags = article_data.get('tags', [])
+        if isinstance(tags, list):
+            tags = json.dumps(tags)
+        try:
+            with self._get_connection() as conn:
+                cursor = conn.cursor()
+                cursor.execute('''
+                    UPDATE articles SET
+                        rss_source_id = %s, title = %s, url = %s,
+                        summary_en = %s, summary_zh = %s,
+                        long_summary_en = %s, long_summary_zh = %s,
+                        title_en = %s, title_zh = %s,
+                        importance_score = %s, signal_score = %s,
+                        structure_score = %s, consequence_score = %s,
+                        confidence_score = %s, momentum_score = %s,
+                        tags = %s, category = %s, content_hash = %s,
+                        source_published_at = %s
+                    WHERE id = %s
+                ''', (
+                    article_data['rss_source_id'], article_data['title'],
+                    article_data['url'], article_data.get('summary_en', ''),
+                    article_data.get('summary_zh', ''),
+                    article_data.get('long_summary_en', ''),
+                    article_data.get('long_summary_zh', ''),
+                    article_data.get('title_en', ''),
+                    article_data.get('title_zh', ''),
+                    article_data.get('importance_score', 0),
+                    article_data.get('signal_score', 0),
+                    article_data.get('structure_score', 0),
+                    article_data.get('consequence_score', 0),
+                    article_data.get('confidence_score', 0),
+                    article_data.get('momentum_score', 0), tags,
+                    article_data.get('category', 'news'),
+                    article_data.get('content_hash'),
+                    article_data.get('source_published_at') or article_data.get('published_at'),
+                    article_id,
+                ))
+                replaced = cursor.rowcount == 1
+                logging.info(
+                    "First-party source replacement for article %s: %s",
+                    article_id, replaced
+                )
+                return replaced
+        except Exception as exc:
+            logging.error(
+                "Failed first-party source replacement for %s: %s",
+                article_id, exc
+            )
+            return False
 
     # ==================== Hot Tags ====================
 

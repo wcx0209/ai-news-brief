@@ -233,6 +233,7 @@ def main():
                        a.importance_score, a.signal_score, a.structure_score,
                        a.consequence_score, a.confidence_score, a.momentum_score,
                        a.tags, a.category, a.published_at,
+                       COALESCE(a.source_published_at, a.published_at) AS source_published_at,
                        a.created_at, rs.name AS source_name
                 FROM articles a
                 LEFT JOIN rss_sources rs ON rs.id = a.rss_source_id
@@ -288,6 +289,9 @@ def main():
                 "momentum": int(row["momentum_score"] or 0),
             },
             "published_at": iso(row["published_at"] or row["created_at"]),
+            "source_published_at": iso(
+                row["source_published_at"] or row["published_at"] or row["created_at"]
+            ),
             "image_url": image_urls[index],
             "tags": parse_tags(row["tags"]),
             "en": {

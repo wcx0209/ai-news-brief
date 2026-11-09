@@ -27,9 +27,21 @@ SOURCES = [
     ("https://machinelearning.apple.com/rss.xml", "Apple Machine Learning", "Official ML research", "news", 82),
     ("https://huggingface.co/blog/feed.xml", "Hugging Face", "Model releases and the open-source AI ecosystem", "news", 78),
 
+    # Official model release channels. GitHub Atom feeds are used where a
+    # vendor does not publish a stable newsroom RSS feed.
+    ("https://github.com/meta-llama/llama-models/releases.atom", "Meta Llama Releases", "[FIRST_PARTY] Official Meta Llama model releases", "models", 94),
+    ("https://github.com/Stability-AI/generative-models/releases.atom", "Stability AI Releases", "[FIRST_PARTY] Official Stability AI model releases", "models", 88),
+
     # China: official channels and influential technology media
     ("https://github.com/deepseek-ai/DeepSeek-R1/releases.atom", "DeepSeek Releases", "Official DeepSeek model release announcements", "news", 94),
     ("https://seed.bytedance.com/en/", "ByteDance Seed", "Official ByteDance model and research announcements", "news", 94),
+    ("https://www.tencent.com/zh-cn/newsroom/", "Tencent Newsroom", "[FIRST_PARTY] Official Tencent corporate, Hunyuan model, product, and research announcements", "news", 98),
+    ("https://github.com/QwenLM/Qwen3/releases.atom", "Qwen Releases", "[FIRST_PARTY] Official Alibaba Qwen model releases", "models", 96),
+    ("https://github.com/moonshotai/Kimi-K2/releases.atom", "Kimi Releases", "[FIRST_PARTY] Official Moonshot AI Kimi model releases", "models", 94),
+    ("https://github.com/zai-org/GLM-4.5/releases.atom", "Z.ai GLM Releases", "[FIRST_PARTY] Official Z.ai GLM model releases", "models", 94),
+    ("https://github.com/MiniMax-AI/MiniMax-M2/releases.atom", "MiniMax Releases", "[FIRST_PARTY] Official MiniMax model releases", "models", 92),
+    ("https://github.com/Tencent-Hunyuan/Hunyuan-A13B/releases.atom", "Tencent Hunyuan Releases", "[FIRST_PARTY] Official Tencent Hunyuan open-model releases", "models", 94),
+    ("https://github.com/PaddlePaddle/ERNIE/releases.atom", "Baidu ERNIE Releases", "[FIRST_PARTY] Official Baidu ERNIE model releases", "models", 92),
     ("https://www.qbitai.com/feed", "QbitAI 量子位", "Influential Chinese AI industry and model reporting", "news", 90),
     ("https://www.scmp.com/rss/36/feed", "SCMP China Tech", "China and Asian technology industry reporting", "news", 88),
     ("https://www.geekpark.net/rss", "GeekPark 极客公园", "Chinese technology companies, products, and startup reporting", "news", 84),
@@ -43,6 +55,35 @@ SOURCES = [
     ("https://analyticsindiamag.com/feed", "Analytics India Magazine", "Indian AI companies, models, and enterprise adoption", "news", 84),
     ("https://www.livemint.com/rss/AI", "Mint AI", "Indian business and policy reporting on artificial intelligence", "news", 82),
     ("https://aisingapore.org/feed/", "AI Singapore", "Official Singapore AI ecosystem, research, and industry updates", "news", 82),
+
+    # AI infrastructure and accelerator vendors: official engineering blogs,
+    # newsrooms, and product release feeds.
+    ("https://www.graphcore.ai/posts/rss.xml", "Graphcore", "[FIRST_PARTY] Official Graphcore AI accelerator and software updates", "business", 88),
+    ("https://sambanova.ai/blog/rss.xml", "SambaNova", "[FIRST_PARTY] Official SambaNova AI systems, models, and enterprise platform updates", "business", 88),
+    ("https://news.skhynix.com/feed/", "SK hynix Newsroom", "[FIRST_PARTY] Official SK hynix AI memory and semiconductor announcements", "business", 86),
+    ("https://github.com/ROCm/ROCm/releases.atom", "AMD ROCm Releases", "[FIRST_PARTY] Official AMD AI compute software-stack releases", "open_source", 92),
+    ("https://github.com/openvinotoolkit/openvino/releases.atom", "Intel OpenVINO Releases", "[FIRST_PARTY] Official Intel AI inference software releases", "open_source", 90),
+    ("https://github.com/quic/ai-hub-models/releases.atom", "Qualcomm AI Hub Releases", "[FIRST_PARTY] Official Qualcomm on-device AI model releases", "open_source", 90),
+    ("https://github.com/Cerebras/modelzoo/releases.atom", "Cerebras Model Zoo Releases", "[FIRST_PARTY] Official Cerebras AI model and training-stack releases", "open_source", 90),
+    ("https://github.com/groq/groq-python/releases.atom", "Groq Platform Releases", "[FIRST_PARTY] Official Groq inference-platform SDK releases", "open_source", 88),
+    ("https://github.com/tenstorrent/tt-metal/releases.atom", "Tenstorrent TT-Metal Releases", "[FIRST_PARTY] Official Tenstorrent accelerator software releases", "open_source", 88),
+    ("https://github.com/aws-neuron/aws-neuron-sdk/releases.atom", "AWS Neuron Releases", "[FIRST_PARTY] Official AWS Trainium and Inferentia software releases", "open_source", 90),
+    ("https://github.com/ARM-software/kleidiai/releases.atom", "Arm KleidiAI Releases", "[FIRST_PARTY] Official Arm edge-AI kernel releases", "open_source", 86),
+
+    # AI software, data, cloud, and developer-platform vendors.
+    ("https://github.blog/ai-and-ml/feed/", "GitHub AI", "[FIRST_PARTY] Official GitHub AI, Copilot, and developer-platform updates", "news", 90),
+    ("https://blog.cloudflare.com/tag/ai/rss/", "Cloudflare AI", "[FIRST_PARTY] Official Cloudflare AI infrastructure and developer-platform updates", "news", 88),
+    ("https://www.databricks.com/feed", "Databricks", "[FIRST_PARTY] Official Databricks data and AI platform updates", "news", 90),
+    ("https://www.pinecone.io/blog/rss/", "Pinecone", "[FIRST_PARTY] Official Pinecone vector database and AI retrieval updates", "news", 84),
+    ("https://wandb.ai/fully-connected/rss.xml", "Weights & Biases", "[FIRST_PARTY] Official Weights & Biases model-development platform updates", "news", 84),
+    ("https://vercel.com/atom", "Vercel", "[FIRST_PARTY] Official Vercel AI SDK and application-platform updates", "news", 84),
+    ("https://github.com/langchain-ai/langchain/releases.atom", "LangChain Releases", "[FIRST_PARTY] Official LangChain agent framework releases", "open_source", 86),
+    ("https://github.com/run-llama/llama_index/releases.atom", "LlamaIndex Releases", "[FIRST_PARTY] Official LlamaIndex data and agent framework releases", "open_source", 84),
+    ("https://github.com/microsoft/autogen/releases.atom", "Microsoft AutoGen Releases", "[FIRST_PARTY] Official Microsoft AutoGen agent framework releases", "open_source", 88),
+    ("https://github.com/crewAIInc/crewAI/releases.atom", "CrewAI Releases", "[FIRST_PARTY] Official CrewAI multi-agent platform releases", "open_source", 84),
+    ("https://github.com/vllm-project/vllm/releases.atom", "vLLM Releases", "[FIRST_PARTY] Official vLLM inference-engine releases", "open_source", 88),
+    ("https://github.com/huggingface/transformers/releases.atom", "Hugging Face Transformers Releases", "[FIRST_PARTY] Official Hugging Face model-library releases", "open_source", 88),
+    ("https://github.com/ollama/ollama/releases.atom", "Ollama Releases", "[FIRST_PARTY] Official Ollama local-model runtime releases", "open_source", 86),
 
     # High-impact international AI media
     ("https://www.technologyreview.com/topic/artificial-intelligence/feed/", "MIT Technology Review AI", "Independent AI industry reporting", "news", 76),

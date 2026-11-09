@@ -111,6 +111,17 @@ Singapore IMDA. Broad feeds pass an AI-specific headline gate before LLM
 processing, so unrelated portfolio promotions or departmental notices are
 discarded early.
 
+The maintained vendor registry also covers official channels across three
+layers of the AI stack: foundation-model developers (including Tencent
+Hunyuan, Qwen, Kimi, GLM, MiniMax and ERNIE), accelerator and memory vendors
+(including NVIDIA, AMD, Intel, Qualcomm, Cerebras, Groq, Tenstorrent, Arm,
+Graphcore, SambaNova and SK hynix), and AI software/data platforms (including
+GitHub, Microsoft, Databricks, Cloudflare, Pinecone, Weights & Biases, Vercel,
+LangChain, LlamaIndex, CrewAI, vLLM, Transformers and Ollama). Official sources
+run in a separate first-party phase before media, social, and trending feeds.
+When semantic deduplication matches an existing media story, the official
+version replaces its provenance while preserving the permanent archive URL.
+
 
 ### 🚀 Open source — GitHub Trending
 

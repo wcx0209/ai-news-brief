@@ -19,6 +19,10 @@ fetching:
   max_entries_per_source: 1
   llm_min_interval_seconds: 15
   article_max_age_days: 2
+  # Official vendor newsrooms can publish less frequently than media feeds.
+  # A longer first-party window also lets a newly added official source replace
+  # a recent secondary-source version of the same announcement.
+  official_article_max_age_days: 7
   hf_daily_top_n: 5
   discussion:
     min_likes: 40
