@@ -1,6 +1,6 @@
 const COPY = {
   en: {
-    brand: "POLYEMERGENCE", navNews: "Brief", navSignals: "Signals", navInsight: "Method", navFeedback: "Feedback",
+    brand: "POLYEMERGENCE", navNews: "Brief", navSignals: "Signals", navArchive: "Archive", navInsight: "Method", navFeedback: "Feedback",
     edition: "GLOBAL EDITION", latest: "LATEST INTELLIGENCE",
     seoTitle: "AI News & Industry Intelligence | Polyemergence",
     seoDescription: "Daily AI news and analysis covering models, companies, startups, research, academia, open source, interviews, policy, business, and society.",
@@ -31,7 +31,7 @@ const COPY = {
     footer: "Independent AI intelligence for a changing world."
   },
   zh: {
-    brand: "多重涌现", navNews: "简报", navSignals: "信号", navInsight: "方法", navFeedback: "反馈",
+    brand: "多重涌现", navNews: "简报", navSignals: "信号", navArchive: "归档", navInsight: "方法", navFeedback: "反馈",
     edition: "全球版", latest: "最新情报",
     seoTitle: "AI 新闻与人工智能行业情报 | 多重涌现",
     seoDescription: "每日聚合 AI 模型、公司、创业、研究、学术、开源、访谈、政策、商业与社会领域的重要新闻。",

@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="zh-Hans" data-locale="zh"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<script defer src="/analytics.js?v=1"></script><title>2026-11-09 | AI 新闻历史归档</title>
+<meta name="description" content="按新加坡发布日期整理的多重涌现 AI 情报永久记录。"><meta name="robots" content="index,follow,max-snippet:-1,max-image-preview:large">
+<link rel="canonical" href="https://polyemergence.com/zh/archive/2026/11/09/"><link rel="alternate" hreflang="zh-Hans" href="https://polyemergence.com/zh/archive/2026/11/09/">
+<link rel="alternate" hreflang="en" href="https://polyemergence.com/en/archive/2026/11/09/"><link rel="alternate" hreflang="x-default" href="https://polyemergence.com/en/archive/2026/11/09/">
+<link rel="alternate" type="application/rss+xml" title="多重涌现 RSS" href="/feed-zh.xml">
+<meta property="og:type" content="website"><meta property="og:site_name" content="多重涌现"><meta property="og:title" content="2026-11-09 | AI 新闻历史归档"><meta property="og:description" content="按新加坡发布日期整理的多重涌现 AI 情报永久记录。"><meta property="og:url" content="https://polyemergence.com/zh/archive/2026/11/09/"><meta property="og:image" content="https://polyemergence.com/assets/social-preview.png">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="/styles.css?v=20261109-18"><link rel="stylesheet" href="/archive.css?v=2"><script type="application/ld+json">{"@context":"https://schema.org","@type":"CollectionPage","name":"AI 新闻历史归档 2026-11-09","url":"https://polyemergence.com/zh/archive/2026/11/09/","datePublished":"2026-11-09","inLanguage":"zh-Hans","mainEntity":{"@type":"ItemList","numberOfItems":6,"itemListElement":[{"@type":"ListItem","position":1,"url":"https://polyemergence.com/zh/archive/2026/11/09/#news-bd65ac11-b108-4243-aa0e-a2a0bb0deca7","name":"thedotmack/claude-mem：为每个AI代理提供跨会话的持久化上下文"},{"@type":"ListItem","position":2,"url":"https://polyemergence.com/zh/archive/2026/11/09/#news-dbd24c7f-e16d-4ee8-8c43-0228f31bac53","name":"NVIDIA/auto-ontology：用于构建语义图推理层的 Python 框架"},{"@type":"ListItem","position":3,"url":"https://polyemergence.com/zh/archive/2026/11/09/#news-4d7eefb4-2876-4332-a3c8-eaf9f218c00e","name":"斯坦福 CS146S 讲师 Mihail Eric：AI 编程智能体如何重塑工程课程与软件工厂"},{"@type":"ListItem","position":4,"url":"https://polyemergence.com/zh/archive/2026/11/09/#news-621240f0-83a7-47fe-b6ba-0dbd7ee3a267","name":"英伟达就CEO黄仁勋涉嫌接触外国情报人员一事展开独立调查"},{"@type":"ListItem","position":5,"url":"https://polyemergence.com/zh/archive/2026/11/09/#news-4f243516-1d23-49b2-9b09-70980a0e7088","name":"寿司郎携手富士通，用AI拯救面临危机的渔业"},{"@type":"ListItem","position":6,"url":"https://polyemergence.com/zh/archive/2026/11/09/#news-5914f68e-1d38-4a1d-82dd-8b391a64bb51","name":"コクヨ利用Notion和AI消除开发部门的资料散乱现象"}]}}</script></head>
+<body><header class="site-header"><a class="brand" href="/zh/" aria-label="多重涌现"><img src="/assets/logo-zh-reverse.svg" alt="多重涌现" width="420" height="70"></a>
+<nav class="desktop-nav" aria-label="Primary"><a href="/zh/#brief">简报</a><a href="/zh/archive/" aria-current="page">历史归档</a><a href="/zh/#about">方法</a></nav>
+<div class="header-tools"><span class="edition">全球版</span><div class="language-switch"><a href="https://polyemergence.com/en/archive/2026/11/09/" hreflang="en">EN</a><span>|</span><a href="https://polyemergence.com/zh/archive/2026/11/09/" aria-current="page">中</a></div></div></header>
+<main class="archive-main"><section class="archive-hero"><p class="section-index">历史归档</p><h1>2026 · 11 · 09</h1><p>6 条内容</p></section><nav class="archive-period-nav"><a href="/zh/archive/2026/11/08/">← 较早一期</a><a href="/zh/archive/2026/11/">本月总览</a></nav><section class="archive-list"><article class="archive-story" id="news-bd65ac11-b108-4243-aa0e-a2a0bb0deca7">
+<div class="archive-story-meta"><span>GitHub Trending</span><span>开源</span><time datetime="2026-11-09T00:56:06.865637+00:00">08:56 SGT</time><strong>重要性 90</strong></div>
+<h2><a href="#news-bd65ac11-b108-4243-aa0e-a2a0bb0deca7">thedotmack/claude-mem：为每个AI代理提供跨会话的持久化上下文</a></h2><p>这是个什么项目？
+
+每次你开启一个新的AI编程会话时，AI助手总是从零开始。它会重新阅读相同的代码文件，问一样的问题，甚至踩进你们之前已经修复过的坑里。Claude-Mem 就像是给你的AI配了一个专属记事本，它静静地呆在旁边，记录下助手读过的每一行代码、做过的每一次修改和运行的每一条命令。
+工作原理与核心功能
+
+该项目通过本地的钩子（hooks）和轻量级服务来捕获活动。一个后台的观察者AI会把这些活动变成简短的观察记录，并在会话结束时生成摘要。当你开启新会话时，助手会先拿到一个精简的目录，只有在真正需要时才会去翻阅详细内容，从而大量节省Token。此外，它还提供了强大的搜索工具和网页端查看器，方便你随时回顾进度。
+如何安装与使用
+
+安装过程非常简单，只需要在终端中敲下一行命令。运行 npx claude-mem install 之后，安装程序会自动检测你电脑上装了哪些AI工具，配好插件并启动后台服务。如果你想了解更多高级配置或多语言模式，可以参考官方提供的详细文档。</p>
+<div class="archive-scores" aria-label="Polyemergence Method scores"><span><small>信号</small><strong>90</strong></span><span><small>结构</small><strong>90</strong></span><span><small>影响</small><strong>90</strong></span><span><small>可信度</small><strong>95</strong></span><span><small>热度</small><strong>99</strong></span></div><div class="archive-story-footer"><div class="archive-tags"><span>ai agent</span><span>memory</span><span>claude code</span><span>developer tools</span><span>typescript</span></div><a class="archive-original" href="https://github.com/thedotmack/claude-mem" target="_blank" rel="noopener noreferrer">阅读原文 ↗</a></div></article><article class="archive-story" id="news-dbd24c7f-e16d-4ee8-8c43-0228f31bac53">
+<div class="archive-story-meta"><span>GitHub Trending</span><span>开源</span><time datetime="2026-11-09T00:56:05.558574+00:00">08:56 SGT</time><strong>重要性 88</strong></div>
+<h2><a href="#news-dbd24c7f-e16d-4ee8-8c43-0228f31bac53">NVIDIA/auto-ontology：用于构建语义图推理层的 Python 框架</a></h2><p>详细功能
+
+Auto Ontology 充当了原始数据库和 AI 智能体之间的桥梁。它通过自动读取数据库结构、分析字段并推导表与表之间的关系，为企业数据构建出一个语义知识图谱。开发者可以用它把大白话问题转换成精准的 SQL 查询，并借助英伟达 NIM 模型，确保每一个回答都附带可追溯的数据来源和执行步骤。
+系统架构
+
+该项目采用了现代化的微服务架构设计。它包含一个基于 Next.js 的前端网页界面、用于处理聊天和目录管理的 FastAPI Python 后端、负责向量嵌入的后台工作进程，以及搭配 pgvector 扩展的 PostgreSQL 数据库，用来存放应用数据和语义图谱。
+安装与使用
+
+使用 Docker Compose 可以非常轻松地跑起整个项目。你只需要克隆代码库，在 .env 文件中配好英伟达 API 密钥等环境变量，然后运行 Docker Compose 就能一键启动本地服务。启动后，你就可以连接自己的数据库，通过内置的聊天界面直接提问，或者通过 MCP 服务器将其无缝接入其他开发工具中。</p>
+<div class="archive-scores" aria-label="Polyemergence Method scores"><span><small>信号</small><strong>85</strong></span><span><small>结构</small><strong>90</strong></span><span><small>影响</small><strong>90</strong></span><span><small>可信度</small><strong>95</strong></span><span><small>热度</small><strong>100</strong></span></div><div class="archive-story-footer"><div class="archive-tags"><span>python</span><span>nvidia</span><span>ontology</span><span>llm</span><span>text-to-sql</span></div><a class="archive-original" href="https://github.com/NVIDIA/auto-ontology" target="_blank" rel="noopener noreferrer">阅读原文 ↗</a></div></article><article class="archive-story" id="news-4d7eefb4-2876-4332-a3c8-eaf9f218c00e">
+<div class="archive-story-meta"><span>Latent Space</span><span>访谈</span><time datetime="2026-11-08T21:23:23+00:00">05:23 SGT</time><strong>重要性 83</strong></div>
+<h2><a href="#news-4d7eefb4-2876-4332-a3c8-eaf9f218c00e">斯坦福 CS146S 讲师 Mihail Eric：AI 编程智能体如何重塑工程课程与软件工厂</a></h2><p>斯坦福讲师兼 Monaco AI 负责人 Mihail Eric 在访谈中分享了在高级编程智能体时代教授 AI 原生工程学的实践见解。面对学生仅用一个提示词就能完成去年作业的现状，斯坦福的 CS146S 课程重新设计了教学大纲，引入了开源项目维护者。学生现在必须理解不熟悉的仓库、提交补丁并向真正的维护者解释代码，这把教育瓶颈从“编写代码”转移到了“理解和评估代码差异”上。
+
+在 Monaco，Eric 的团队构建了定制的智能体工作区，将值班智能体与 Datadog 和 GitHub 等工具集成。他认为，开源代码库的未来将演变为由智能体运行的软件工厂。在这种不断变化的环境中，工程师的角色正在从手动编码转变为监督后台智能体、管理大型代码库的上下文工程以及应对自动代码审查。</p>
+<div class="archive-scores" aria-label="Polyemergence Method scores"><span><small>信号</small><strong>85</strong></span><span><small>结构</small><strong>85</strong></span><span><small>影响</small><strong>78</strong></span><span><small>可信度</small><strong>81</strong></span><span><small>热度</small><strong>82</strong></span></div><div class="archive-story-footer"><div class="archive-tags"><span>ai-coding</span><span>software-engineering</span><span>stanford</span><span>agents</span><span>developer-tools</span></div><a class="archive-original" href="https://www.youtube.com/watch?v=dpY7YzZo4kE" target="_blank" rel="noopener noreferrer">阅读原文 ↗</a></div></article><article class="archive-story" id="news-621240f0-83a7-47fe-b6ba-0dbd7ee3a267">
+<div class="archive-story-meta"><span>The Guardian AI</span><span>公司</span><time datetime="2026-11-08T21:00:58+00:00">05:00 SGT</time><strong>重要性 75</strong></div>
+<h2><a href="#news-621240f0-83a7-47fe-b6ba-0dbd7ee3a267">英伟达就CEO黄仁勋涉嫌接触外国情报人员一事展开独立调查</a></h2><p>背景与指控
+美国国会共和党高级议员要求英伟达CEO黄仁勋向国会汇报相关情况。此前有媒体报道称，黄仁勋曾与一名涉嫌向北京传递信息的中国女商人保持密切关系，并成为了外国情报机构的目标。
+承认交往与内部调查
+根据泄露的内部邮件草案，黄仁勋承认自己曾与这名疑似间谍的女子恋爱，并为自己的不忠行为承担全部责任。英伟达董事会随后宣布启动独立调查，不过他们强调目前没有理由认为公司机密或美国国家安全受到了损害，黄仁勋本人也表示将全力配合审查。
+政治影响与后续
+此前有美国官员的备忘录指出该女商人涉嫌从事间谍活动。尽管存在这些情报安全隐患，黄仁勋夫妇此前仍受邀出席了白宫晚宴，这反映出科技巨头高管的个人私生活与地缘政治之间错综复杂的联系。</p>
+<div class="archive-scores" aria-label="Polyemergence Method scores"><span><small>信号</small><strong>80</strong></span><span><small>结构</small><strong>70</strong></span><span><small>影响</small><strong>75</strong></span><span><small>可信度</small><strong>85</strong></span><span><small>热度</small><strong>90</strong></span></div><div class="archive-story-footer"><div class="archive-tags"><span>nvidia</span><span>jensen huang</span><span>national security</span><span>investigation</span><span>china</span></div><a class="archive-original" href="https://www.theguardian.com/us-news/2026/nov/08/nvidia-jensen-huang-investigation" target="_blank" rel="noopener noreferrer">阅读原文 ↗</a></div></article><article class="archive-story" id="news-4f243516-1d23-49b2-9b09-70980a0e7088">
+<div class="archive-story-meta"><span>ITmedia AI+</span><span>公司</span><time datetime="2026-11-08T22:00:00+00:00">06:00 SGT</time><strong>重要性 53</strong></div>
+<h2><a href="#news-4f243516-1d23-49b2-9b09-70980a0e7088">寿司郎携手富士通，用AI拯救面临危机的渔业</a></h2><p>背景
+日本的渔业目前正面临着从业人员老龄化、渔获量减少等严峻危机。随着全球对海鲜的需求不断增长，像金枪鱼和三文鱼这样的热门食材正变得越来越难稳定采购。
+细节
+为了应对这一挑战，寿司郎与富士通展开合作，利用 AI技术 来剖析海洋环境，追踪鱼类资源，并更好地理解海洋生态系统的变化，试图将传统的捕鱼方式转化为数字化的科学管理。
+影响
+通过提高捕捞预测的准确性并推动可持续发展，这项合作有望缓解未来的海鲜短缺问题，从而保护人们餐桌上的 美味鱼生 能够持续供应。</p>
+<div class="archive-scores" aria-label="Polyemergence Method scores"><span><small>信号</small><strong>50</strong></span><span><small>结构</small><strong>50</strong></span><span><small>影响</small><strong>60</strong></span><span><small>可信度</small><strong>82</strong></span><span><small>热度</small><strong>40</strong></span></div><div class="archive-story-footer"><div class="archive-tags"><span>sushiro</span><span>fujitsu</span><span>ai</span><span>fisheries</span><span>sustainability</span></div><a class="archive-original" href="https://www.itmedia.co.jp/business/articles/2611/09/news039.html" target="_blank" rel="noopener noreferrer">阅读原文 ↗</a></div></article><article class="archive-story" id="news-5914f68e-1d38-4a1d-82dd-8b391a64bb51">
+<div class="archive-story-meta"><span>ITmedia AI+</span><span>公司</span><time datetime="2026-11-08T21:00:00+00:00">05:00 SGT</time><strong>重要性 48</strong></div>
+<h2><a href="#news-5914f68e-1d38-4a1d-82dd-8b391a64bb51">コクヨ利用Notion和AI消除开发部门的资料散乱现象</a></h2><p>随着コクヨ开发团队规模扩大到约100人，会议记录、需求定义书和设计文件分散在各种云服务和文件服务器中，导致寻找资料花费大量时间。为了应对这一挑战，该公司于2024年7月引入了Notion，作为跨职能的统一平台，用来集中管理所有的工作任务、笔记和数据库。
+
+目前，コクヨ不仅在Notion上实时协同编辑会议记录，还利用自定义AI代理进行文档的初步审核，并将反馈结果存入数据库以持续改进审查质量。此外，他们还将Claude与Notion MCP结合，让AI能够直接检索和更新Notion中的信息。未来，该公司计划将这种模式推广到全公司，实现决策的加速与优化。</p>
+<div class="archive-scores" aria-label="Polyemergence Method scores"><span><small>信号</small><strong>50</strong></span><span><small>结构</small><strong>50</strong></span><span><small>影响</small><strong>45</strong></span><span><small>可信度</small><strong>85</strong></span><span><small>热度</small><strong>60</strong></span></div><div class="archive-story-footer"><div class="archive-tags"><span>notion</span><span>ai agents</span><span>knowledge management</span><span>claude</span><span>workflow automation</span></div><a class="archive-original" href="https://kn.itmedia.co.jp/kn/article/2611/09/2000002973/" target="_blank" rel="noopener noreferrer">阅读原文 ↗</a></div></article></section></main><footer><div class="footer-brand"><img src="/assets/logo-zh-reverse.svg" alt="多重涌现" width="360"></div><div class="footer-copy"><p>面向变化世界的独立 AI 情报媒体。</p><p class="company-note">由一家位于新加坡、以数据与投资为主要业务的科技初创公司创办。</p><p class="footer-meta"><a href="/feed-zh.xml">RSS 订阅</a></p></div></footer></body></html>

@@ -28,3 +28,9 @@
 /data/*
   Cache-Control: no-cache, no-store, must-revalidate
   CDN-Cache-Control: no-store
+
+/feed-*.xml
+  Cache-Control: no-cache, must-revalidate
+
+/archive-sitemap.xml
+  Cache-Control: no-cache, must-revalidate
