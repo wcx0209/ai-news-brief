@@ -2,7 +2,7 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
     <loc>https://polyemergence.com/en/</loc>
-    <lastmod>2026-11-08</lastmod>
+    <lastmod>2026-11-09</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://polyemergence.com/en/"/>
@@ -11,7 +11,7 @@
   </url>
   <url>
     <loc>https://polyemergence.com/zh/</loc>
-    <lastmod>2026-11-08</lastmod>
+    <lastmod>2026-11-09</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://polyemergence.com/en/"/>
@@ -20,7 +20,7 @@
   </url>
   <url>
     <loc>https://polyemergence.com/en/open-source/</loc>
-    <lastmod>2026-11-08</lastmod>
+    <lastmod>2026-11-09</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.2</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://polyemergence.com/en/open-source/"/>
@@ -29,7 +29,7 @@
   </url>
   <url>
     <loc>https://polyemergence.com/zh/open-source/</loc>
-    <lastmod>2026-11-08</lastmod>
+    <lastmod>2026-11-09</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.2</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://polyemergence.com/en/open-source/"/>
