@@ -218,6 +218,9 @@ footer { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; padding: 58px
 .footer-brand img { width: 100%; height: 100%; object-fit: contain; object-position: left center; }
 footer p { margin: 0; color: var(--fog); }
 .footer-copy { display: grid; gap: 16px; align-content: start; }
+.footer-topics { display: flex; flex-wrap: wrap; gap: 8px 16px; font-size: 11px; line-height: 1.5; }
+.footer-topics a { color: var(--fog); text-decoration: none; }
+.footer-topics a:hover, .footer-topics a:focus-visible { color: var(--orange); }
 .company-note { max-width: 620px; color: #858585; font-size: 12px; line-height: 1.6; }
 .footer-meta { font-size: 12px; }
 .footer-meta a { color: var(--mineral); text-decoration-color: #555; text-underline-offset: 4px; }

@@ -21,9 +21,36 @@ CATEGORIES = {
     "models", "company", "startups", "research", "academia",
     "open_source", "interviews", "policy", "business", "society",
 }
+CATEGORY_ORDER = ["models", "company", "startups", "research", "academia", "open_source", "interviews", "policy", "business", "society"]
 CATEGORY_LABELS = {
     "en": {"models": "Models", "company": "Company", "startups": "Startups", "research": "Research", "academia": "Academia", "open_source": "Open Source", "interviews": "Interviews", "policy": "Policy", "business": "Business", "society": "Society"},
     "zh": {"models": "模型", "company": "公司", "startups": "创业", "research": "研究", "academia": "学术", "open_source": "开源", "interviews": "访谈", "policy": "政策", "business": "商业", "society": "社会"},
+}
+TOPIC_TITLES = {
+    "en": {
+        "models": "AI Model News: LLM Releases, Benchmarks & Updates",
+        "company": "AI Company News: OpenAI, Anthropic, Google & More",
+        "startups": "AI Startup News: Funding, Products & Venture Capital",
+        "research": "AI Research News: Papers, Benchmarks & Breakthroughs",
+        "academia": "AI Academic News: University Research & Papers",
+        "open_source": "Open Source AI News: Models, Tools & GitHub Projects",
+        "interviews": "AI Interviews: Founders, Researchers & Industry Leaders",
+        "policy": "AI Policy News: Regulation, Safety & Government",
+        "business": "AI Business News: Markets, Investment & Strategy",
+        "society": "AI and Society News: Work, Culture & Public Impact",
+    },
+    "zh": {
+        "models": "AI模型新闻：大模型发布、评测与更新",
+        "company": "AI公司新闻：OpenAI、Anthropic、Google与全球动态",
+        "startups": "AI创业资讯：融资、产品与风险投资",
+        "research": "AI研究资讯：论文、基准与技术突破",
+        "academia": "AI学术资讯：高校研究与前沿论文",
+        "open_source": "开源AI资讯：模型、工具与GitHub项目",
+        "interviews": "AI深度访谈：创始人、研究者与行业领袖",
+        "policy": "AI政策与监管：安全、法规与政府动态",
+        "business": "AI商业资讯：市场、投资与企业战略",
+        "society": "AI与社会：工作、文化与公共影响",
+    },
 }
 COPY = {
     "en": {"lang": "en", "brand": "Polyemergence", "brief": "Brief", "archive": "Archive", "method": "Method", "edition": "GLOBAL EDITION", "title": "AI News Archive", "intro": "A permanent record of Polyemergence AI intelligence, organized by Singapore publication date.", "stories": "stories", "months": "Months", "days": "Daily editions", "day_count": "days", "original": "Read original", "share": "Share", "importance": "Importance", "signal": "Signal", "structure": "Structure", "consequence": "Consequence", "confidence": "Confidence", "momentum": "Momentum", "older": "Older edition", "newer": "Newer edition", "month": "Month overview", "all": "All archives", "feed": "RSS feed", "footer": "Independent AI intelligence for a changing world.", "company": "Published by a Singapore-based technology startup focused on data and investment."},
@@ -110,6 +137,10 @@ def archive_path(locale, day, anchor=None):
 
 def article_path(locale, day, record):
     return f"/{locale}/archive/{day:%Y/%m/%d}/{anchor_for(record)[5:]}/"
+
+
+def topic_path(locale, category):
+    return f"/{locale}/topics/{category.replace('_', '-')}/"
 
 
 def record_from_feed(item):
@@ -221,6 +252,10 @@ def page_shell(locale, title, description, canonical, alternate, body, structure
     logo = f"logo-{locale}-reverse.svg"
     other = "zh" if locale == "en" else "en"
     structured_html = f'<script type="application/ld+json">{json_ld(structured)}</script>' if structured else ""
+    topic_links = "".join(
+        f'<a href="{topic_path(locale, category)}">{esc(CATEGORY_LABELS[locale][category])}</a>'
+        for category in CATEGORY_ORDER
+    )
     return f'''<!doctype html>
 <html lang="{c['lang']}" data-locale="{locale}"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
@@ -231,11 +266,11 @@ def page_shell(locale, title, description, canonical, alternate, body, structure
 <link rel="alternate" type="application/rss+xml" title="{esc(c['brand'])} RSS" href="/feed-{locale}.xml">
 <meta property="og:type" content="{esc(og_type)}"><meta property="og:site_name" content="{esc(c['brand'])}"><meta property="og:title" content="{esc(title)}"><meta property="og:description" content="{esc(description)}"><meta property="og:url" content="{esc(canonical)}"><meta property="og:image" content="{SITE}/assets/social-preview.png">
 <meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="{esc(title)}"><meta name="twitter:description" content="{esc(description)}"><meta name="twitter:image" content="{SITE}/assets/social-preview.png">
-<link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="/styles.css?v=20261109-19"><link rel="stylesheet" href="/archive.css?v=3">{structured_html}</head>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="/styles.css?v=20261109-20"><link rel="stylesheet" href="/archive.css?v=3">{structured_html}</head>
 <body><header class="site-header"><a class="brand" href="/{locale}/" aria-label="{esc(c['brand'])}"><img src="/assets/{logo}" alt="{esc(c['brand'])}" width="420" height="70"></a>
 <nav class="desktop-nav" aria-label="Primary"><a href="/{locale}/#brief">{esc(c['brief'])}</a><a href="/{locale}/archive/" aria-current="page">{esc(c['archive'])}</a><a href="/{locale}/#about">{esc(c['method'])}</a></nav>
 <div class="header-tools"><span class="edition">{esc(c['edition'])}</span><div class="language-switch"><a href="{esc(alternate)}" hreflang="{COPY[other]['lang']}">{'中' if other == 'zh' else 'EN'}</a><span>|</span><a href="{esc(canonical)}" aria-current="page">{'中' if locale == 'zh' else 'EN'}</a></div></div></header>
-<main class="archive-main">{body}</main><footer><div class="footer-brand"><img src="/assets/{logo}" alt="{esc(c['brand'])}" width="360"></div><div class="footer-copy"><p>{esc(c['footer'])}</p><p class="company-note">{esc(c['company'])}</p><p class="footer-meta"><a href="/feed-{locale}.xml">{esc(c['feed'])}</a></p></div></footer></body></html>'''
+<main class="archive-main">{body}</main><footer><div class="footer-brand"><img src="/assets/{logo}" alt="{esc(c['brand'])}" width="360"></div><div class="footer-copy"><p>{esc(c['footer'])}</p><p class="company-note">{esc(c['company'])}</p><nav class="footer-topics" aria-label="AI topics">{topic_links}</nav><p class="footer-meta"><a href="/feed-{locale}.xml">{esc(c['feed'])}</a></p></div></footer></body></html>'''
 
 
 def story_html(record, locale):
@@ -290,13 +325,44 @@ def render_article(output, locale, record):
         "@context": "https://schema.org", "@type": "NewsArticle", "headline": title,
         "description": description, "datePublished": record["published"].isoformat(),
         "dateModified": record["published"].isoformat(), "inLanguage": c["lang"],
+        "articleSection": CATEGORY_LABELS[locale][record["category"]],
+        "keywords": record["tags"],
         "mainEntityOfPage": canonical, "url": canonical,
-        "publisher": {"@type": "Organization", "name": c["brand"], "url": SITE},
+        "publisher": {"@type": "NewsMediaOrganization", "name": c["brand"], "url": SITE, "logo": {"@type": "ImageObject", "url": SITE + "/assets/mark.svg"}},
         "isBasedOn": record["url"],
     }
     path = output / locale / "archive" / f"{day:%Y}" / f"{day:%m}" / f"{day:%d}" / anchor_for(record)[5:] / "index.html"
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(page_shell(locale, f"{title} | {c['brand']}", description, canonical, alternate, body, structured, "article"), encoding="utf-8")
+
+
+def render_topic(output, locale, category, records):
+    c = COPY[locale]
+    other = "zh" if locale == "en" else "en"
+    title = TOPIC_TITLES[locale][category]
+    description = (
+        f"{title}. Follow the latest stories ranked by the Polyemergence importance method."
+        if locale == "en"
+        else f"{title}。多重涌现按重要性筛选并持续更新全球人工智能动态。"
+    )
+    canonical = SITE + topic_path(locale, category)
+    alternate = SITE + topic_path(other, category)
+    ordered = sorted(records, key=lambda item: (item["published"], item["importance"]), reverse=True)
+    content = "".join(story_html(record, locale) for record in ordered)
+    if not content:
+        content = f'<p class="archive-empty">{"New coverage will appear here as it is published." if locale == "en" else "新内容发布后将在这里持续归档。"}</p>'
+    body = f'''<section class="archive-hero archive-topic-hero"><p class="section-index">{esc(CATEGORY_LABELS[locale][category]).upper()}</p><h1>{esc(title)}</h1><p>{esc(description)}</p></section><nav class="archive-period-nav"><a href="/{locale}/">← {esc(c['brief'])}</a><a href="/{locale}/archive/">{esc(c['archive'])}</a></nav><section class="archive-list">{content}</section>'''
+    structured = {
+        "@context": "https://schema.org", "@type": "CollectionPage", "name": title,
+        "description": description, "url": canonical, "inLanguage": c["lang"],
+        "mainEntity": {"@type": "ItemList", "numberOfItems": len(ordered), "itemListElement": [
+            {"@type": "ListItem", "position": position, "url": SITE + article_path(locale, record["published"].astimezone(LOCAL_TZ).date(), record), "name": clean_text(record[locale]["title"])}
+            for position, record in enumerate(ordered, 1)
+        ]},
+    }
+    path = output / locale / "topics" / category.replace("_", "-") / "index.html"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(page_shell(locale, f"{title} | {c['brand']}", description, canonical, alternate, body, structured), encoding="utf-8")
 
 
 def render_indexes(output, locale, grouped):
@@ -386,6 +452,13 @@ def render_sitemap(output, grouped):
                 ET.SubElement(node, f"{{{namespace}}}lastmod").text = day.isoformat()
                 for lang, locale in (("en", "en"), ("zh-Hans", "zh"), ("x-default", "en")):
                     ET.SubElement(node, f"{{{xhtml}}}link", {"rel": "alternate", "hreflang": lang, "href": SITE + article_path(locale, day, record)})
+    for category in CATEGORY_ORDER:
+        for current_locale in ("en", "zh"):
+            node = ET.SubElement(root, f"{{{namespace}}}url")
+            ET.SubElement(node, f"{{{namespace}}}loc").text = SITE + topic_path(current_locale, category)
+            ET.SubElement(node, f"{{{namespace}}}lastmod").text = latest_day.isoformat()
+            for lang, locale in (("en", "en"), ("zh-Hans", "zh"), ("x-default", "en")):
+                ET.SubElement(node, f"{{{xhtml}}}link", {"rel": "alternate", "hreflang": lang, "href": SITE + topic_path(locale, category)})
     ET.ElementTree(root).write(output / "archive-sitemap.xml", encoding="utf-8", xml_declaration=True)
 
 
@@ -409,6 +482,9 @@ def main():
             render_daily(output, locale, day, grouped[day], ordered_days)
             for record in grouped[day]:
                 render_article(output, locale, record)
+        all_records = [record for day in ordered_days for record in grouped[day]]
+        for category in CATEGORY_ORDER:
+            render_topic(output, locale, category, [record for record in all_records if record["category"] == category])
         render_rss(output, locale, grouped)
     render_sitemap(output, grouped)
     print(f"Generated {len(grouped)} daily archives containing {sum(map(len, grouped.values()))} stories")
