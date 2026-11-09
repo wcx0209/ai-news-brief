@@ -280,10 +280,12 @@ def main():
             "en": {
                 "title": row["title_en"] or row["title"],
                 "summary": row["summary_en"] or row["long_summary_en"] or "",
+                "full_summary": row["long_summary_en"] or row["summary_en"] or "",
             },
             "zh": {
                 "title": row["title_zh"] or row["title"],
                 "summary": row["summary_zh"] or row["long_summary_zh"] or "",
+                "full_summary": row["long_summary_zh"] or row["summary_zh"] or "",
             },
         })
 
@@ -303,6 +305,7 @@ def main():
             item[locale] = {
                 "title": localized.get("title") or "",
                 "summary": localized.get("summary") or localized.get("long_summary") or "",
+                "full_summary": localized.get("full_summary") or localized.get("long_summary") or localized.get("summary") or "",
             }
 
     payload = {

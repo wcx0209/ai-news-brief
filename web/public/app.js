@@ -8,6 +8,7 @@ const COPY = {
     promise: "Daily AI intelligence across models, companies, startups, research, academia, open source, interviews, policy, business, and society.",
     loading: "Loading today’s brief…", updated: "Updated", stories: "stories", dailyBrief: "Daily Brief",
     filters: { all: "All", models: "Models", company: "Company", startups: "Startups", research: "Research", academia: "Academia", open_source: "Open Source", interviews: "Interviews", policy: "Policy", business: "Business", society: "Society" }, importance: "Importance",
+    expandSummary: "Expand full summary", collapseSummary: "Collapse summary",
     scoreSignal: "Signal", scoreStructure: "Structure", scoreConsequence: "Consequence", scoreConfidence: "Confidence", scoreMomentum: "Momentum",
     read: "Read original", noStories: "No stories in this section yet.", error: "The live feed is unavailable. Showing the last bundled briefing.",
     demo: "Demo feed — run the scheduled collector to publish the live briefing.",
@@ -38,6 +39,7 @@ const COPY = {
     promise: "每日追踪模型、公司、创业、研究、学术、开源、访谈、政策、商业与社会领域的重要 AI 新闻。",
     loading: "正在载入今日简报…", updated: "更新于", stories: "条内容", dailyBrief: "每日简报",
     filters: { all: "全部", models: "模型", company: "公司", startups: "创业", research: "研究", academia: "学术", open_source: "开源", interviews: "访谈", policy: "政策", business: "商业", society: "社会" }, importance: "重要性",
+    expandSummary: "展开全文", collapseSummary: "收起全文",
     scoreSignal: "信号", scoreStructure: "结构", scoreConsequence: "影响", scoreConfidence: "可信度", scoreMomentum: "热度",
     read: "阅读原文", noStories: "这个栏目暂时没有内容。", error: "实时数据暂时不可用，正在显示最近一次简报。",
     demo: "当前为演示数据——运行定时采集任务后将自动发布实时内容。",
@@ -102,7 +104,21 @@ function formatDate(value) {
 
 function textFor(item) {
   const localized = item[state.locale] || item.en || item.zh || {};
-  return { title: plainText(localized.title || "Untitled"), summary: localized.summary || localized.long_summary || "" };
+  return {
+    title: plainText(localized.title || "Untitled"),
+    summary: localized.summary || localized.long_summary || "",
+    fullSummary: localized.full_summary || localized.long_summary || ""
+  };
+}
+
+function summaryMarkup(text) {
+  const shortText = String(text.summary || "").trim();
+  const fullText = String(text.fullSummary || "").trim();
+  const expandable = fullText && plainText(fullText) !== plainText(shortText);
+  return `<div class="story-summary">
+    <p data-summary-short>${inlineMarkup(shortText)}</p>
+    ${expandable ? `<div class="summary-full" data-summary-full hidden>${inlineMarkup(fullText)}</div><button class="summary-toggle" type="button" data-summary-toggle aria-expanded="false">${escapeHtml(COPY[state.locale].expandSummary)} ↓</button>` : ""}
+  </div>`;
 }
 
 function categoryFor(item) {
@@ -294,6 +310,20 @@ document.addEventListener("load", event => {
   if (tooSmall) activateImageFallback(image);
 }, true);
 
+document.addEventListener("click", event => {
+  const toggle = event.target.closest?.("[data-summary-toggle]");
+  if (!toggle) return;
+  const summary = toggle.closest(".story-summary");
+  const shortText = summary?.querySelector("[data-summary-short]");
+  const fullText = summary?.querySelector("[data-summary-full]");
+  if (!shortText || !fullText) return;
+  const expanding = toggle.getAttribute("aria-expanded") !== "true";
+  toggle.setAttribute("aria-expanded", String(expanding));
+  shortText.hidden = expanding;
+  fullText.hidden = !expanding;
+  toggle.textContent = `${expanding ? COPY[state.locale].collapseSummary : COPY[state.locale].expandSummary} ${expanding ? "↑" : "↓"}`;
+});
+
 function renderHero(items) {
   $("#hero-ticker").innerHTML = items.slice(0, 3).map((item, index) => {
     const text = textFor(item);
@@ -324,7 +354,7 @@ function renderLead(item) {
     <div class="lead-copy">
       <div class="story-kicker"><span>${escapeHtml(item.source)} · ${COPY[state.locale].filters[categoryFor(item)]} · ${escapeHtml(formatDate(item.published_at))}</span><span class="score" title="${COPY[state.locale].importance} ${importance}"><small>${COPY[state.locale].importance}</small>${importance}</span></div>
       ${scoreBreakdown(item)}
-      <div><h3>${escapeHtml(text.title)}</h3><p>${inlineMarkup(text.summary)}</p><a class="read-link" href="${escapeHtml(safeUrl(item.url))}" target="_blank" rel="noopener noreferrer">${COPY[state.locale].read} ↗</a></div>
+      <div><h3>${escapeHtml(text.title)}</h3>${summaryMarkup(text)}<a class="read-link" href="${escapeHtml(safeUrl(item.url))}" target="_blank" rel="noopener noreferrer">${COPY[state.locale].read} ↗</a></div>
     </div>
     <div class="story-visual">${imageMarkup(item, true)}</div>`;
 }
@@ -338,7 +368,7 @@ function renderCard(item) {
     <div class="card-copy">
     <div class="story-kicker"><span>${escapeHtml(item.source)} · ${COPY[state.locale].filters[categoryFor(item)]}</span><span>${COPY[state.locale].importance} ${importance}</span></div>
     ${scoreBreakdown(item, true)}
-    <h3>${escapeHtml(text.title)}</h3><p>${inlineMarkup(text.summary)}</p>
+    <h3>${escapeHtml(text.title)}</h3>${summaryMarkup(text)}
     <a class="read-link" href="${escapeHtml(safeUrl(item.url))}" target="_blank" rel="noopener noreferrer">${COPY[state.locale].read} ↗</a>
     <div class="tags">${tags}</div>
     </div>
