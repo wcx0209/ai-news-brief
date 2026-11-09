@@ -7,7 +7,7 @@ const COPY = {
     eyebrow: "DAILY AI NEWS · INDUSTRY SIGNALS · ANALYSIS", tagline: "What’s next,<br>made visible.",
     promise: "AI news today, ranked by importance across models, companies, startups, research, open source, policy, business, and society.",
     loading: "Loading today’s brief…", updated: "Updated", stories: "stories", dailyBrief: "AI News Today",
-    filters: { all: "All", models: "Models", company: "Company", startups: "Startups", research: "Research", academia: "Academia", open_source: "Open Source", interviews: "Interviews", policy: "Policy", business: "Business", society: "Society" }, importance: "Importance",
+    filters: { all: "All", models: "Models", company: "Company", startups: "Startups", research: "Research", academia: "Academia", open_source: "Open Source", interviews: "Interviews", policy: "Policy", business: "Business", society: "Society" }, importance: "Importance", published: "Published",
     expandSummary: "Expand full summary", collapseSummary: "Collapse summary", share: "Share",
     scoreSignal: "Signal", scoreStructure: "Structure", scoreConsequence: "Consequence", scoreConfidence: "Confidence", scoreMomentum: "Momentum",
     read: "Read original", noStories: "No stories in this section yet.", error: "The live feed is unavailable. Showing the last bundled briefing.",
@@ -40,7 +40,7 @@ const COPY = {
     eyebrow: "AI 新闻 · 人工智能行业动态 · 趋势洞察", tagline: "看见<br>下一步。",
     promise: "每日AI资讯与全球AI新闻聚合，按重要性追踪模型、公司、创业、研究、开源、政策、商业与社会动态。",
     loading: "正在载入今日简报…", updated: "更新于", stories: "条内容", dailyBrief: "今日 AI 新闻",
-    filters: { all: "全部", models: "模型", company: "公司", startups: "创业", research: "研究", academia: "学术", open_source: "开源", interviews: "访谈", policy: "政策", business: "商业", society: "社会" }, importance: "重要性",
+    filters: { all: "全部", models: "模型", company: "公司", startups: "创业", research: "研究", academia: "学术", open_source: "开源", interviews: "访谈", policy: "政策", business: "商业", society: "社会" }, importance: "重要性", published: "发布",
     expandSummary: "展开全文", collapseSummary: "收起全文", share: "分享",
     scoreSignal: "信号", scoreStructure: "结构", scoreConsequence: "影响", scoreConfidence: "可信度", scoreMomentum: "热度",
     read: "阅读原文", noStories: "这个栏目暂时没有内容。", error: "实时数据暂时不可用，正在显示最近一次简报。",
@@ -104,6 +104,31 @@ function formatDate(value) {
   if (!value) return "";
   const locale = state.locale === "zh" ? "zh-CN" : "en-SG";
   return new Intl.DateTimeFormat(locale, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }).format(new Date(value));
+}
+
+function sourcePublishedAt(item) {
+  return item?.source_published_at || item?.published_at || "";
+}
+
+function formatSourcePublished(item) {
+  const value = sourcePublishedAt(item);
+  if (!value) return "";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+  const locale = state.locale === "zh" ? "zh-CN" : "en-SG";
+  const formatted = new Intl.DateTimeFormat(locale, {
+    timeZone: "Asia/Singapore", month: "short", day: "numeric",
+    hour: "2-digit", minute: "2-digit", hour12: false
+  }).format(date);
+  return `${COPY[state.locale].published} ${formatted} SGT`;
+}
+
+function publishedTimeMarkup(item) {
+  const value = sourcePublishedAt(item);
+  const label = formatSourcePublished(item);
+  return value && label
+    ? `<div class="story-published"><time datetime="${escapeHtml(value)}">${escapeHtml(label)}</time></div>`
+    : "";
 }
 
 function archiveShareUrl(item) {
@@ -351,7 +376,7 @@ document.addEventListener("click", event => {
 function renderHero(items) {
   $("#hero-ticker").innerHTML = items.slice(0, 3).map((item, index) => {
     const text = textFor(item);
-    return `<a href="${escapeHtml(safeUrl(item.url))}" target="_blank" rel="noopener noreferrer"><span>${String(index + 1).padStart(2, "0")}</span><strong>${escapeHtml(text.title)}</strong><small>${escapeHtml(formatDate(item.published_at))}</small></a>`;
+    return `<a href="${escapeHtml(safeUrl(item.url))}" target="_blank" rel="noopener noreferrer"><span>${String(index + 1).padStart(2, "0")}</span><strong>${escapeHtml(text.title)}</strong><small>${escapeHtml(formatSourcePublished(item))}</small></a>`;
   }).join("");
 }
 
@@ -376,7 +401,8 @@ function renderLead(item) {
   const importance = Number(item.importance || 0);
   $("#lead-story").innerHTML = `
     <div class="lead-copy">
-      <div class="story-kicker"><span>${escapeHtml(item.source)} · ${COPY[state.locale].filters[categoryFor(item)]} · ${escapeHtml(formatDate(item.published_at))}</span><span class="score" title="${COPY[state.locale].importance} ${importance}"><small>${COPY[state.locale].importance}</small>${importance}</span></div>
+      <div class="story-kicker"><span>${escapeHtml(item.source)} · ${COPY[state.locale].filters[categoryFor(item)]}</span><span class="score" title="${COPY[state.locale].importance} ${importance}"><small>${COPY[state.locale].importance}</small>${importance}</span></div>
+      ${publishedTimeMarkup(item)}
       ${scoreBreakdown(item)}
       <div><h3>${escapeHtml(text.title)}</h3>${summaryMarkup(text)}${trustStrip(item)}<div class="story-actions"><a class="read-link" href="${escapeHtml(safeUrl(item.url))}" target="_blank" rel="noopener noreferrer">${COPY[state.locale].read} ↗</a>${shareButton(item, text)}</div></div>
     </div>
@@ -391,6 +417,7 @@ function renderCard(item) {
     <div class="card-visual">${imageMarkup(item)}<span class="card-plane" aria-hidden="true"></span></div>
     <div class="card-copy">
     <div class="story-kicker"><span>${escapeHtml(item.source)} · ${COPY[state.locale].filters[categoryFor(item)]}</span><span>${COPY[state.locale].importance} ${importance}</span></div>
+    ${publishedTimeMarkup(item)}
     ${scoreBreakdown(item, true)}
     <h3>${escapeHtml(text.title)}</h3>${summaryMarkup(text)}${trustStrip(item)}
     <div class="story-actions"><a class="read-link" href="${escapeHtml(safeUrl(item.url))}" target="_blank" rel="noopener noreferrer">${COPY[state.locale].read} ↗</a>${shareButton(item, text)}</div>
