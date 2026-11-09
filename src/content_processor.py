@@ -21,6 +21,7 @@ CURLCFFI_DOMAINS = [
     'nytimes.com', 'washingtonpost.com',
     'theverge.com',
     'awesomeagents.ai',
+    'tencent.com',
 ]
 
 # Realistic browser headers to avoid 403
@@ -60,6 +61,41 @@ def _get_session():
 
 class ContentProcessor:
     @staticmethod
+    def _extract_main_text(html: str) -> str:
+        """Extract article text, with a structured-HTML fallback.
+
+        Trafilatura intentionally rejects some pages whose navigation is much
+        larger than the article. Vendor newsrooms (notably Tencent) still expose
+        clean semantic article containers, so preserve those primary sources
+        instead of falling back to a media rewrite.
+        """
+        text = trafilatura.extract(html)
+        if text:
+            return text
+        try:
+            from bs4 import BeautifulSoup
+            soup = BeautifulSoup(html, 'html.parser')
+            node = (
+                soup.select_one('article .entry-content')
+                or soup.select_one('.entry-content')
+                or soup.select_one('article')
+                or soup.select_one('main')
+            )
+            if not node:
+                return None
+            for unwanted in node.select('script, style, nav, footer, form, noscript'):
+                unwanted.decompose()
+            text = '\n\n'.join(
+                part.get_text(' ', strip=True)
+                for part in node.select('h1, h2, h3, p, li')
+                if part.get_text(' ', strip=True)
+            )
+            return text if len(text) >= 200 else None
+        except Exception as exc:
+            logging.debug("Structured HTML extraction failed: %s", exc)
+            return None
+
+    @staticmethod
     def _is_difficult_domain(url: str) -> bool:
         """Check if URL is from a domain known to block simple requests."""
         url_lower = url.lower()
@@ -78,7 +114,7 @@ class ContentProcessor:
             from curl_cffi import requests as cffi_requests
             resp = cffi_requests.get(url, impersonate="chrome", timeout=timeout)
             resp.raise_for_status()
-            text = trafilatura.extract(resp.text)
+            text = ContentProcessor._extract_main_text(resp.text)
             if text:
                 logging.info(f"curl_cffi succeeded for {url}")
                 return text
@@ -136,7 +172,7 @@ class ContentProcessor:
                 response.raise_for_status()
                 
                 # Use trafilatura to extract content from the HTML
-                text = trafilatura.extract(response.text)
+                text = ContentProcessor._extract_main_text(response.text)
                 return text
                 
             except requests.exceptions.HTTPError as e:
