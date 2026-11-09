@@ -108,6 +108,10 @@ def archive_path(locale, day, anchor=None):
     return base + (f"#{anchor}" if anchor else "")
 
 
+def article_path(locale, day, record):
+    return f"/{locale}/archive/{day:%Y/%m/%d}/{anchor_for(record)[5:]}/"
+
+
 def record_from_feed(item):
     published = parse_datetime(item.get("published_at"))
     tags = parse_tags(item.get("tags"))
@@ -212,7 +216,7 @@ def json_ld(value):
     return json.dumps(value, ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/")
 
 
-def page_shell(locale, title, description, canonical, alternate, body, structured=None):
+def page_shell(locale, title, description, canonical, alternate, body, structured=None, og_type="website"):
     c = COPY[locale]
     logo = f"logo-{locale}-reverse.svg"
     other = "zh" if locale == "en" else "en"
@@ -225,7 +229,8 @@ def page_shell(locale, title, description, canonical, alternate, body, structure
 <link rel="canonical" href="{esc(canonical)}"><link rel="alternate" hreflang="{c['lang']}" href="{esc(canonical)}">
 <link rel="alternate" hreflang="{COPY[other]['lang']}" href="{esc(alternate)}"><link rel="alternate" hreflang="x-default" href="{esc(canonical if locale == 'en' else alternate)}">
 <link rel="alternate" type="application/rss+xml" title="{esc(c['brand'])} RSS" href="/feed-{locale}.xml">
-<meta property="og:type" content="website"><meta property="og:site_name" content="{esc(c['brand'])}"><meta property="og:title" content="{esc(title)}"><meta property="og:description" content="{esc(description)}"><meta property="og:url" content="{esc(canonical)}"><meta property="og:image" content="{SITE}/assets/social-preview.png">
+<meta property="og:type" content="{esc(og_type)}"><meta property="og:site_name" content="{esc(c['brand'])}"><meta property="og:title" content="{esc(title)}"><meta property="og:description" content="{esc(description)}"><meta property="og:url" content="{esc(canonical)}"><meta property="og:image" content="{SITE}/assets/social-preview.png">
+<meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="{esc(title)}"><meta name="twitter:description" content="{esc(description)}"><meta name="twitter:image" content="{SITE}/assets/social-preview.png">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="/styles.css?v=20261109-19"><link rel="stylesheet" href="/archive.css?v=3">{structured_html}</head>
 <body><header class="site-header"><a class="brand" href="/{locale}/" aria-label="{esc(c['brand'])}"><img src="/assets/{logo}" alt="{esc(c['brand'])}" width="420" height="70"></a>
 <nav class="desktop-nav" aria-label="Primary"><a href="/{locale}/#brief">{esc(c['brief'])}</a><a href="/{locale}/archive/" aria-current="page">{esc(c['archive'])}</a><a href="/{locale}/#about">{esc(c['method'])}</a></nav>
@@ -242,12 +247,12 @@ def story_html(record, locale):
     score_html = "".join(f'<span><small>{esc(c[key])}</small><strong>{scores[key]}</strong></span>' for key in ("signal", "structure", "consequence", "confidence", "momentum"))
     anchor = anchor_for(record)
     day = record["published"].astimezone(LOCAL_TZ).date()
-    share_url = f"{SITE}{archive_path(locale, day)}?utm_source=share&amp;utm_medium=organic&amp;utm_campaign=article#{anchor}"
+    share_url = f"{SITE}{article_path(locale, day, record)}?utm_source=share&amp;utm_medium=organic&amp;utm_campaign=article"
     share_summary = re.sub(r"\s+", " ", clean_text(text["summary"] or text["full"])).strip()[:180]
     share_button = f'''<button class="share-button" type="button" data-share-button data-share-id="{esc(record['id'])}" data-share-locale="{locale}" data-share-title="{esc(clean_text(text['title']))}" data-share-summary="{esc(share_summary)}" data-share-url="{share_url}" aria-label="{esc(c['share'])}: {esc(clean_text(text['title']))}"><svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="18" cy="5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="19" r="2.5"/><path d="m8.2 10.8 7.6-4.5M8.2 13.2l7.6 4.5"/></svg><span>{esc(c['share'])}</span></button>'''
     return f'''<article class="archive-story" id="{anchor_for(record)}">
 <div class="archive-story-meta"><span>{esc(record['source'])}</span><span>{esc(CATEGORY_LABELS[locale][record['category']])}</span><time datetime="{record['published'].isoformat()}">{published_local:%H:%M} SGT</time><strong>{esc(c['importance'])} {record['importance']}</strong></div>
-<h2><a href="#{anchor_for(record)}">{esc(clean_text(text['title']))}</a></h2><p>{esc(clean_text(text['full'] or text['summary']))}</p>
+<h2><a href="{article_path(locale, day, record)}">{esc(clean_text(text['title']))}</a></h2><p>{esc(clean_text(text['full'] or text['summary']))}</p>
 <div class="archive-scores" aria-label="Polyemergence Method scores">{score_html}</div><div class="archive-story-footer"><div class="archive-tags">{tags}</div><div class="archive-actions">{share_button}<a class="archive-original" href="{esc(record['url'])}" target="_blank" rel="noopener noreferrer">{esc(c['original'])} ↗</a></div></div></article>'''
 
 
@@ -265,10 +270,33 @@ def render_daily(output, locale, day, items, ordered_days):
     if newer:
         nav.append(f'<a href="{archive_path(locale, newer)}">{esc(c["newer"])} →</a>')
     body = f'''<section class="archive-hero"><p class="section-index">{esc(c['archive']).upper()}</p><h1>{day:%Y · %m · %d}</h1><p>{len(items)} {esc(c['stories'])}</p></section><nav class="archive-period-nav">{"".join(nav)}</nav><section class="archive-list">{"".join(story_html(item, locale) for item in items)}</section>'''
-    structured = {"@context": "https://schema.org", "@type": "CollectionPage", "name": f"{c['title']} {day.isoformat()}", "url": canonical, "datePublished": day.isoformat(), "inLanguage": c["lang"], "mainEntity": {"@type": "ItemList", "numberOfItems": len(items), "itemListElement": [{"@type": "ListItem", "position": pos, "url": canonical + "#" + anchor_for(item), "name": clean_text(item[locale]["title"])} for pos, item in enumerate(items, 1)]}}
+    structured = {"@context": "https://schema.org", "@type": "CollectionPage", "name": f"{c['title']} {day.isoformat()}", "url": canonical, "datePublished": day.isoformat(), "inLanguage": c["lang"], "mainEntity": {"@type": "ItemList", "numberOfItems": len(items), "itemListElement": [{"@type": "ListItem", "position": pos, "url": SITE + article_path(locale, day, item), "name": clean_text(item[locale]["title"])} for pos, item in enumerate(items, 1)]}}
     path = output / locale / "archive" / f"{day:%Y}" / f"{day:%m}" / f"{day:%d}" / "index.html"
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(page_shell(locale, f"{day.isoformat()} | {c['title']}", c["intro"], canonical, alternate, body, structured), encoding="utf-8")
+
+
+def render_article(output, locale, record):
+    c = COPY[locale]
+    other = "zh" if locale == "en" else "en"
+    day = record["published"].astimezone(LOCAL_TZ).date()
+    text = record[locale]
+    title = clean_text(text["title"])
+    description = re.sub(r"\s+", " ", clean_text(text["summary"] or text["full"])).strip()[:240]
+    canonical = SITE + article_path(locale, day, record)
+    alternate = SITE + article_path(other, day, record)
+    body = f'''<nav class="archive-period-nav"><a href="{archive_path(locale, day)}">← {day.isoformat()}</a><a href="/{locale}/archive/">{esc(c['all'])}</a></nav><section class="archive-list archive-article-page">{story_html(record, locale)}</section>'''
+    structured = {
+        "@context": "https://schema.org", "@type": "NewsArticle", "headline": title,
+        "description": description, "datePublished": record["published"].isoformat(),
+        "dateModified": record["published"].isoformat(), "inLanguage": c["lang"],
+        "mainEntityOfPage": canonical, "url": canonical,
+        "publisher": {"@type": "Organization", "name": c["brand"], "url": SITE},
+        "isBasedOn": record["url"],
+    }
+    path = output / locale / "archive" / f"{day:%Y}" / f"{day:%m}" / f"{day:%d}" / anchor_for(record)[5:] / "index.html"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(page_shell(locale, f"{title} | {c['brand']}", description, canonical, alternate, body, structured, "article"), encoding="utf-8")
 
 
 def render_indexes(output, locale, grouped):
@@ -281,7 +309,7 @@ def render_indexes(output, locale, grouped):
     for (year, month), days in months.items():
         cards = []
         for day in days:
-            titles = "".join(f'<li><a href="{archive_path(locale, day, anchor_for(item))}">{esc(clean_text(item[locale]["title"]))}</a></li>' for item in grouped[day][:5])
+            titles = "".join(f'<li><a href="{article_path(locale, day, item)}">{esc(clean_text(item[locale]["title"]))}</a></li>' for item in grouped[day][:5])
             cards.append(f'<article class="archive-day-card"><div><time datetime="{day.isoformat()}">{day:%d}</time><span>{len(grouped[day])} {esc(c["stories"])}</span></div><ol>{titles}</ol><a class="archive-day-link" href="{archive_path(locale, day)}">{day:%Y-%m-%d} →</a></article>')
         canonical = f"{SITE}/{locale}/archive/{year:04d}/{month:02d}/"
         other = "zh" if locale == "en" else "en"
@@ -318,7 +346,7 @@ def render_rss(output, locale, grouped, limit=100):
     ET.SubElement(channel, "atom:link", {"href": f"{SITE}/feed-{locale}.xml", "rel": "self", "type": "application/rss+xml"})
     for record in records:
         day = record["published"].astimezone(LOCAL_TZ).date()
-        link = SITE + archive_path(locale, day, anchor_for(record))
+        link = SITE + article_path(locale, day, record)
         item = ET.SubElement(channel, "item")
         ET.SubElement(item, "title").text = clean_text(record[locale]["title"])
         ET.SubElement(item, "link").text = link
@@ -350,6 +378,14 @@ def render_sitemap(output, grouped):
             ET.SubElement(node, f"{{{namespace}}}lastmod").text = lastmod.isoformat()
             for lang, locale in (("en", "en"), ("zh-Hans", "zh"), ("x-default", "en")):
                 ET.SubElement(node, f"{{{xhtml}}}link", {"rel": "alternate", "hreflang": lang, "href": f"{SITE}/{locale}/{suffix}"})
+    for day in sorted(grouped, reverse=True):
+        for record in grouped[day]:
+            for current_locale in ("en", "zh"):
+                node = ET.SubElement(root, f"{{{namespace}}}url")
+                ET.SubElement(node, f"{{{namespace}}}loc").text = SITE + article_path(current_locale, day, record)
+                ET.SubElement(node, f"{{{namespace}}}lastmod").text = day.isoformat()
+                for lang, locale in (("en", "en"), ("zh-Hans", "zh"), ("x-default", "en")):
+                    ET.SubElement(node, f"{{{xhtml}}}link", {"rel": "alternate", "hreflang": lang, "href": SITE + article_path(locale, day, record)})
     ET.ElementTree(root).write(output / "archive-sitemap.xml", encoding="utf-8", xml_declaration=True)
 
 
@@ -371,6 +407,8 @@ def main():
         render_indexes(output, locale, grouped)
         for day in ordered_days:
             render_daily(output, locale, day, grouped[day], ordered_days)
+            for record in grouped[day]:
+                render_article(output, locale, record)
         render_rss(output, locale, grouped)
     render_sitemap(output, grouped)
     print(f"Generated {len(grouped)} daily archives containing {sum(map(len, grouped.values()))} stories")

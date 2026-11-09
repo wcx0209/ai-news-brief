@@ -108,7 +108,7 @@ function archiveShareUrl(item) {
     timeZone: "Asia/Singapore", year: "numeric", month: "2-digit", day: "2-digit"
   }).formatToParts(date).filter(part => part.type !== "literal").map(part => [part.type, part.value]));
   const anchor = `news-${String(item.id || "story").replace(/[^A-Za-z0-9_-]+/g, "-").replace(/^-|-$/g, "")}`;
-  return `https://polyemergence.com/${state.locale}/archive/${parts.year}/${parts.month}/${parts.day}/?utm_source=share&utm_medium=organic&utm_campaign=article#${anchor}`;
+  return `https://polyemergence.com/${state.locale}/archive/${parts.year}/${parts.month}/${parts.day}/${anchor.slice(5)}/?utm_source=share&utm_medium=organic&utm_campaign=article`;
 }
 
 function shareButton(item, text) {
