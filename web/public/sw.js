@@ -1,4 +1,4 @@
-const CACHE_NAME = "polyemergence-v3";
+const CACHE_NAME = "polyemergence-v4";
 const DATA_CACHE_KEY = "/data/latest.json";
 const APP_SHELL = [
   "/",
@@ -7,6 +7,7 @@ const APP_SHELL = [
   "/locale-redirect.js",
   "/styles.css",
   "/app.js",
+  "/share.js",
   "/manifest.webmanifest",
   "/favicon.svg",
   "/assets/app-icon.svg",
@@ -69,7 +70,7 @@ self.addEventListener("fetch", event => {
     return;
   }
 
-  if (["/app.js", "/styles.css", "/manifest.webmanifest"].includes(url.pathname)) {
+  if (["/app.js", "/share.js", "/styles.css", "/manifest.webmanifest"].includes(url.pathname)) {
     event.respondWith(networkFirst(request, url.pathname));
     return;
   }

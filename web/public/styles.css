@@ -106,6 +106,14 @@ main { overflow: hidden; }
 .summary-toggle { appearance: none; border: 0; border-bottom: 1px solid currentColor; padding: 0 0 3px; color: var(--white); background: transparent; cursor: pointer; font: 800 12px/1.2 Inter, "Noto Sans SC", sans-serif; }
 .summary-toggle:hover, .summary-toggle:focus-visible { color: var(--orange); }
 .read-link { width: fit-content; padding-bottom: 5px; border-bottom: 4px solid var(--orange); font-weight: 850; text-decoration: none; }
+.story-actions { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px 24px; }
+.share-button { display: inline-flex; align-items: center; gap: 8px; appearance: none; padding: 7px 0 5px; color: inherit; background: transparent; border: 0; border-bottom: 1px solid #8b8b8b; cursor: pointer; font: 800 11px/1 Inter, "Noto Sans SC", sans-serif; }
+.share-button:hover, .share-button:focus-visible { color: var(--orange); border-color: var(--orange); }
+.share-button svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.8; }
+.share-toast { position: fixed; z-index: 1000; right: 24px; bottom: 24px; max-width: calc(100vw - 48px); padding: 13px 16px; color: var(--white); background: var(--carbon); border-left: 5px solid var(--orange); box-shadow: 0 12px 36px rgba(0,0,0,.25); opacity: 0; transform: translateY(12px); pointer-events: none; transition: opacity .18s ease, transform .18s ease; font: 750 12px/1.4 Inter, "Noto Sans SC", sans-serif; }
+.share-toast.is-visible { opacity: 1; transform: translateY(0); }
+.lead-copy .share-button { color: var(--fog); border-color: #666; }
+.lead-copy .share-button:hover, .lead-copy .share-button:focus-visible { color: var(--orange); border-color: var(--orange); }
 .story-visual, .card-visual { position: relative; overflow: hidden; }
 .story-visual { min-height: 360px; background: #151515; }
 .card-visual { background: var(--mineral); }

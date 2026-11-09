@@ -8,7 +8,7 @@ const COPY = {
     promise: "Daily AI intelligence across models, companies, startups, research, academia, open source, interviews, policy, business, and society.",
     loading: "Loading today’s brief…", updated: "Updated", stories: "stories", dailyBrief: "Daily Brief",
     filters: { all: "All", models: "Models", company: "Company", startups: "Startups", research: "Research", academia: "Academia", open_source: "Open Source", interviews: "Interviews", policy: "Policy", business: "Business", society: "Society" }, importance: "Importance",
-    expandSummary: "Expand full summary", collapseSummary: "Collapse summary",
+    expandSummary: "Expand full summary", collapseSummary: "Collapse summary", share: "Share",
     scoreSignal: "Signal", scoreStructure: "Structure", scoreConsequence: "Consequence", scoreConfidence: "Confidence", scoreMomentum: "Momentum",
     read: "Read original", noStories: "No stories in this section yet.", error: "The live feed is unavailable. Showing the last bundled briefing.",
     demo: "Demo feed — run the scheduled collector to publish the live briefing.",
@@ -39,7 +39,7 @@ const COPY = {
     promise: "每日追踪模型、公司、创业、研究、学术、开源、访谈、政策、商业与社会领域的重要 AI 新闻。",
     loading: "正在载入今日简报…", updated: "更新于", stories: "条内容", dailyBrief: "每日简报",
     filters: { all: "全部", models: "模型", company: "公司", startups: "创业", research: "研究", academia: "学术", open_source: "开源", interviews: "访谈", policy: "政策", business: "商业", society: "社会" }, importance: "重要性",
-    expandSummary: "展开全文", collapseSummary: "收起全文",
+    expandSummary: "展开全文", collapseSummary: "收起全文", share: "分享",
     scoreSignal: "信号", scoreStructure: "结构", scoreConsequence: "影响", scoreConfidence: "可信度", scoreMomentum: "热度",
     read: "阅读原文", noStories: "这个栏目暂时没有内容。", error: "实时数据暂时不可用，正在显示最近一次简报。",
     demo: "当前为演示数据——运行定时采集任务后将自动发布实时内容。",
@@ -100,6 +100,20 @@ function formatDate(value) {
   if (!value) return "";
   const locale = state.locale === "zh" ? "zh-CN" : "en-SG";
   return new Intl.DateTimeFormat(locale, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }).format(new Date(value));
+}
+
+function archiveShareUrl(item) {
+  const date = new Date(item.published_at);
+  const parts = Object.fromEntries(new Intl.DateTimeFormat("en", {
+    timeZone: "Asia/Singapore", year: "numeric", month: "2-digit", day: "2-digit"
+  }).formatToParts(date).filter(part => part.type !== "literal").map(part => [part.type, part.value]));
+  const anchor = `news-${String(item.id || "story").replace(/[^A-Za-z0-9_-]+/g, "-").replace(/^-|-$/g, "")}`;
+  return `https://polyemergence.com/${state.locale}/archive/${parts.year}/${parts.month}/${parts.day}/?utm_source=share&utm_medium=organic&utm_campaign=article#${anchor}`;
+}
+
+function shareButton(item, text) {
+  const summary = plainText(text.summary || text.fullSummary || "").replace(/\s+/g, " ").trim().slice(0, 180);
+  return `<button class="share-button" type="button" data-share-button data-share-id="${escapeHtml(item.id || "")}" data-share-locale="${state.locale}" data-share-title="${escapeHtml(text.title)}" data-share-summary="${escapeHtml(summary)}" data-share-url="${escapeHtml(archiveShareUrl(item))}" aria-label="${escapeHtml(COPY[state.locale].share)}: ${escapeHtml(text.title)}"><svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="18" cy="5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="19" r="2.5"/><path d="m8.2 10.8 7.6-4.5M8.2 13.2l7.6 4.5"/></svg><span>${escapeHtml(COPY[state.locale].share)}</span></button>`;
 }
 
 function textFor(item) {
@@ -354,7 +368,7 @@ function renderLead(item) {
     <div class="lead-copy">
       <div class="story-kicker"><span>${escapeHtml(item.source)} · ${COPY[state.locale].filters[categoryFor(item)]} · ${escapeHtml(formatDate(item.published_at))}</span><span class="score" title="${COPY[state.locale].importance} ${importance}"><small>${COPY[state.locale].importance}</small>${importance}</span></div>
       ${scoreBreakdown(item)}
-      <div><h3>${escapeHtml(text.title)}</h3>${summaryMarkup(text)}<a class="read-link" href="${escapeHtml(safeUrl(item.url))}" target="_blank" rel="noopener noreferrer">${COPY[state.locale].read} ↗</a></div>
+      <div><h3>${escapeHtml(text.title)}</h3>${summaryMarkup(text)}<div class="story-actions"><a class="read-link" href="${escapeHtml(safeUrl(item.url))}" target="_blank" rel="noopener noreferrer">${COPY[state.locale].read} ↗</a>${shareButton(item, text)}</div></div>
     </div>
     <div class="story-visual">${imageMarkup(item, true)}</div>`;
 }
@@ -369,7 +383,7 @@ function renderCard(item) {
     <div class="story-kicker"><span>${escapeHtml(item.source)} · ${COPY[state.locale].filters[categoryFor(item)]}</span><span>${COPY[state.locale].importance} ${importance}</span></div>
     ${scoreBreakdown(item, true)}
     <h3>${escapeHtml(text.title)}</h3>${summaryMarkup(text)}
-    <a class="read-link" href="${escapeHtml(safeUrl(item.url))}" target="_blank" rel="noopener noreferrer">${COPY[state.locale].read} ↗</a>
+    <div class="story-actions"><a class="read-link" href="${escapeHtml(safeUrl(item.url))}" target="_blank" rel="noopener noreferrer">${COPY[state.locale].read} ↗</a>${shareButton(item, text)}</div>
     <div class="tags">${tags}</div>
     </div>
   </article>`;
