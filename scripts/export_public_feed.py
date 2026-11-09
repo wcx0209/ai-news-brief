@@ -2,6 +2,7 @@
 """Export a privacy-safe static feed for the Polyemergence frontend."""
 
 import argparse
+from concurrent.futures import ThreadPoolExecutor, as_completed
 import json
 import os
 import re
@@ -208,7 +209,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--output", default="web/public/data/latest.json")
     parser.add_argument("--limit", type=int, default=60)
-    parser.add_argument("--discover-images", type=int, default=12)
+    parser.add_argument("--discover-images", type=int, default=60)
     parser.add_argument("--max-open-source", type=int, default=2)
     parser.add_argument("--max-academia", type=int, default=2)
     parser.add_argument("--min-academia-importance", type=int, default=70)
@@ -253,12 +254,24 @@ def main():
         print(f"No curated articles; preserving existing feed at {args.output}")
         return
 
+    image_urls = [youtube_thumbnail(safe_http_url(row["url"])) for row in rows]
+    discoverable = {
+        index: safe_http_url(row["url"])
+        for index, row in enumerate(rows[:args.discover_images])
+        if not image_urls[index] and safe_http_url(row["url"])
+    }
+    if discoverable:
+        with ThreadPoolExecutor(max_workers=min(6, len(discoverable))) as executor:
+            futures = {
+                executor.submit(discover_image, url): index
+                for index, url in discoverable.items()
+            }
+            for future in as_completed(futures):
+                image_urls[futures[future]] = future.result()
+
     items = []
     for index, row in enumerate(rows):
         source_url = safe_http_url(row["url"])
-        image_url = youtube_thumbnail(source_url)
-        if not image_url and source_url and index < args.discover_images:
-            image_url = discover_image(source_url)
         items.append({
             "id": row["id"],
             "url": source_url,
@@ -275,7 +288,7 @@ def main():
                 "momentum": int(row["momentum_score"] or 0),
             },
             "published_at": iso(row["published_at"] or row["created_at"]),
-            "image_url": image_url,
+            "image_url": image_urls[index],
             "tags": parse_tags(row["tags"]),
             "en": {
                 "title": row["title_en"] or row["title"],
