@@ -53,8 +53,8 @@ TOPIC_TITLES = {
     },
 }
 COPY = {
-    "en": {"lang": "en", "brand": "Polyemergence", "brief": "Brief", "archive": "Archive", "method": "Method", "edition": "GLOBAL EDITION", "title": "AI News Archive", "intro": "A permanent record of Polyemergence AI intelligence, organized by Singapore publication date.", "stories": "stories", "months": "Months", "days": "Daily editions", "day_count": "days", "original": "Read original", "share": "Share", "importance": "Importance", "signal": "Signal", "structure": "Structure", "consequence": "Consequence", "confidence": "Confidence", "momentum": "Momentum", "older": "Older edition", "newer": "Newer edition", "month": "Month overview", "all": "All archives", "feed": "RSS feed", "footer": "Independent AI intelligence for a changing world.", "company": "Published by a Singapore-based technology startup focused on data and investment."},
-    "zh": {"lang": "zh-Hans", "brand": "多重涌现", "brief": "简报", "archive": "历史归档", "method": "方法", "edition": "全球版", "title": "AI 新闻历史归档", "intro": "按新加坡发布日期整理的多重涌现 AI 情报永久记录。", "stories": "条内容", "months": "月份", "days": "每日归档", "day_count": "天", "original": "阅读原文", "share": "分享", "importance": "重要性", "signal": "信号", "structure": "结构", "consequence": "影响", "confidence": "可信度", "momentum": "热度", "older": "较早一期", "newer": "较新一期", "month": "本月总览", "all": "全部归档", "feed": "RSS 订阅", "footer": "面向变化世界的独立 AI 情报媒体。", "company": "由一家位于新加坡、以数据与投资为主要业务的科技初创公司创办。"},
+    "en": {"lang": "en", "brand": "Polyemergence", "brief": "Brief", "archive": "Archive", "method": "Method", "edition": "GLOBAL EDITION", "title": "AI News Archive", "intro": "A permanent record of Polyemergence AI intelligence, organized by Singapore publication date.", "stories": "stories", "months": "Months", "days": "Daily editions", "day_count": "days", "original": "Read original", "share": "Share", "importance": "Importance", "signal": "Signal", "structure": "Structure", "consequence": "Consequence", "confidence": "Confidence", "momentum": "Momentum", "older": "Older edition", "newer": "Newer edition", "month": "Month overview", "all": "All archives", "feed": "RSS feed", "footer": "Independent AI intelligence for a changing world.", "company": "Published by PolyEmergence Pte Ltd., Singapore. No current financial or commercial conflict declared.", "standards": "Editorial standards", "corrections": "Corrections", "about_brief": "About this brief", "content_type": "Content type", "source_type": "Source type", "source": "Original source", "published": "Source published", "process": "Process", "verification": "Verification", "byline": "Published by", "conflict": "Conflict disclosure"},
+    "zh": {"lang": "zh-Hans", "brand": "多重涌现", "brief": "简报", "archive": "历史归档", "method": "方法", "edition": "全球版", "title": "AI 新闻历史归档", "intro": "按新加坡发布日期整理的多重涌现 AI 情报永久记录。", "stories": "条内容", "months": "月份", "days": "每日归档", "day_count": "天", "original": "阅读原文", "share": "分享", "importance": "重要性", "signal": "信号", "structure": "结构", "consequence": "影响", "confidence": "可信度", "momentum": "热度", "older": "较早一期", "newer": "较新一期", "month": "本月总览", "all": "全部归档", "feed": "RSS 订阅", "footer": "面向变化世界的独立 AI 情报媒体。", "company": "由新加坡 PolyEmergence Pte Ltd. 发布。目前无已声明的财务或商业利益冲突。", "standards": "编辑标准", "corrections": "纠错记录", "about_brief": "关于这篇简报", "content_type": "内容类型", "source_type": "信源类型", "source": "原始来源", "published": "原文发布时间", "process": "处理方式", "verification": "核验边界", "byline": "发布方", "conflict": "利益冲突"},
 }
 
 
@@ -141,6 +141,50 @@ def article_path(locale, day, record):
 
 def topic_path(locale, category):
     return f"/{locale}/topics/{category.replace('_', '-')}/"
+
+
+def content_type(record, locale):
+    labels = {
+        "en": {"interviews": "Interview summary", "academia": "Research summary", "research": "Research summary", "default": "News summary"},
+        "zh": {"interviews": "访谈摘要", "academia": "研究摘要", "research": "研究摘要", "default": "新闻摘要"},
+    }
+    return labels[locale].get(record["category"], labels[locale]["default"])
+
+
+def source_type(record, locale):
+    host = urlparse(record["url"]).netloc.lower()
+    first_party = ("github.com", "arxiv.org", "huggingface.co", "openai.com", "anthropic.com", "deepmind.google", "blogs.nvidia.com")
+    if host.endswith(".gov") or host.endswith(".gov.sg") or "europa.eu" in host or any(domain in host for domain in first_party):
+        return "First-party / official source" if locale == "en" else "第一方／官方来源"
+    if "youtube.com" in host or "youtu.be" in host:
+        return "Interview / video source" if locale == "en" else "访谈／视频来源"
+    return "Publisher report" if locale == "en" else "媒体报道"
+
+
+def trust_box(record, locale):
+    c = COPY[locale]
+    published_local = record["published"].astimezone(LOCAL_TZ)
+    process = (
+        "AI-assisted discovery, translation, summarisation, classification and scoring; standards and corrections are maintained by the editorial desk."
+        if locale == "en" else
+        "AI 辅助发现、翻译、摘要、分类与评分；编辑标准和纠错由编辑部维护。"
+    )
+    verification = (
+        "The original URL and publication metadata are retained. This brief is not independently fact-checked unless explicitly stated."
+        if locale == "en" else
+        "保留原始链接与发布信息；除非特别说明，本简报不构成独立事实核查。"
+    )
+    conflict = "No financial or commercial conflict declared." if locale == "en" else "无已声明的财务或商业利益冲突。"
+    return f'''<details class="source-note"><summary>{esc(c['about_brief'])}</summary><dl>
+<div><dt>{esc(c['content_type'])}</dt><dd>{esc(content_type(record, locale))}</dd></div>
+<div><dt>{esc(c['source_type'])}</dt><dd>{esc(source_type(record, locale))}</dd></div>
+<div><dt>{esc(c['source'])}</dt><dd><a href="{esc(record['url'])}" target="_blank" rel="noopener noreferrer">{esc(record['source'])} ↗</a></dd></div>
+<div><dt>{esc(c['published'])}</dt><dd><time datetime="{record['published'].isoformat()}">{published_local:%Y-%m-%d %H:%M} SGT</time></dd></div>
+<div><dt>{esc(c['process'])}</dt><dd>{esc(process)}</dd></div>
+<div><dt>{esc(c['verification'])}</dt><dd>{esc(verification)}</dd></div>
+<div><dt>{esc(c['byline'])}</dt><dd>Polyemergence Editorial Desk · PolyEmergence Pte Ltd.</dd></div>
+<div><dt>{esc(c['conflict'])}</dt><dd>{esc(conflict)}</dd></div>
+</dl><p><a href="/{locale}/standards/">{esc(c['standards'])} →</a> · <a href="/{locale}/corrections/">{esc(c['corrections'])} →</a></p></details>'''
 
 
 def record_from_feed(item):
@@ -266,11 +310,11 @@ def page_shell(locale, title, description, canonical, alternate, body, structure
 <link rel="alternate" type="application/rss+xml" title="{esc(c['brand'])} RSS" href="/feed-{locale}.xml">
 <meta property="og:type" content="{esc(og_type)}"><meta property="og:site_name" content="{esc(c['brand'])}"><meta property="og:title" content="{esc(title)}"><meta property="og:description" content="{esc(description)}"><meta property="og:url" content="{esc(canonical)}"><meta property="og:image" content="{SITE}/assets/social-preview.png">
 <meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="{esc(title)}"><meta name="twitter:description" content="{esc(description)}"><meta name="twitter:image" content="{SITE}/assets/social-preview.png">
-<link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="/styles.css?v=20261109-20"><link rel="stylesheet" href="/archive.css?v=3">{structured_html}</head>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="/styles.css?v=20261109-21"><link rel="stylesheet" href="/archive.css?v=4">{structured_html}</head>
 <body><header class="site-header"><a class="brand" href="/{locale}/" aria-label="{esc(c['brand'])}"><img src="/assets/{logo}" alt="{esc(c['brand'])}" width="420" height="70"></a>
 <nav class="desktop-nav" aria-label="Primary"><a href="/{locale}/#brief">{esc(c['brief'])}</a><a href="/{locale}/archive/" aria-current="page">{esc(c['archive'])}</a><a href="/{locale}/#about">{esc(c['method'])}</a></nav>
 <div class="header-tools"><span class="edition">{esc(c['edition'])}</span><div class="language-switch"><a href="{esc(alternate)}" hreflang="{COPY[other]['lang']}">{'中' if other == 'zh' else 'EN'}</a><span>|</span><a href="{esc(canonical)}" aria-current="page">{'中' if locale == 'zh' else 'EN'}</a></div></div></header>
-<main class="archive-main">{body}</main><footer><div class="footer-brand"><img src="/assets/{logo}" alt="{esc(c['brand'])}" width="360"></div><div class="footer-copy"><p>{esc(c['footer'])}</p><p class="company-note">{esc(c['company'])}</p><nav class="footer-topics" aria-label="AI topics">{topic_links}</nav><p class="footer-meta"><a href="/feed-{locale}.xml">{esc(c['feed'])}</a></p></div></footer></body></html>'''
+<main class="archive-main">{body}</main><footer><div class="footer-brand"><img src="/assets/{logo}" alt="{esc(c['brand'])}" width="360"></div><div class="footer-copy"><p>{esc(c['footer'])}</p><p class="company-note">{esc(c['company'])}</p><nav class="footer-topics" aria-label="AI topics">{topic_links}</nav><p class="footer-meta"><a href="/{locale}/standards/">{esc(c['standards'])}</a> · <a href="/{locale}/corrections/">{esc(c['corrections'])}</a> · <a href="/feed-{locale}.xml">{esc(c['feed'])}</a></p></div></footer></body></html>'''
 
 
 def story_html(record, locale):
@@ -288,7 +332,7 @@ def story_html(record, locale):
     return f'''<article class="archive-story" id="{anchor_for(record)}">
 <div class="archive-story-meta"><span>{esc(record['source'])}</span><span>{esc(CATEGORY_LABELS[locale][record['category']])}</span><time datetime="{record['published'].isoformat()}">{published_local:%H:%M} SGT</time><strong>{esc(c['importance'])} {record['importance']}</strong></div>
 <h2><a href="{article_path(locale, day, record)}">{esc(clean_text(text['title']))}</a></h2><p>{esc(clean_text(text['full'] or text['summary']))}</p>
-<div class="archive-scores" aria-label="Polyemergence Method scores">{score_html}</div><div class="archive-story-footer"><div class="archive-tags">{tags}</div><div class="archive-actions">{share_button}<a class="archive-original" href="{esc(record['url'])}" target="_blank" rel="noopener noreferrer">{esc(c['original'])} ↗</a></div></div></article>'''
+<div class="archive-scores" aria-label="Polyemergence Method scores">{score_html}</div>{trust_box(record, locale)}<div class="archive-story-footer"><div class="archive-tags">{tags}</div><div class="archive-actions">{share_button}<a class="archive-original" href="{esc(record['url'])}" target="_blank" rel="noopener noreferrer">{esc(c['original'])} ↗</a></div></div></article>'''
 
 
 def render_daily(output, locale, day, items, ordered_days):
@@ -328,7 +372,9 @@ def render_article(output, locale, record):
         "articleSection": CATEGORY_LABELS[locale][record["category"]],
         "keywords": record["tags"],
         "mainEntityOfPage": canonical, "url": canonical,
-        "publisher": {"@type": "NewsMediaOrganization", "name": c["brand"], "url": SITE, "logo": {"@type": "ImageObject", "url": SITE + "/assets/mark.svg"}},
+        "author": {"@type": "Organization", "name": "Polyemergence Editorial Desk", "url": SITE + f"/{locale}/standards/"},
+        "publisher": {"@type": "NewsMediaOrganization", "name": c["brand"], "legalName": "PolyEmergence Pte Ltd.", "url": SITE, "logo": {"@type": "ImageObject", "url": SITE + "/assets/mark.svg"}, "publishingPrinciples": SITE + f"/{locale}/standards/", "correctionsPolicy": SITE + f"/{locale}/corrections/"},
+        "isAccessibleForFree": True,
         "isBasedOn": record["url"],
     }
     path = output / locale / "archive" / f"{day:%Y}" / f"{day:%m}" / f"{day:%d}" / anchor_for(record)[5:] / "index.html"
@@ -459,6 +505,13 @@ def render_sitemap(output, grouped):
             ET.SubElement(node, f"{{{namespace}}}lastmod").text = latest_day.isoformat()
             for lang, locale in (("en", "en"), ("zh-Hans", "zh"), ("x-default", "en")):
                 ET.SubElement(node, f"{{{xhtml}}}link", {"rel": "alternate", "hreflang": lang, "href": SITE + topic_path(locale, category)})
+    for page in ("standards", "corrections"):
+        for current_locale in ("en", "zh"):
+            node = ET.SubElement(root, f"{{{namespace}}}url")
+            ET.SubElement(node, f"{{{namespace}}}loc").text = f"{SITE}/{current_locale}/{page}/"
+            ET.SubElement(node, f"{{{namespace}}}lastmod").text = latest_day.isoformat()
+            for lang, locale in (("en", "en"), ("zh-Hans", "zh"), ("x-default", "en")):
+                ET.SubElement(node, f"{{{xhtml}}}link", {"rel": "alternate", "hreflang": lang, "href": f"{SITE}/{locale}/{page}/"})
     ET.ElementTree(root).write(output / "archive-sitemap.xml", encoding="utf-8", xml_declaration=True)
 
 

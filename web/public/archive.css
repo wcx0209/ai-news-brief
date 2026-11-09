@@ -20,6 +20,15 @@
 .archive-scores span:last-child { border-right: 0; }
 .archive-scores small { color: var(--neutral); font: 750 9px/1.3 ui-monospace, monospace; text-transform: uppercase; }
 .archive-scores strong { font: 900 13px/1 ui-monospace, monospace; }
+.source-note { max-width: 980px; margin-top: 24px; border-block: 1px solid #d8d8d8; }
+.source-note summary { padding: 13px 0; cursor: pointer; color: var(--carbon); font: 850 10px/1.4 ui-monospace, monospace; letter-spacing: .04em; text-transform: uppercase; }
+.source-note summary::marker { color: var(--orange); }
+.source-note dl { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 26px; margin: 0; padding: 0 0 18px; }
+.source-note dl div { display: grid; grid-template-columns: minmax(105px, .42fr) 1fr; gap: 12px; padding: 9px 0; border-top: 1px solid #ececec; }
+.source-note dt { color: var(--neutral); font: 750 9px/1.45 ui-monospace, monospace; text-transform: uppercase; }
+.source-note dd { margin: 0; color: #454545; font-size: 11px; line-height: 1.55; }
+.source-note a { color: inherit; text-decoration-color: var(--orange); text-underline-offset: 3px; }
+.source-note > p { margin: 0 0 18px; font: 800 10px/1.5 ui-monospace, monospace; }
 .archive-story-footer { display: flex; justify-content: space-between; align-items: end; gap: 24px; margin-top: 28px; }
 .archive-actions { display: flex; align-items: center; gap: 20px; }
 .archive-tags { display: flex; flex-wrap: wrap; gap: 6px; }
@@ -53,6 +62,7 @@
   .archive-story { scroll-margin-top: 88px; padding: 28px 22px; border-left-width: 5px; }
   .archive-story-meta strong { margin-left: 0; }
   .archive-story > p { font-size: 15px; }
+  .source-note dl { grid-template-columns: 1fr; }
   .archive-scores { grid-template-columns: repeat(2, 1fr); }
   .archive-scores span, .archive-scores span:nth-child(3) { border-right: 1px solid #d4d4d4; }
   .archive-scores span:nth-child(even) { border-right: 0; }

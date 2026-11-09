@@ -1,4 +1,4 @@
-const CACHE_NAME = "polyemergence-v6";
+const CACHE_NAME = "polyemergence-v7";
 const DATA_CACHE_KEY = "/data/latest.json";
 const APP_SHELL = [
   "/",

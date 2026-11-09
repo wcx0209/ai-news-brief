@@ -17,6 +17,8 @@ const COPY = {
     methodConsequence: "Consequence", methodConsequenceText: "Business · policy · society",
     methodFormula: "Importance = 35% Signal + 35% Structure + 30% Consequence. Confidence and momentum remain separate.",
     methodAcademia: "Academic items require Importance ≥70 and Confidence ≥65. No more than two are published per daily brief; the quota is never padded.",
+    trustNews: "News summary", trustResearch: "Research summary", trustInterview: "Interview summary",
+    trustAi: "AI-assisted", trustSource: "Original source linked", trustConflict: "No conflict declared", trustStandards: "Standards",
     feedbackIndex: "READER SIGNAL", feedbackTitle: "Help sharpen<br>the signal.",
     feedbackIntro: "Found an error, a missing source, or a story we should follow? Send a private note to the editorial desk.",
     feedbackTopic: "What is this about?", feedbackCorrection: "Story correction", feedbackSource: "Source suggestion",
@@ -48,6 +50,8 @@ const COPY = {
     methodConsequence: "影响", methodConsequenceText: "商业 · 政策 · 社会",
     methodFormula: "重要性 = 35% 信号 + 35% 结构 + 30% 影响；可信度与热度独立呈现。",
     methodAcademia: "学术内容需同时达到重要性 ≥70、可信度 ≥65；每期最多发布两条，不足则不补位。",
+    trustNews: "新闻摘要", trustResearch: "研究摘要", trustInterview: "访谈摘要",
+    trustAi: "AI 辅助", trustSource: "保留原始来源", trustConflict: "无利益冲突", trustStandards: "编辑标准",
     feedbackIndex: "读者信号", feedbackTitle: "帮助我们<br>校准信号。",
     feedbackIntro: "发现错误、遗漏的重要信源，或值得持续追踪的线索？请私下告诉编辑。",
     feedbackTopic: "反馈类型", feedbackCorrection: "内容纠错", feedbackSource: "推荐信源",
@@ -150,6 +154,12 @@ function categoryFor(item) {
   if (/funding|revenue|earnings|acqui|data center|chip|enterprise|融资|营收|收购|数据中心|芯片|企业/.test(text)) return "business";
   if (/jobs|labor|education|culture|public|environment|社会|就业|教育|文化|环境|公众/.test(text)) return "society";
   return "company";
+}
+
+function trustStrip(item) {
+  const category = categoryFor(item);
+  const type = category === "interviews" ? COPY[state.locale].trustInterview : ["research", "academia"].includes(category) ? COPY[state.locale].trustResearch : COPY[state.locale].trustNews;
+  return `<div class="trust-strip" aria-label="${escapeHtml(COPY[state.locale].trustStandards)}"><span>${escapeHtml(type)}</span><span>${escapeHtml(COPY[state.locale].trustAi)}</span><span>${escapeHtml(COPY[state.locale].trustSource)}</span><span>${escapeHtml(COPY[state.locale].trustConflict)}</span><a href="/${state.locale}/standards/">${escapeHtml(COPY[state.locale].trustStandards)} →</a></div>`;
 }
 
 function imageFit(item) {
@@ -368,7 +378,7 @@ function renderLead(item) {
     <div class="lead-copy">
       <div class="story-kicker"><span>${escapeHtml(item.source)} · ${COPY[state.locale].filters[categoryFor(item)]} · ${escapeHtml(formatDate(item.published_at))}</span><span class="score" title="${COPY[state.locale].importance} ${importance}"><small>${COPY[state.locale].importance}</small>${importance}</span></div>
       ${scoreBreakdown(item)}
-      <div><h3>${escapeHtml(text.title)}</h3>${summaryMarkup(text)}<div class="story-actions"><a class="read-link" href="${escapeHtml(safeUrl(item.url))}" target="_blank" rel="noopener noreferrer">${COPY[state.locale].read} ↗</a>${shareButton(item, text)}</div></div>
+      <div><h3>${escapeHtml(text.title)}</h3>${summaryMarkup(text)}${trustStrip(item)}<div class="story-actions"><a class="read-link" href="${escapeHtml(safeUrl(item.url))}" target="_blank" rel="noopener noreferrer">${COPY[state.locale].read} ↗</a>${shareButton(item, text)}</div></div>
     </div>
     <div class="story-visual">${imageMarkup(item, true)}</div>`;
 }
@@ -382,7 +392,7 @@ function renderCard(item) {
     <div class="card-copy">
     <div class="story-kicker"><span>${escapeHtml(item.source)} · ${COPY[state.locale].filters[categoryFor(item)]}</span><span>${COPY[state.locale].importance} ${importance}</span></div>
     ${scoreBreakdown(item, true)}
-    <h3>${escapeHtml(text.title)}</h3>${summaryMarkup(text)}
+    <h3>${escapeHtml(text.title)}</h3>${summaryMarkup(text)}${trustStrip(item)}
     <div class="story-actions"><a class="read-link" href="${escapeHtml(safeUrl(item.url))}" target="_blank" rel="noopener noreferrer">${COPY[state.locale].read} ↗</a>${shareButton(item, text)}</div>
     <div class="tags">${tags}</div>
     </div>

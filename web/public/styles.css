@@ -187,7 +187,16 @@ main { overflow: hidden; }
 .method li p { color: var(--fog); line-height: 1.4; }
 .method-formula { max-width: 520px; margin: 32px 0 0; color: var(--fog); font: 650 12px/1.6 ui-monospace, monospace; }
 .method-academia { max-width: 520px; margin: 16px 0 0; padding-left: 12px; border-left: 2px solid var(--orange); color: #b8b8b8; font: 650 11px/1.6 ui-monospace, monospace; }
+.method-academia a { color: var(--mineral); text-decoration-color: var(--orange); text-underline-offset: 3px; }
 .method-score.is-compact + h3 { margin-top: 18px; }
+.trust-strip { display: flex; flex-wrap: wrap; gap: 6px 12px; align-items: center; margin: 18px 0 0; color: var(--neutral); font: 700 9px/1.4 ui-monospace, monospace; text-transform: uppercase; }
+.trust-strip span { padding-left: 10px; border-left: 2px solid #c8c8c8; }
+.trust-strip span:first-child { border-left-color: var(--orange); }
+.trust-strip a { color: var(--carbon); text-decoration-color: var(--orange); text-underline-offset: 3px; }
+.lead-story .trust-strip { color: #a9a9a9; }
+.lead-story .trust-strip span { border-left-color: #575757; }
+.lead-story .trust-strip span:first-child { border-left-color: var(--orange); }
+.lead-story .trust-strip a { color: var(--mineral); }
 
 .feedback { display: grid; grid-template-columns: 1fr 1fr; gap: 70px; padding-block: 92px 110px; background: var(--paper); border-top: 13px solid var(--orange); }
 .feedback-intro h2 { max-width: 660px; margin: 0; text-transform: uppercase; font-family: "Arial Narrow", Inter, "Noto Sans SC", sans-serif; font-style: italic; font-size: clamp(46px, 4.7vw, 70px); font-weight: 950; line-height: .9; letter-spacing: -.05em; }
@@ -221,7 +230,7 @@ footer p { margin: 0; color: var(--fog); }
 .footer-topics { display: flex; flex-wrap: wrap; gap: 8px 16px; font-size: 11px; line-height: 1.5; }
 .footer-topics a { color: var(--fog); text-decoration: none; }
 .footer-topics a:hover, .footer-topics a:focus-visible { color: var(--orange); }
-.company-note { max-width: 620px; color: #858585; font-size: 12px; line-height: 1.6; }
+.company-note { max-width: 620px; color: #a0a0a0; font-size: 12px; line-height: 1.6; }
 .footer-meta { font-size: 12px; }
 .footer-meta a { color: var(--mineral); text-decoration-color: #555; text-underline-offset: 4px; }
 .footer-meta a:hover, .footer-meta a:focus-visible { color: var(--white); text-decoration-color: var(--orange); }
