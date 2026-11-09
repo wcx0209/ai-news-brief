@@ -193,6 +193,21 @@ def select_daily(records):
     return selected
 
 
+def merge_current_feed(records, feed_path):
+    """Keep every currently published card addressable from its share link.
+
+    The public feed can contain newly curated rows that are not returned by the
+    archive query yet.  Merge those rows by id so the archive export and the
+    homepage are always published atomically with matching anchors.
+    """
+    if not feed_path.exists():
+        return records
+    current = load_json(feed_path)
+    known_ids = {str(record["id"]) for record in records}
+    records.extend(record for record in current if str(record["id"]) not in known_ids)
+    return records
+
+
 def json_ld(value):
     return json.dumps(value, ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/")
 
@@ -345,7 +360,9 @@ def main():
     args = parser.parse_args()
     output = Path(args.output)
     output.mkdir(parents=True, exist_ok=True)
-    records = load_json(args.input_json) if args.input_json else load_database()
+    records = load_json(args.input_json) if args.input_json else merge_current_feed(
+        load_database(), output / "data" / "latest.json"
+    )
     grouped = select_daily(records)
     if not grouped:
         raise SystemExit("No eligible archive records")
