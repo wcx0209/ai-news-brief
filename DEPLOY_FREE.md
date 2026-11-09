@@ -18,7 +18,7 @@ Public RSS + Hacker News + YouTube + GitHub Trending
         Cloudflare Pages static frontend
 ```
 
-The browser never connects to Postgres and never receives a database URL or API key. Postgres permanently retains the complete article and vector history; the published JSON contains only the latest 48-hour reading window.
+The browser never connects to Postgres and never receives a database URL or API key. Postgres permanently retains the complete article and vector history; the Daily Brief contains only stories whose original source publication time is within the latest 48-hour reading window.
 
 ## 1. Gemini
 

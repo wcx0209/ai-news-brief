@@ -146,7 +146,7 @@ def select_balanced_rows(rows, limit, max_open_source, max_academia,
 
 
 def load_previous_items(path, max_age_hours=48):
-    """Load recent published items so a single sparse run does not erase coverage."""
+    """Load items whose original source publication is still in the brief window."""
     if not os.path.exists(path):
         return []
     try:
@@ -155,16 +155,18 @@ def load_previous_items(path, max_age_hours=48):
     except (OSError, TypeError, json.JSONDecodeError):
         return []
 
-    cutoff = datetime.now(timezone.utc) - timedelta(hours=max_age_hours)
+    now = datetime.now(timezone.utc)
+    cutoff = now - timedelta(hours=max_age_hours)
     recent = []
     for item in items:
         try:
-            published = datetime.fromisoformat(str(item.get("published_at", "")).replace("Z", "+00:00"))
+            source_published = item.get("source_published_at") or item.get("published_at")
+            published = datetime.fromisoformat(str(source_published or "").replace("Z", "+00:00"))
             if published.tzinfo is None:
                 published = published.replace(tzinfo=timezone.utc)
         except (TypeError, ValueError):
             continue
-        if published >= cutoff:
+        if cutoff <= published <= now:
             recent.append(item)
     return recent
 
@@ -182,7 +184,7 @@ def merge_recent_items(current, previous, limit, max_github, max_academia,
             deduped[key] = item  # Current items arrive last and win.
 
     def rank(item):
-        published = str(item.get("published_at") or "")
+        published = str(item.get("source_published_at") or item.get("published_at") or "")
         return int(item.get("importance") or 0), published
 
     merged = []
@@ -240,10 +242,12 @@ def main():
                        a.created_at, rs.name AS source_name
                 FROM articles a
                 LEFT JOIN rss_sources rs ON rs.id = a.rss_source_id
-                WHERE COALESCE(a.published_at, a.created_at) >= NOW() - (%s * INTERVAL '1 hour')
+                WHERE COALESCE(a.source_published_at, a.published_at, a.created_at)
+                      >= NOW() - (%s * INTERVAL '1 hour')
+                  AND COALESCE(a.source_published_at, a.published_at, a.created_at) <= NOW()
                 ORDER BY (a.importance_score - CASE WHEN a.category IN ('opensource', 'open_source') AND rs.name = 'GitHub Trending' THEN 25 ELSE 0 END) DESC,
                          COALESCE(rs.importance_score, 0) DESC,
-                         COALESCE(a.published_at, a.created_at) DESC
+                         COALESCE(a.source_published_at, a.published_at, a.created_at) DESC
                 LIMIT %s
                 """,
                 (max(1, args.max_age_hours), max(args.limit * 3, args.limit)),
@@ -253,10 +257,6 @@ def main():
                 args.max_academia, args.min_academia_importance,
                 args.min_academia_confidence,
             )
-
-    if not rows and os.path.exists(args.output):
-        print(f"No curated articles; preserving existing feed at {args.output}")
-        return
 
     image_urls = [youtube_thumbnail(safe_http_url(row["url"])) for row in rows]
     discoverable = {

@@ -426,6 +426,20 @@ function renderCard(item) {
   </article>`;
 }
 
+const DAILY_BRIEF_WINDOW_MS = 48 * 60 * 60 * 1000;
+
+function isCurrentBriefItem(item, now = Date.now()) {
+  const value = item?.source_published_at || item?.published_at;
+  const publishedAt = Date.parse(value || "");
+  if (!Number.isFinite(publishedAt)) return false;
+  return publishedAt <= now && publishedAt >= now - DAILY_BRIEF_WINDOW_MS;
+}
+
+function applyBriefWindow(feed) {
+  const items = Array.isArray(feed?.items) ? feed.items.filter(item => isCurrentBriefItem(item)) : [];
+  return { ...feed, count: items.length, items };
+}
+
 function renderFeed() {
   if (!state.feed) return;
   const items = state.feed.items || [];
@@ -484,7 +498,7 @@ async function loadFeed({ background = false } = {}) {
   try {
     const response = await fetch("/data/latest.json", { cache: "no-store", credentials: "omit" });
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    state.feed = await response.json();
+    state.feed = applyBriefWindow(await response.json());
   } catch (error) {
     $("#update-status").textContent = COPY[state.locale].error;
     if (background && state.feed) return;
