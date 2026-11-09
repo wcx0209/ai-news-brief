@@ -1,4 +1,5 @@
-const CACHE_NAME = "polyemergence-v2";
+const CACHE_NAME = "polyemergence-v3";
+const DATA_CACHE_KEY = "/data/latest.json";
 const APP_SHELL = [
   "/",
   "/en/",
@@ -37,6 +38,20 @@ async function networkFirst(request, fallbackUrl) {
   }
 }
 
+async function freshDataFirst(request) {
+  const cache = await caches.open(CACHE_NAME);
+  try {
+    // Bypass both the browser HTTP cache and the CDN's stale response path.
+    const response = await fetch(new Request(request, { cache: "no-store" }));
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    await cache.put(DATA_CACHE_KEY, response.clone());
+    return response;
+  } catch {
+    // The last successful payload remains available when the app is offline.
+    return (await cache.match(DATA_CACHE_KEY)) || Response.error();
+  }
+}
+
 self.addEventListener("fetch", event => {
   const { request } = event;
   if (request.method !== "GET") return;
@@ -50,7 +65,7 @@ self.addEventListener("fetch", event => {
   }
 
   if (url.pathname.startsWith("/data/")) {
-    event.respondWith(networkFirst(request, "/data/latest.json"));
+    event.respondWith(freshDataFirst(request));
     return;
   }
 

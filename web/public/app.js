@@ -396,17 +396,21 @@ function setLocale(locale) {
 
 $$('[data-filter-link]').forEach(link => link.addEventListener("click", () => { state.category = link.dataset.filterLink; renderFilters(); renderFeed(); }));
 
-async function loadFeed() {
+let lastFeedRequestAt = 0;
+
+async function loadFeed({ background = false } = {}) {
+  lastFeedRequestAt = Date.now();
   try {
-    const response = await fetch("/data/latest.json", { cache: "default", credentials: "omit" });
+    const response = await fetch("/data/latest.json", { cache: "no-store", credentials: "omit" });
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     state.feed = await response.json();
   } catch (error) {
     $("#update-status").textContent = COPY[state.locale].error;
+    if (background && state.feed) return;
     state.feed = { generated_at: new Date().toISOString(), items: [], demo: true };
   }
   setLocale(state.locale);
-  if (location.hash) {
+  if (!background && location.hash) {
     let target = null;
     try { target = document.getElementById(decodeURIComponent(location.hash.slice(1))); } catch {}
     if (target) requestAnimationFrame(() => requestAnimationFrame(() => {
@@ -416,6 +420,12 @@ async function loadFeed() {
       requestAnimationFrame(() => { document.documentElement.style.scrollBehavior = previousBehavior; });
     }));
   }
+}
+
+function refreshFeedIfStale() {
+  if (document.visibilityState === "hidden") return;
+  if (Date.now() - lastFeedRequestAt < 60_000) return;
+  loadFeed({ background: true });
 }
 
 const feedbackForm = $("#feedback-form");
@@ -509,8 +519,17 @@ installButton?.addEventListener("click", async () => {
 });
 
 if ("serviceWorker" in navigator) {
-  window.addEventListener("load", () => navigator.serviceWorker.register("/sw.js").catch(() => {}));
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("/sw.js", { updateViaCache: "none" })
+      .then(registration => registration.update())
+      .catch(() => {});
+  });
 }
+
+document.addEventListener("visibilitychange", refreshFeedIfStale);
+window.addEventListener("pageshow", refreshFeedIfStale);
+window.addEventListener("online", refreshFeedIfStale);
+window.setInterval(refreshFeedIfStale, 5 * 60_000);
 
 setLocale(state.locale);
 renderInstallSteps();

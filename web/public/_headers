@@ -26,4 +26,5 @@
   Cache-Control: no-cache
 
 /data/*
-  Cache-Control: public, max-age=300, s-maxage=300, stale-while-revalidate=86400
+  Cache-Control: no-cache, no-store, must-revalidate
+  CDN-Cache-Control: no-store
