@@ -6,7 +6,7 @@ import threading
 import os
 import re
 import json
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 from calendar import timegm
 from urllib.parse import urljoin
 
@@ -307,9 +307,7 @@ class RSSFetcher:
                     try:
                         published_at = datetime.strptime(
                             raw_date, '%Y年%m月%d日'
-                        ).replace(
-                            tzinfo=timezone(timedelta(hours=8))
-                        ).isoformat()
+                        ).replace(tzinfo=timezone.utc).isoformat()
                     except ValueError:
                         logging.debug(
                             "Tencent Newsroom date could not be parsed: %s", raw_date

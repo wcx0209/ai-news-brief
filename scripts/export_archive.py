@@ -379,7 +379,7 @@ def render_article(output, locale, record):
     structured = {
         "@context": "https://schema.org", "@type": "NewsArticle", "headline": title,
         "description": description,
-        "datePublished": (record.get("source_published") or record["published"]).isoformat(),
+        "datePublished": (record.get("source_published") or record["published"]).astimezone(LOCAL_TZ).isoformat(),
         "dateModified": record["published"].isoformat(), "inLanguage": c["lang"],
         "articleSection": CATEGORY_LABELS[locale][record["category"]],
         "keywords": record["tags"],

@@ -174,7 +174,10 @@ def merge_recent_items(current, previous, limit, max_github, max_academia,
     """Merge, rank, and reapply publication gates to carried-forward items."""
     deduped = {}
     for item in previous + current:
-        key = item.get("url") or item.get("id")
+        # Article ids are permanent even when an official source replaces an
+        # earlier media URL. Deduplicating by URL first would temporarily show
+        # both provenance versions of the same story.
+        key = item.get("id") or item.get("url")
         if key:
             deduped[key] = item  # Current items arrive last and win.
 
