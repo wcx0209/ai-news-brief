@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Polyemergence API & MCP for AI Agents</title>
+  <meta name="description" content="Connect ChatGPT, Claude and enterprise AI agents to Polyemergence through a public MCP server, REST API and OpenAPI specification.">
+  <meta name="robots" content="index,follow,max-snippet:-1">
+  <link rel="canonical" href="https://polyemergence.com/developers/">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/developer.css?v=1">
+  <script defer src="/analytics.js?v=1"></script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"Polyemergence API & MCP for AI Agents","url":"https://polyemergence.com/developers/","publisher":{"@type":"Organization","name":"PolyEmergence Pte Ltd."},"inLanguage":["en","zh-Hans"]}</script>
+</head>
+<body>
+  <header><a href="/en/"><img src="/assets/logo-en-reverse.svg" alt="Polyemergence" width="420" height="70"></a><nav><a href="#mcp">MCP</a><a href="#api">API</a><a href="#discovery">Discovery</a><a href="/zh/">中文网站</a></nav></header>
+  <main>
+    <section class="hero"><p class="kicker">POLYEMERGENCE · FOR AGENTS</p><h1>AI intelligence,<br><em>ready to call.</em></h1><p class="lede">Connect ChatGPT, Claude, internal copilots and enterprise agents to bilingual AI news with canonical citations, source metadata and transparent importance scores.</p><div class="endpoint"><span>MCP ENDPOINT</span><code>https://polyemergence.com/mcp</code></div><p class="status"><i></i> Public · read-only · no API key required</p></section>
+
+    <section class="split" id="mcp"><div><p class="index">01 / MCP</p><h2>One endpoint for<br>tool-using AI.</h2><p>The MCP server exposes four focused tools: search the archive, fetch one citation-ready article, get the latest brief, and inspect the methodology.</p></div><div class="panel"><h3>Generic MCP client</h3><pre><code>{
+  "mcpServers": {
+    "polyemergence": {
+      "url": "https://polyemergence.com/mcp"
+    }
+  }
+}</code></pre><p>In ChatGPT, Claude or another compatible client, add a custom remote MCP server and paste the endpoint above. Interface labels vary by product and plan.</p></div></section>
+
+    <section class="split dark" id="api"><div><p class="index">02 / REST + OPENAPI</p><h2>Predictable data<br>for your own agent.</h2><p>Use the REST endpoints directly, or import the OpenAPI specification into an agent platform. Responses are JSON and support English or Chinese.</p><a class="button" href="/api/v1/openapi.json">Open OpenAPI 3.1 spec ↗</a></div><div class="routes"><a href="/api/v1/brief?lang=en&amp;hours=48"><code>GET /api/v1/brief</code><span>Latest ranked news</span></a><a href="/api/v1/search?q=OpenAI&amp;lang=en"><code>GET /api/v1/search?q=OpenAI</code><span>Search archives</span></a><code>GET /api/v1/articles/{id}</code><a href="/api/v1/sources"><code>GET /api/v1/sources</code><span>Source directory</span></a><a href="/api/v1/methodology"><code>GET /api/v1/methodology</code><span>Scoring and disclosures</span></a></div></section>
+
+    <section class="split" id="discovery"><div><p class="index">03 / DISCOVERY</p><h2>How does AI<br>know this exists?</h2></div><div class="steps"><article><b>1</b><h3>Crawlers can find it</h3><p>The developer page, sitemap, <a href="/llms.txt">llms.txt</a>, structured article data and visible site links make the interfaces discoverable and citable.</p></article><article><b>2</b><h3>Agents still need a connection</h3><p>Most AI assistants do not automatically execute arbitrary APIs they discover on the web. A user, workspace admin or agent developer must add the MCP endpoint or OpenAPI spec.</p></article><article><b>3</b><h3>Distribution makes it native</h3><p>Publishing the connector in product directories or the MCP registry can make installation easier. Discovery does not grant permission: all tools remain read-only.</p></article></div></section>
+
+    <section class="cn"><p class="index">中文说明</p><h2>给 AI 一个明确入口，而不是等它“自己发现”。</h2><p>搜索引擎和 AI 爬虫可以通过本页、站点地图与 <a href="/llms.txt">llms.txt</a> 认识 Polyemergence；但 ChatGPT、Claude 或企业 Agent 要真正调用新闻数据，仍需由用户或管理员添加 <code>https://polyemergence.com/mcp</code>，或导入 <a href="/api/v1/openapi.json">OpenAPI 文件</a>。接口免费、只读、暂不需要密钥。</p></section>
+  </main>
+  <footer><img src="/assets/logo-en-reverse.svg" alt="Polyemergence" width="300"><p>Published by PolyEmergence Pte Ltd., Singapore.<br>No current financial or commercial conflict declared.</p><p><a href="/en/standards/">Editorial standards</a> · <a href="/en/#feedback">Feedback</a></p></footer>
+</body>
+</html>

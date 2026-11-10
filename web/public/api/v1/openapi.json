@@ -1,0 +1,96 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Polyemergence Public API",
+    "version": "1.0.0",
+    "description": "Read-only bilingual AI news, archives, sources, and Polyemergence Method scores from PolyEmergence Pte Ltd. Preserve canonical URLs when citing results.",
+    "contact": { "url": "https://polyemergence.com/en/#feedback" }
+  },
+  "servers": [{ "url": "https://polyemergence.com/api/v1" }],
+  "paths": {
+    "/brief": {
+      "get": {
+        "operationId": "getDailyBrief",
+        "summary": "Get the latest AI news ranked by importance",
+        "parameters": [
+          { "$ref": "#/components/parameters/lang" },
+          { "$ref": "#/components/parameters/category" },
+          { "name": "hours", "in": "query", "schema": { "type": "integer", "minimum": 1, "maximum": 8760, "default": 48 } },
+          { "$ref": "#/components/parameters/limit" }
+        ],
+        "responses": { "200": { "description": "A ranked list of recent stories", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ArticleList" } } } } }
+      }
+    },
+    "/search": {
+      "get": {
+        "operationId": "searchNews",
+        "summary": "Search Polyemergence news and archives",
+        "parameters": [
+          { "name": "q", "in": "query", "required": true, "schema": { "type": "string", "maxLength": 200 } },
+          { "$ref": "#/components/parameters/lang" },
+          { "$ref": "#/components/parameters/limit" }
+        ],
+        "responses": { "200": { "description": "Matching stories", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ArticleList" } } } } }
+      }
+    },
+    "/articles/{id}": {
+      "get": {
+        "operationId": "getArticle",
+        "summary": "Get one article summary and its source metadata",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } },
+          { "$ref": "#/components/parameters/lang" }
+        ],
+        "responses": {
+          "200": { "description": "Article", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Article" } } } },
+          "404": { "description": "Article not found" }
+        }
+      }
+    },
+    "/sources": {
+      "get": {
+        "operationId": "listSources",
+        "summary": "List sources represented in the public archive",
+        "responses": { "200": { "description": "Source directory" } }
+      }
+    },
+    "/methodology": {
+      "get": {
+        "operationId": "getMethodology",
+        "summary": "Get scoring rules and editorial disclosures",
+        "responses": { "200": { "description": "Polyemergence Method" } }
+      }
+    }
+  },
+  "components": {
+    "parameters": {
+      "lang": { "name": "lang", "in": "query", "schema": { "type": "string", "enum": ["en", "zh"], "default": "en" } },
+      "category": { "name": "category", "in": "query", "schema": { "type": "string", "enum": ["models", "company", "startups", "research", "academia", "open_source", "interviews", "policy", "business", "society"] } },
+      "limit": { "name": "limit", "in": "query", "schema": { "type": "integer", "minimum": 1, "maximum": 100, "default": 20 } }
+    },
+    "schemas": {
+      "Scores": {
+        "type": "object",
+        "properties": {
+          "signal": { "type": "integer" }, "structure": { "type": "integer" }, "consequence": { "type": "integer" },
+          "confidence": { "type": "integer" }, "momentum": { "type": "integer" }
+        }
+      },
+      "Article": {
+        "type": "object",
+        "required": ["id", "title", "summary", "source", "source_url", "canonical_url", "category", "importance", "published_at"],
+        "properties": {
+          "id": { "type": "string" }, "title": { "type": "string" }, "summary": { "type": "string" }, "full_summary": { "type": "string" },
+          "source": { "type": "string" }, "source_url": { "type": "string", "format": "uri" }, "canonical_url": { "type": "string", "format": "uri" },
+          "language": { "type": "string" }, "category": { "type": "string" }, "importance": { "type": "integer" }, "scores": { "$ref": "#/components/schemas/Scores" },
+          "published_at": { "type": "string", "format": "date-time" }, "source_published_at": { "type": "string", "format": "date-time" },
+          "tags": { "type": "array", "items": { "type": "string" } }
+        }
+      },
+      "ArticleList": {
+        "type": "object",
+        "properties": { "count": { "type": "integer" }, "items": { "type": "array", "items": { "$ref": "#/components/schemas/Article" } } }
+      }
+    }
+  }
+}

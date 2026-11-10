@@ -325,7 +325,7 @@ def page_shell(locale, title, description, canonical, alternate, body, structure
 <body><header class="site-header"><a class="brand" href="/{locale}/" aria-label="{esc(c['brand'])}"><img src="/assets/{logo}" alt="{esc(c['brand'])}" width="420" height="70"></a>
 <nav class="desktop-nav" aria-label="Primary"><a href="/{locale}/#brief">{esc(c['brief'])}</a><a href="/{locale}/archive/" aria-current="page">{esc(c['archive'])}</a><a href="/{locale}/#about">{esc(c['method'])}</a></nav>
 <div class="header-tools"><span class="edition">{esc(c['edition'])}</span><div class="language-switch"><a href="{esc(alternate)}" hreflang="{COPY[other]['lang']}">{'中' if other == 'zh' else 'EN'}</a><span>|</span><a href="{esc(canonical)}" aria-current="page">{'中' if locale == 'zh' else 'EN'}</a></div></div></header>
-<main class="archive-main">{body}</main><footer><div class="footer-brand"><img src="/assets/{logo}" alt="{esc(c['brand'])}" width="360"></div><div class="footer-copy"><p>{esc(c['footer'])}</p><p class="company-note">{esc(c['company'])}</p><nav class="footer-topics" aria-label="AI topics">{topic_links}</nav><p class="footer-meta"><a href="/{locale}/standards/">{esc(c['standards'])}</a> · <a href="/{locale}/corrections/">{esc(c['corrections'])}</a> · <a href="/feed-{locale}.xml">{esc(c['feed'])}</a></p></div></footer></body></html>'''
+<main class="archive-main">{body}</main><footer><div class="footer-brand"><img src="/assets/{logo}" alt="{esc(c['brand'])}" width="360"></div><div class="footer-copy"><p>{esc(c['footer'])}</p><p class="company-note">{esc(c['company'])}</p><nav class="footer-topics" aria-label="AI topics">{topic_links}</nav><p class="footer-meta"><a href="/{locale}/standards/">{esc(c['standards'])}</a> · <a href="/{locale}/corrections/">{esc(c['corrections'])}</a> · <a href="/feed-{locale}.xml">{esc(c['feed'])}</a> · <a href="/developers/">API / MCP</a></p></div></footer></body></html>'''
 
 
 def story_html(record, locale):
@@ -527,6 +527,34 @@ def render_sitemap(output, grouped):
     ET.ElementTree(root).write(output / "archive-sitemap.xml", encoding="utf-8", xml_declaration=True)
 
 
+def render_public_data(output, records):
+    """Export the permanent public corpus consumed by the REST API and MCP server."""
+    items = []
+    for record in sorted(records, key=lambda item: (item["published"], item["importance"]), reverse=True):
+        day = record["published"].astimezone(LOCAL_TZ).date()
+        items.append({
+            "id": str(record["id"]), "url": record["url"], "source": record["source"],
+            "category": record["category"], "importance": record["importance"],
+            "scores": record["scores"],
+            "published_at": record["published"].isoformat().replace("+00:00", "Z"),
+            "source_published_at": record["source_published"].isoformat().replace("+00:00", "Z"),
+            "tags": record["tags"],
+            "canonical_urls": {locale: SITE + article_path(locale, day, record) for locale in ("en", "zh")},
+            "en": {"title": clean_text(record["en"]["title"]), "summary": clean_text(record["en"]["summary"]), "full_summary": clean_text(record["en"]["full"])},
+            "zh": {"title": clean_text(record["zh"]["title"]), "summary": clean_text(record["zh"]["summary"]), "full_summary": clean_text(record["zh"]["full"])},
+        })
+    target = output / "data" / "articles.json"
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(json.dumps({
+        "schema_version": "1.0",
+        "generated_at": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
+        "count": len(items),
+        "methodology_url": SITE + "/api/v1/methodology",
+        "license": "Public API access subject to Polyemergence terms and source rights; preserve attribution and canonical URLs.",
+        "items": items,
+    }, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--output", default="web/public")
@@ -551,6 +579,7 @@ def main():
         for category in CATEGORY_ORDER:
             render_topic(output, locale, category, [record for record in all_records if record["category"] == category])
         render_rss(output, locale, grouped)
+    render_public_data(output, [record for day in ordered_days for record in grouped[day]])
     render_sitemap(output, grouped)
     print(f"Generated {len(grouped)} daily archives containing {sum(map(len, grouped.values()))} stories")
 

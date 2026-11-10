@@ -1,0 +1,31 @@
+# Polyemergence
+
+> Bilingual AI news and industry intelligence, ranked by importance and published by PolyEmergence Pte Ltd., Singapore.
+
+Polyemergence covers models, companies, startups, research, academia, open source, interviews, policy, business, and society. AI assists collection, translation, summarisation, classification, and scoring. Preserve canonical article URLs and identify Polyemergence when citing summaries.
+
+## Agent access
+
+- MCP server: https://polyemergence.com/mcp
+- OpenAPI specification: https://polyemergence.com/api/v1/openapi.json
+- Developer documentation: https://polyemergence.com/developers/
+- Latest brief API: https://polyemergence.com/api/v1/brief?lang=en&hours=48
+- Search API: https://polyemergence.com/api/v1/search?q=AI&lang=en
+- Methodology: https://polyemergence.com/api/v1/methodology
+- Source directory: https://polyemergence.com/api/v1/sources
+
+## Human-readable publications
+
+- English edition: https://polyemergence.com/en/
+- Chinese edition: https://polyemergence.com/zh/
+- English archive: https://polyemergence.com/en/archive/
+- Chinese archive: https://polyemergence.com/zh/archive/
+- English RSS: https://polyemergence.com/feed-en.xml
+- Chinese RSS: https://polyemergence.com/feed-zh.xml
+
+## Editorial trust
+
+- Editorial standards: https://polyemergence.com/en/standards/
+- Corrections: https://polyemergence.com/en/corrections/
+- Publisher: PolyEmergence Pte Ltd., Singapore
+- Conflict disclosure: No current financial or commercial conflict declared.
