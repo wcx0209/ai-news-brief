@@ -102,6 +102,26 @@ class OfficialHtmlSourceTests(unittest.TestCase):
             "2026-08-18T00:00:00+00:00",
         )
 
+    def test_extracts_official_article_text_without_navigation(self):
+        soup = BeautifulSoup(
+            """
+            <main>
+              <nav>Products Company Careers</nav>
+              <h1>Introducing Model One</h1>
+              <p>Model One is the publisher's newest model.</p>
+              <script>window.__DATA__ = 'ignore';</script>
+            </main>
+            """,
+            "html.parser",
+        )
+
+        text = RSSFetcher._official_page_text(soup)
+
+        self.assertIn("Introducing Model One", text)
+        self.assertIn("newest model", text)
+        self.assertNotIn("Products Company Careers", text)
+        self.assertNotIn("window.__DATA__", text)
+
 
 if __name__ == "__main__":
     unittest.main()

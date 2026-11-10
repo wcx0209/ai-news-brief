@@ -417,9 +417,22 @@ def _process_single_entry(entry, sources, source_map, user_db, ai_engine, vector
     else:
         full_text = ContentProcessor.fetch_and_extract(url)
         if not full_text:
-            logging.warning(f"{log_prefix}Failed to extract content. Skipping. URL: {url}")
-            fetch_stats.record_failure(rss_url, rss_desc, 'content_extract_failed')
-            return 0
+            # Official HTML adapters have already fetched and validated the
+            # publisher page. Dynamic layouts sometimes defeat trafilatura on
+            # the second request, so first-party sources may fall back to the
+            # readable <article>/<main> text captured from that official page.
+            # This is intentionally unavailable to media and discussion feeds.
+            official_text = (entry.get('official_content') or '').strip()
+            if is_first_party and len(official_text) >= 160:
+                full_text = official_text
+                logging.info(
+                    f"{log_prefix}Using publisher-page text captured by the "
+                    f"official adapter ({len(full_text)} chars): {title}"
+                )
+            else:
+                logging.warning(f"{log_prefix}Failed to extract content. Skipping. URL: {url}")
+                fetch_stats.record_failure(rss_url, rss_desc, 'content_extract_failed')
+                return 0
     
     # 记录已成功获取内容的URL
     user_db.record_fetched_url(url, source_id)

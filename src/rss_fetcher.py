@@ -33,7 +33,9 @@ OFFICIAL_HTML_INDEX_RULES = {
         'exclude_path_prefixes': ('/news/topics/', '/news/category/'),
     },
     'https://www.anthropic.com/news': {
-        'path_prefixes': ('/news/',),
+        # Anthropic places some flagship model announcements at root-level
+        # /claude-* URLs even though they are featured on the News index.
+        'path_prefixes': ('/news/', '/claude-'),
         'exclude_titles': ('Announcements',),
     },
     'https://www.anthropic.com/research': {
@@ -458,6 +460,16 @@ class RSSFetcher:
         return None
 
     @staticmethod
+    def _official_page_text(soup):
+        """Extract readable first-party text already present in an article page."""
+        node = soup.select_one('article') or soup.select_one('main')
+        if not node:
+            return ''
+        for unwanted in node.select('script, style, noscript, svg, nav, footer'):
+            unwanted.decompose()
+        return node.get_text('\n', strip=True)
+
+    @staticmethod
     def _discover_official_article_urls(soup, index_url, path_prefixes,
                                         keep_query_keys=(),
                                         exclude_path_prefixes=(), limit=40):
@@ -574,11 +586,13 @@ class RSSFetcher:
                     ) or article_soup.select_one(
                         'meta[name="description"]'
                     )
+                    official_content = self._official_page_text(article_soup)
                     entries.append({
                         'title': title.strip(),
                         'link': link,
                         'summary': (description_node.get('content') or '').strip()
                         if description_node else '',
+                        'official_content': official_content,
                         'source': feed_config['name'],
                         'source_id': feed_config.get('id'),
                         'published_at': published_at,
