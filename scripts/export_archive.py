@@ -325,7 +325,7 @@ def page_shell(locale, title, description, canonical, alternate, body, structure
     return f'''<!doctype html>
 <html lang="{c['lang']}" data-locale="{locale}"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<script defer src="/analytics.js?v=1"></script><script defer src="/share.js?v=20261109-1"></script><title>{esc(title)}</title>
+<script defer src="/analytics.js?v=2"></script><script defer src="/share.js?v=20261109-1"></script><title>{esc(title)}</title>
 <meta name="description" content="{esc(description)}"><meta name="robots" content="index,follow,max-snippet:-1,max-image-preview:large">
 <link rel="canonical" href="{esc(canonical)}"><link rel="alternate" hreflang="{c['lang']}" href="{esc(canonical)}">
 <link rel="alternate" hreflang="{COPY[other]['lang']}" href="{esc(alternate)}"><link rel="alternate" hreflang="x-default" href="{esc(canonical if locale == 'en' else alternate)}">
