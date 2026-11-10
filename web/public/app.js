@@ -8,7 +8,10 @@ const COPY = {
     promise: "AI news today, ranked by importance across models, companies, startups, research, open source, policy, business, and society.",
     loading: "Loading today’s brief…", updated: "Updated", stories: "stories", dailyBrief: "AI News Today",
     filters: { all: "All", models: "Models", company: "Company", startups: "Startups", research: "Research", academia: "Academia", open_source: "Open Source", interviews: "Interviews", policy: "Policy", business: "Business", society: "Society" }, importance: "Importance", published: "Published",
-    expandSummary: "Expand full summary", collapseSummary: "Collapse summary", share: "Share",
+    expandSummary: "Expand full summary", collapseSummary: "Collapse summary", share: "Share", like: "Like", comments: "Comments",
+    commentPlaceholder: "Add to the conversation…", commentSubmit: "Post", commentSending: "Posting…", commentEmpty: "No comments yet. Start the conversation.",
+    commentIdentity: "You’ll appear as", commentPrivacy: "Only an approximate IP location and the last three characters are public. Your full IP is not stored.",
+    interactionError: "Couldn’t update this right now. Please try again.", commentTooLong: "Maximum 500 characters.",
     scoreSignal: "Signal", scoreStructure: "Structure", scoreConsequence: "Consequence", scoreConfidence: "Confidence", scoreMomentum: "Momentum",
     read: "Read original", noStories: "No stories in this section yet.", error: "The live feed is unavailable. Showing the last bundled briefing.",
     demo: "Demo feed — run the scheduled collector to publish the live briefing.",
@@ -41,7 +44,10 @@ const COPY = {
     promise: "每日AI资讯与全球AI新闻聚合，按重要性追踪模型、公司、创业、研究、开源、政策、商业与社会动态。",
     loading: "正在载入今日简报…", updated: "更新于", stories: "条内容", dailyBrief: "今日 AI 新闻",
     filters: { all: "全部", models: "模型", company: "公司", startups: "创业", research: "研究", academia: "学术", open_source: "开源", interviews: "访谈", policy: "政策", business: "商业", society: "社会" }, importance: "重要性", published: "发布",
-    expandSummary: "展开全文", collapseSummary: "收起全文", share: "分享",
+    expandSummary: "展开全文", collapseSummary: "收起全文", share: "分享", like: "点赞", comments: "评论",
+    commentPlaceholder: "加入讨论……", commentSubmit: "发布", commentSending: "正在发布……", commentEmpty: "还没有评论，来说第一句。",
+    commentIdentity: "你将显示为", commentPrivacy: "只公开粗略 IP 归属地和末三位，完整 IP 不会入库。",
+    interactionError: "暂时无法更新，请稍后再试。", commentTooLong: "最多输入 500 个字符。",
     scoreSignal: "信号", scoreStructure: "结构", scoreConsequence: "影响", scoreConfidence: "可信度", scoreMomentum: "热度",
     read: "阅读原文", noStories: "这个栏目暂时没有内容。", error: "实时数据暂时不可用，正在显示最近一次简报。",
     demo: "当前为演示数据——运行定时采集任务后将自动发布实时内容。",
@@ -68,7 +74,10 @@ const COPY = {
 };
 
 const routeLocale = location.pathname.split("/").filter(Boolean)[0];
-const state = { locale: routeLocale === "zh" ? "zh" : routeLocale === "en" ? "en" : (navigator.language.startsWith("zh") ? "zh" : "en"), category: "all", feed: null };
+const state = {
+  locale: routeLocale === "zh" ? "zh" : routeLocale === "en" ? "en" : (navigator.language.startsWith("zh") ? "zh" : "en"),
+  category: "all", feed: null, interactions: {}, viewer: null, openComments: new Set()
+};
 const categories = ["all", "models", "company", "startups", "research", "academia", "open_source", "interviews", "policy", "business", "society"];
 const $ = (selector) => document.querySelector(selector);
 const $$ = (selector) => [...document.querySelectorAll(selector)];
@@ -143,6 +152,51 @@ function archiveShareUrl(item) {
 function shareButton(item, text) {
   const summary = plainText(text.summary || text.fullSummary || "").replace(/\s+/g, " ").trim().slice(0, 180);
   return `<button class="share-button" type="button" data-share-button data-share-id="${escapeHtml(item.id || "")}" data-share-locale="${state.locale}" data-share-title="${escapeHtml(text.title)}" data-share-summary="${escapeHtml(summary)}" data-share-url="${escapeHtml(archiveShareUrl(item))}" aria-label="${escapeHtml(COPY[state.locale].share)}: ${escapeHtml(text.title)}"><svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="18" cy="5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="19" r="2.5"/><path d="m8.2 10.8 7.6-4.5M8.2 13.2l7.6 4.5"/></svg><span>${escapeHtml(COPY[state.locale].share)}</span></button>`;
+}
+
+function interactionFor(articleId) {
+  return state.interactions[articleId] || { likes: 0, comments: 0, liked: false };
+}
+
+function identityLabel(identity = state.viewer) {
+  if (!identity) return "poly · — · ---";
+  let place = identity.region || identity.region_code || identity.country || "—";
+  if (!identity.region && !identity.region_code && identity.country && typeof Intl.DisplayNames === "function") {
+    try {
+      const names = new Intl.DisplayNames([state.locale === "zh" ? "zh-Hans" : "en"], { type: "region" });
+      place = names.of(identity.country) || identity.country;
+    } catch {}
+  }
+  return `poly · ${place} · ${identity.ip_suffix || "---"}`;
+}
+
+function interactionMarkup(item) {
+  const articleId = escapeHtml(item.id || "");
+  const interaction = interactionFor(item.id);
+  const expanded = state.openComments.has(item.id);
+  return `<div class="story-social" data-interaction data-article-id="${articleId}">
+    <div class="social-actions">
+      <button class="social-button like-button${interaction.liked ? " is-active" : ""}" type="button" data-like aria-pressed="${interaction.liked}" aria-label="${escapeHtml(COPY[state.locale].like)}">
+        <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8l1.1 1.1L12 21l7.8-7.5 1.1-1.1a5.5 5.5 0 0 0-.1-7.8Z"/></svg>
+        <span>${escapeHtml(COPY[state.locale].like)}</span><strong data-like-count>${interaction.likes}</strong>
+      </button>
+      <button class="social-button comment-button" type="button" data-comments-toggle aria-expanded="${expanded}" aria-label="${escapeHtml(COPY[state.locale].comments)}">
+        <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4Z"/></svg>
+        <span>${escapeHtml(COPY[state.locale].comments)}</span><strong data-comment-count>${interaction.comments}</strong>
+      </button>
+    </div>
+    <div class="comment-panel" data-comment-panel ${expanded ? "" : "hidden"}>
+      <div class="comment-list" data-comment-list><p class="comment-empty">${escapeHtml(COPY[state.locale].commentEmpty)}</p></div>
+      <form class="comment-form" data-comment-form>
+        <label><span>${escapeHtml(COPY[state.locale].commentIdentity)} <strong data-viewer-label>${escapeHtml(identityLabel())}</strong></span>
+          <textarea name="body" rows="3" minlength="2" maxlength="500" required placeholder="${escapeHtml(COPY[state.locale].commentPlaceholder)}"></textarea>
+        </label>
+        <input class="comment-trap" name="website" type="text" tabindex="-1" autocomplete="off" aria-hidden="true">
+        <div class="comment-form-meta"><small>${escapeHtml(COPY[state.locale].commentPrivacy)}</small><span><output data-comment-length>0</output>/500</span></div>
+        <div class="comment-form-actions"><button type="submit">${escapeHtml(COPY[state.locale].commentSubmit)}</button><p data-comment-status role="status" aria-live="polite"></p></div>
+      </form>
+    </div>
+  </div>`;
 }
 
 function textFor(item) {
@@ -404,7 +458,7 @@ function renderLead(item) {
       <div class="story-kicker"><span>${escapeHtml(item.source)} · ${COPY[state.locale].filters[categoryFor(item)]}</span><span class="score" title="${COPY[state.locale].importance} ${importance}"><small>${COPY[state.locale].importance}</small>${importance}</span></div>
       ${publishedTimeMarkup(item)}
       ${scoreBreakdown(item)}
-      <div><h3>${escapeHtml(text.title)}</h3>${summaryMarkup(text)}${trustStrip(item)}<div class="story-actions"><a class="read-link" href="${escapeHtml(safeUrl(item.url))}" target="_blank" rel="noopener noreferrer">${COPY[state.locale].read} ↗</a>${shareButton(item, text)}</div></div>
+      <div><h3>${escapeHtml(text.title)}</h3>${summaryMarkup(text)}${trustStrip(item)}<div class="story-actions"><a class="read-link" href="${escapeHtml(safeUrl(item.url))}" target="_blank" rel="noopener noreferrer">${COPY[state.locale].read} ↗</a>${shareButton(item, text)}</div>${interactionMarkup(item)}</div>
     </div>
     <div class="story-visual">${imageMarkup(item, true)}</div>`;
 }
@@ -421,6 +475,7 @@ function renderCard(item) {
     ${scoreBreakdown(item, true)}
     <h3>${escapeHtml(text.title)}</h3>${summaryMarkup(text)}${trustStrip(item)}
     <div class="story-actions"><a class="read-link" href="${escapeHtml(safeUrl(item.url))}" target="_blank" rel="noopener noreferrer">${COPY[state.locale].read} ↗</a>${shareButton(item, text)}</div>
+    ${interactionMarkup(item)}
     <div class="tags">${tags}</div>
     </div>
   </article>`;
@@ -454,7 +509,178 @@ function renderFeed() {
   $("#demo-notice").textContent = COPY[state.locale].demo;
   const updated = formatDate(state.feed.generated_at);
   $("#update-status").textContent = `${COPY[state.locale].updated} ${updated} · ${items.length} ${COPY[state.locale].stories}`;
+  loadInteractionSummary(filtered.map(item => item.id).filter(Boolean));
 }
+
+let interactionRequest = 0;
+
+function applyInteractionToDom(articleId) {
+  const interaction = interactionFor(articleId);
+  $$(`[data-interaction][data-article-id="${CSS.escape(articleId)}"]`).forEach(root => {
+    const like = root.querySelector("[data-like]");
+    if (like) {
+      like.classList.toggle("is-active", interaction.liked);
+      like.setAttribute("aria-pressed", String(interaction.liked));
+    }
+    const likeCount = root.querySelector("[data-like-count]");
+    const commentCount = root.querySelector("[data-comment-count]");
+    if (likeCount) likeCount.textContent = String(interaction.likes || 0);
+    if (commentCount) commentCount.textContent = String(interaction.comments || 0);
+    const viewer = root.querySelector("[data-viewer-label]");
+    if (viewer) viewer.textContent = identityLabel();
+  });
+}
+
+async function loadInteractionSummary(articleIds) {
+  const ids = [...new Set(articleIds)].slice(0, 50);
+  if (!ids.length) return;
+  const requestNumber = ++interactionRequest;
+  try {
+    const response = await fetch(`/api/interactions?article_ids=${encodeURIComponent(ids.join(","))}`, { cache: "no-store", credentials: "same-origin" });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const payload = await response.json();
+    if (requestNumber !== interactionRequest) return;
+    state.viewer = payload.viewer || state.viewer;
+    Object.entries(payload.items || {}).forEach(([id, value]) => {
+      state.interactions[id] = { ...interactionFor(id), ...value };
+      applyInteractionToDom(id);
+    });
+    state.openComments.forEach(id => {
+      const root = document.querySelector(`[data-interaction][data-article-id="${CSS.escape(id)}"]`);
+      if (root) loadComments(root);
+    });
+  } catch {
+    // News remains fully usable if the optional interaction service is unavailable.
+  }
+}
+
+function formatCommentDate(value) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+  return new Intl.DateTimeFormat(state.locale === "zh" ? "zh-CN" : "en-SG", {
+    month: "short", day: "numeric", hour: "2-digit", minute: "2-digit"
+  }).format(date);
+}
+
+function renderComments(root, comments) {
+  const list = root.querySelector("[data-comment-list]");
+  if (!list) return;
+  if (!comments.length) {
+    list.innerHTML = `<p class="comment-empty">${escapeHtml(COPY[state.locale].commentEmpty)}</p>`;
+    return;
+  }
+  list.innerHTML = comments.map(comment => `<article class="reader-comment">
+    <div><strong>${escapeHtml(identityLabel(comment.identity))}</strong><time datetime="${escapeHtml(comment.created_at || "")}">${escapeHtml(formatCommentDate(comment.created_at))}</time></div>
+    <p>${escapeHtml(comment.body || "")}</p>
+  </article>`).join("");
+}
+
+async function loadComments(root) {
+  const articleId = root?.dataset.articleId;
+  const list = root?.querySelector("[data-comment-list]");
+  if (!articleId || !list || list.dataset.loading === "true") return;
+  list.dataset.loading = "true";
+  try {
+    const response = await fetch(`/api/interactions?view=comments&article_id=${encodeURIComponent(articleId)}`, { cache: "no-store", credentials: "same-origin" });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const payload = await response.json();
+    state.viewer = payload.viewer || state.viewer;
+    renderComments(root, payload.comments || []);
+    const viewer = root.querySelector("[data-viewer-label]");
+    if (viewer) viewer.textContent = identityLabel();
+  } catch {
+    list.innerHTML = `<p class="comment-empty is-error">${escapeHtml(COPY[state.locale].interactionError)}</p>`;
+  } finally {
+    delete list.dataset.loading;
+  }
+}
+
+document.addEventListener("click", async event => {
+  const likeButton = event.target.closest?.("[data-like]");
+  if (likeButton) {
+    const root = likeButton.closest("[data-interaction]");
+    const articleId = root?.dataset.articleId;
+    if (!articleId || likeButton.disabled) return;
+    likeButton.disabled = true;
+    const desired = !interactionFor(articleId).liked;
+    try {
+      const response = await fetch("/api/interactions", {
+        method: "POST", credentials: "same-origin",
+        headers: { "Accept": "application/json", "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "like", article_id: articleId, liked: desired })
+      });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const payload = await response.json();
+      state.interactions[articleId] = { ...interactionFor(articleId), liked: payload.liked, likes: payload.likes };
+      applyInteractionToDom(articleId);
+    } catch {
+      const status = root.querySelector("[data-comment-status]");
+      if (status) status.textContent = COPY[state.locale].interactionError;
+    } finally {
+      likeButton.disabled = false;
+    }
+    return;
+  }
+
+  const commentButton = event.target.closest?.("[data-comments-toggle]");
+  if (!commentButton) return;
+  const root = commentButton.closest("[data-interaction]");
+  const panel = root?.querySelector("[data-comment-panel]");
+  const articleId = root?.dataset.articleId;
+  if (!panel || !articleId) return;
+  const opening = panel.hidden;
+  panel.hidden = !opening;
+  commentButton.setAttribute("aria-expanded", String(opening));
+  if (opening) {
+    state.openComments.add(articleId);
+    await loadComments(root);
+    root.querySelector("textarea")?.focus({ preventScroll: true });
+  } else {
+    state.openComments.delete(articleId);
+  }
+});
+
+document.addEventListener("input", event => {
+  if (!event.target.matches?.("[data-comment-form] textarea")) return;
+  const output = event.target.closest("[data-comment-form]")?.querySelector("[data-comment-length]");
+  if (output) output.textContent = String(event.target.value.length);
+});
+
+document.addEventListener("submit", async event => {
+  const form = event.target.closest?.("[data-comment-form]");
+  if (!form) return;
+  event.preventDefault();
+  if (!form.reportValidity()) return;
+  const root = form.closest("[data-interaction]");
+  const articleId = root?.dataset.articleId;
+  const textarea = form.querySelector("textarea");
+  const submit = form.querySelector('button[type="submit"]');
+  const status = form.querySelector("[data-comment-status]");
+  if (!articleId || !textarea || !submit) return;
+  submit.disabled = true;
+  submit.textContent = COPY[state.locale].commentSending;
+  if (status) status.textContent = "";
+  try {
+    const response = await fetch("/api/interactions", {
+      method: "POST", credentials: "same-origin",
+      headers: { "Accept": "application/json", "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "comment", article_id: articleId, body: textarea.value, website: form.elements.website?.value || "" })
+    });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const payload = await response.json();
+    state.interactions[articleId] = { ...interactionFor(articleId), comments: payload.comments };
+    applyInteractionToDom(articleId);
+    textarea.value = "";
+    const output = form.querySelector("[data-comment-length]");
+    if (output) output.textContent = "0";
+    await loadComments(root);
+  } catch {
+    if (status) status.textContent = COPY[state.locale].interactionError;
+  } finally {
+    submit.disabled = false;
+    submit.textContent = COPY[state.locale].commentSubmit;
+  }
+});
 
 function renderFilters() {
   const items = state.feed?.items || [];

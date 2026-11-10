@@ -20,6 +20,8 @@ Public RSS + Hacker News + YouTube + GitHub Trending
 
 The browser never connects to Postgres and never receives a database URL or API key. Postgres permanently retains the complete article and vector history; the Daily Brief contains only stories whose original source publication time is within the latest 48-hour reading window.
 
+Reader likes and comments are handled separately by a Cloudflare Pages Function and a free D1 database. The service stores a salted visitor hash for like deduplication and rate limiting. It never stores the full visitor IP; public comments show only `poly`, the approximate Cloudflare region, and the final three IP characters.
+
 ## 1. Gemini
 
 Create a Gemini API key in Google AI Studio, then add:
@@ -57,7 +59,21 @@ Output directory:  web/public
 Production branch: main
 ```
 
-Connect `polyemergence.com` after the first successful deployment. The static frontend does not require Cloudflare environment variables.
+Connect `polyemergence.com` after the first successful deployment.
+
+For reader interactions, create a D1 database named `polyemergence-interactions` and bind it to the Pages project with the variable name:
+
+```text
+INTERACTIONS
+```
+
+Add a production secret containing a long random value:
+
+```text
+INTERACTIONS_HASH_SALT=...
+```
+
+The Pages Function creates its tables and indexes on its first request. Redeploy the latest production build after adding the binding and secret.
 
 ## Free-tier fit
 

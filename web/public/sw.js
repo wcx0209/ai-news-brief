@@ -1,4 +1,4 @@
-const CACHE_NAME = "polyemergence-v9";
+const CACHE_NAME = "polyemergence-v10";
 const DATA_CACHE_KEY = "/data/latest.json";
 const APP_SHELL = [
   "/",
@@ -67,6 +67,11 @@ self.addEventListener("fetch", event => {
 
   if (url.pathname.startsWith("/data/")) {
     event.respondWith(freshDataFirst(request));
+    return;
+  }
+
+  if (url.pathname.startsWith("/api/")) {
+    event.respondWith(fetch(new Request(request, { cache: "no-store" })));
     return;
   }
 
