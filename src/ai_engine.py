@@ -63,8 +63,20 @@ class AIEngine:
         Returns:
             提示词内容字符串
         """
-        if not category:
-            category = 'default'
+        # Public taxonomy is broader than the small set of editorial prompt
+        # templates. Route every supported category to an intentional template
+        # instead of silently producing an empty system prompt.
+        prompt_aliases = {
+            'models': 'news',
+            'company': 'news',
+            'startups': 'news',
+            'research': 'news',
+            'policy': 'news',
+            'business': 'news',
+            'society': 'news',
+            'open_source': 'opensource',
+        }
+        category = prompt_aliases.get((category or 'news').lower(), (category or 'news').lower())
             
         # 获取对应的提示词文件名
         prompt_file = category.lower() + '.txt'
@@ -74,14 +86,15 @@ class AIEngine:
             with open(prompt_path, 'r', encoding='utf-8') as f:
                 return f.read()
         except FileNotFoundError:
-            logging.warning(f"Prompt file not found: {prompt_path}, using default")
-            # 如果找不到，尝试读取默认提示词
-            default_path = os.path.join(self.prompts_dir, 'default.txt')
+            logging.warning(f"Prompt file not found: {prompt_path}, using news")
+            # Unknown future taxonomy values safely inherit the general news
+            # contract, which contains the required bilingual JSON schema.
+            default_path = os.path.join(self.prompts_dir, 'news.txt')
             try:
                 with open(default_path, 'r', encoding='utf-8') as f:
                     return f.read()
             except FileNotFoundError:
-                logging.error("Default prompt file not found")
+                logging.error("News prompt file not found")
                 return ""
 
     def _load_prompt(self, filename: str) -> str:
