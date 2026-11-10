@@ -48,6 +48,9 @@ jobs:
       - name: Install collector
         run: pip install -r requirements.txt
 
+      - name: Validate official-source adapters
+        run: python -m unittest discover -s tests -v
+
       - name: Seed free sources
         run: python scripts/bootstrap_sources.py
 

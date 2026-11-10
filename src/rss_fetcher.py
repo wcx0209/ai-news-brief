@@ -8,7 +8,7 @@ import re
 import json
 from datetime import datetime, timezone
 from calendar import timegm
-from urllib.parse import urljoin, urlparse
+from urllib.parse import parse_qsl, urlencode, urljoin, urlparse, urlunparse
 
 from config_loader import ConfigLoader
 
@@ -17,11 +17,53 @@ from config_loader import ConfigLoader
 # Keep this allowlist narrow and first-party: the adapter follows article links
 # on the same official domain and reads their own publication metadata.
 OFFICIAL_HTML_INDEX_RULES = {
-    'https://thinkingmachines.ai/news': ('/news/',),
-    'https://www.worldlabs.ai/blog': ('/blog/',),
-    'https://www.pi.website/blog': ('/blog/', '/research/'),
-    'https://reflection.ai/blog': ('/blog/',),
-    'https://www.lila.ai/news': ('/news/',),
+    'https://thinkingmachines.ai/news': {'path_prefixes': ('/news/',)},
+    'https://www.worldlabs.ai/blog': {'path_prefixes': ('/blog/',)},
+    'https://www.pi.website/blog': {'path_prefixes': ('/blog/', '/research/')},
+    'https://reflection.ai/blog': {'path_prefixes': ('/blog/',)},
+    'https://www.lila.ai/news': {'path_prefixes': ('/news/',)},
+
+    # Official company, model, research, and product indexes. Many vendors do
+    # not expose a stable RSS feed, so these narrow same-domain rules keep the
+    # primary announcement in the pipeline instead of relying on media recaps
+    # or third-party RSS mirrors.
+    'https://research.meta.ai': {'path_prefixes': ('/blog/',)},
+    'https://about.fb.com/news/tag/ai': {
+        'path_prefixes': ('/news/',),
+        'exclude_path_prefixes': ('/news/topics/', '/news/category/'),
+    },
+    'https://www.anthropic.com/news': {
+        'path_prefixes': ('/news/',),
+        'exclude_titles': ('Announcements',),
+    },
+    'https://www.anthropic.com/research': {
+        'path_prefixes': ('/research/',),
+        'exclude_titles': (
+            'Alignment', 'Economics', 'Engineering', 'Frontier Red Team',
+            'Interpretability', 'Science', 'Societal Impacts',
+        ),
+    },
+    'https://x.ai/news': {'path_prefixes': ('/news/',)},
+    'https://mistral.ai/news': {'path_prefixes': ('/news/',)},
+    'https://cohere.com/blog': {
+        'path_prefixes': ('/blog/',),
+        'exclude_path_prefixes': ('/blog/tag/',),
+    },
+    # Qwen's current blog identifies articles with ?id=... on one route.
+    'https://qwen.ai/blog': {
+        'path_prefixes': ('/blog',),
+        'keep_query_keys': ('id',),
+    },
+    'https://ernie.baidu.com': {'path_prefixes': ('/blog/',)},
+    'https://www.minimax.io/news': {'path_prefixes': ('/news/',)},
+    'https://www.amd.com/en/blogs.html': {'path_prefixes': ('/en/blogs/',)},
+    'https://www.qualcomm.com/news/onq': {'path_prefixes': ('/news/onq/',)},
+    'https://www.cerebras.ai/blog': {'path_prefixes': ('/blog/',)},
+    'https://groq.com/blog': {'path_prefixes': ('/blog/',)},
+    'https://www.langchain.com/blog': {'path_prefixes': ('/blog/',)},
+    'https://www.llamaindex.ai/blog': {'path_prefixes': ('/blog/',)},
+    'https://crewai.com/blog': {'path_prefixes': ('/blog/',)},
+    'https://ollama.com/blog': {'path_prefixes': ('/blog/',)},
 }
 
 
@@ -361,6 +403,25 @@ class RSSFetcher:
             if node:
                 raw_values.append((node.get('content') or node.get('datetime') or '').strip())
 
+        # JSON-LD is the most reliable publication metadata on many modern
+        # company sites. Walk nested graphs instead of assuming one schema.
+        def collect_json_dates(value):
+            if isinstance(value, dict):
+                published = value.get('datePublished')
+                if published:
+                    raw_values.append(str(published).strip())
+                for child in value.values():
+                    collect_json_dates(child)
+            elif isinstance(value, list):
+                for child in value:
+                    collect_json_dates(child)
+
+        for node in soup.select('script[type="application/ld+json"]'):
+            try:
+                collect_json_dates(json.loads(node.string or node.get_text() or '{}'))
+            except (TypeError, ValueError, json.JSONDecodeError):
+                continue
+
         # Some modern sites expose the date only in visible page text.
         page_text = soup.get_text(' ', strip=True)
         match = re.search(
@@ -369,6 +430,15 @@ class RSSFetcher:
         )
         if match:
             raw_values.append(match.group(0))
+        short_match = re.search(
+            r'\b(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec)\.?\s+\d{1,2},?\s+20\d{2}\b',
+            page_text,
+        )
+        if short_match:
+            raw_values.append(short_match.group(0).replace('Sept ', 'Sep ').replace('.', ''))
+        numeric_match = re.search(r'\b20\d{2}[/-]\d{1,2}[/-]\d{1,2}\b', page_text)
+        if numeric_match:
+            raw_values.append(numeric_match.group(0).replace('/', '-'))
 
         for raw in raw_values:
             if not raw:
@@ -380,14 +450,54 @@ class RSSFetcher:
                 return parsed.astimezone(timezone.utc).isoformat()
             except ValueError:
                 pass
-            for fmt in ('%B %d, %Y', '%b %d, %Y', '%Y-%m-%d'):
+            for fmt in ('%B %d, %Y', '%b %d, %Y', '%b %d %Y', '%Y-%m-%d'):
                 try:
                     return datetime.strptime(raw, fmt).replace(tzinfo=timezone.utc).isoformat()
                 except ValueError:
                     continue
         return None
 
-    def _fetch_official_html_index(self, feed_config, path_prefixes):
+    @staticmethod
+    def _discover_official_article_urls(soup, index_url, path_prefixes,
+                                        keep_query_keys=(),
+                                        exclude_path_prefixes=(), limit=40):
+        """Return canonical, same-domain article URLs from an official index."""
+        parsed_index = urlparse(index_url)
+        source_host = parsed_index.netloc.lower()
+
+        def normalize(link):
+            parsed = urlparse(link)
+            kept_query = urlencode([
+                (key, value) for key, value in parse_qsl(parsed.query)
+                if key in keep_query_keys
+            ])
+            path = parsed.path.rstrip('/') or '/'
+            return urlunparse((parsed.scheme, parsed.netloc, path, '', kept_query, ''))
+
+        index_normalized = normalize(index_url)
+        article_urls = []
+        seen = set()
+        for anchor in soup.select('a[href]'):
+            link = urljoin(index_url, (anchor.get('href') or '').strip())
+            parsed = urlparse(link)
+            normalized = normalize(link)
+            if (
+                parsed.netloc.lower() != source_host
+                or normalized == index_normalized
+                or not any(parsed.path.startswith(prefix) for prefix in path_prefixes)
+                or any(parsed.path.startswith(prefix) for prefix in exclude_path_prefixes)
+                or parsed.path.lower().endswith(('.xml', '.rss', '.atom'))
+                or re.search(r'/page/\d+/?$', parsed.path)
+                or normalized in seen
+            ):
+                continue
+            seen.add(normalized)
+            article_urls.append(normalized)
+            if len(article_urls) >= limit:
+                break
+        return article_urls
+
+    def _fetch_official_html_index(self, feed_config, rule):
         """Build feed entries from a first-party HTML news or research index."""
         try:
             from bs4 import BeautifulSoup
@@ -399,28 +509,40 @@ class RSSFetcher:
             )
             response.raise_for_status()
             soup = BeautifulSoup(response.text, 'html.parser')
-            source_host = urlparse(index_url).netloc.lower()
-            index_normalized = index_url.rstrip('/')
+            resolved_index_url = str(getattr(response, 'url', '') or index_url)
+            article_urls = self._discover_official_article_urls(
+                soup,
+                resolved_index_url,
+                rule['path_prefixes'],
+                rule.get('keep_query_keys', ()),
+                rule.get('exclude_path_prefixes', ()),
+            )
 
-            article_urls = []
-            seen = set()
-            for anchor in soup.select('a[href]'):
-                link = urljoin(index_url, (anchor.get('href') or '').strip())
-                parsed = urlparse(link)
-                normalized = link.split('#', 1)[0].split('?', 1)[0].rstrip('/')
-                if (
-                    parsed.netloc.lower() != source_host
-                    or normalized == index_normalized
-                    or not any(parsed.path.startswith(prefix) for prefix in path_prefixes)
-                    or parsed.path.lower().endswith(('.xml', '.rss', '.atom'))
-                    or re.search(r'/page/\d+/?$', parsed.path)
-                    or normalized in seen
-                ):
-                    continue
-                seen.add(normalized)
-                article_urls.append(normalized + ('/' if parsed.path.endswith('/') else ''))
-                if len(article_urls) >= 8:
-                    break
+            # A few official sites render the article grid client-side. Keep
+            # the cloud collector browserless by default, but reuse its shared
+            # headless browser when static HTML contains no article links.
+            if not article_urls:
+                try:
+                    with self._browser_lock:
+                        browser = self._get_browser_unlocked()
+                        browser.get(resolved_index_url)
+                        rendered_html = browser.run_js(
+                            'return document.documentElement.outerHTML || ""'
+                        )
+                    if rendered_html:
+                        rendered_soup = BeautifulSoup(rendered_html, 'html.parser')
+                        article_urls = self._discover_official_article_urls(
+                            rendered_soup,
+                            resolved_index_url,
+                            rule['path_prefixes'],
+                            rule.get('keep_query_keys', ()),
+                            rule.get('exclude_path_prefixes', ()),
+                        )
+                except Exception as exc:
+                    logging.debug(
+                        'Rendered official index fallback failed for %s: %s',
+                        feed_config['name'], exc
+                    )
 
             entries = []
             for link in article_urls:
@@ -439,6 +561,8 @@ class RSSFetcher:
                         if title_node and title_node.name == 'meta'
                         else title_node.get_text(' ', strip=True) if title_node else ''
                     )
+                    if title.strip() in rule.get('exclude_titles', ()):
+                        continue
                     published_at = self._official_page_date(article_soup)
                     if not title or not published_at:
                         logging.debug(
@@ -447,6 +571,8 @@ class RSSFetcher:
                         continue
                     description_node = article_soup.select_one(
                         'meta[property="og:description"]'
+                    ) or article_soup.select_one(
+                        'meta[name="description"]'
                     )
                     entries.append({
                         'title': title.strip(),
@@ -458,6 +584,8 @@ class RSSFetcher:
                         'published_at': published_at,
                         'orig_entry': {'title': title.strip(), 'link': link},
                     })
+                    if len(entries) >= 8:
+                        break
                 except Exception as exc:
                     logging.debug('Official article fetch failed for %s: %s', link, exc)
 
