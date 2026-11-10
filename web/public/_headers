@@ -48,3 +48,6 @@
 
 /archive-sitemap.xml
   Cache-Control: no-cache, must-revalidate
+
+/news-sitemap.xml
+  Cache-Control: no-cache, must-revalidate

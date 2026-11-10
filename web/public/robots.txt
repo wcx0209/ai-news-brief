@@ -3,3 +3,4 @@ Allow: /
 
 Sitemap: https://polyemergence.com/sitemap.xml
 Sitemap: https://polyemergence.com/archive-sitemap.xml
+Sitemap: https://polyemergence.com/news-sitemap.xml

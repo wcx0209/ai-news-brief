@@ -7,8 +7,8 @@ import json
 import os
 import re
 import sys
-from collections import defaultdict
-from datetime import datetime, timezone
+from collections import Counter, defaultdict
+from datetime import datetime, timedelta, timezone
 from email.utils import format_datetime
 from pathlib import Path
 from urllib.parse import urlparse
@@ -63,6 +63,25 @@ COPY = {
     "zh": {"lang": "zh-Hans", "brand": "多重涌现", "brief": "简报", "archive": "历史归档", "method": "方法", "edition": "全球版", "title": "AI 新闻历史归档", "intro": "按新加坡发布日期整理的多重涌现 AI 情报永久记录。", "stories": "条内容", "months": "月份", "days": "每日归档", "day_count": "天", "original": "阅读原文", "share": "分享", "importance": "重要性", "signal": "信号", "structure": "结构", "consequence": "影响", "confidence": "可信度", "momentum": "热度", "older": "较早一期", "newer": "较新一期", "month": "本月总览", "all": "全部归档", "feed": "RSS 订阅", "footer": "面向变化世界的独立 AI 情报媒体。", "company": "由新加坡 PolyEmergence Pte Ltd. 发布。目前无已声明的财务或商业利益冲突。", "standards": "编辑标准", "corrections": "纠错记录", "about_brief": "关于这篇简报", "content_type": "内容类型", "source_type": "信源类型", "source": "原始来源", "published": "原文发布时间", "process": "处理方式", "verification": "核验边界", "byline": "发布方", "conflict": "利益冲突"},
 }
 
+SEO_COPY = {
+    "en": {
+        "site_published": "Polyemergence published",
+        "why": "Why it matters",
+        "signal": "Polyemergence signal",
+        "watch": "What to watch next",
+        "daily": "Daily AI News",
+        "full_archive": "View the complete daily archive",
+    },
+    "zh": {
+        "site_published": "本站发布时间",
+        "why": "为什么重要",
+        "signal": "多重涌现判断",
+        "watch": "下一步观察",
+        "daily": "每日 AI 新闻",
+        "full_archive": "查看完整当日归档",
+    },
+}
+
 
 def esc(value):
     return html.escape(str(value or ""), quote=True)
@@ -75,6 +94,7 @@ def clean_text(value):
     text = re.sub(r"(?m)^\s*[-*+]\s+", "• ", text)
     text = re.sub(r"\[([^\]]+)\]\((?:https?://[^)]+)\)", r"\1", text)
     text = re.sub(r"(\*\*|__|`)", "", text)
+    text = re.sub(r"[ \t]+\n", "\n", text)
     return re.sub(r"\n{3,}", "\n\n", text).strip()
 
 
@@ -149,6 +169,11 @@ def topic_path(locale, category):
     return f"/{locale}/topics/{category.replace('_', '-')}/"
 
 
+def daily_brief_path(locale, day):
+    slug = "daily-ai-news" if locale == "en" else "ai-news-daily"
+    return f"/{locale}/{slug}/{day.isoformat()}/"
+
+
 def content_type(record, locale):
     labels = {
         "en": {"interviews": "Interview summary", "academia": "Research summary", "research": "Research summary", "default": "News summary"},
@@ -202,6 +227,7 @@ def trust_box(record, locale):
 def record_from_feed(item):
     published = parse_datetime(item.get("published_at"))
     source_published = parse_datetime(item.get("source_published_at") or item.get("published_at"))
+    site_published = parse_datetime(item.get("site_published_at") or item.get("published_at"))
     tags = parse_tags(item.get("tags"))
     source = item.get("source") or "Unknown source"
     title = (item.get("en") or {}).get("title") or (item.get("zh") or {}).get("title") or ""
@@ -212,6 +238,7 @@ def record_from_feed(item):
         "id": item.get("id"), "url": safe_url(item.get("url")), "source": source,
         "category": normalize_category(item.get("category"), title, source, tags),
         "published": published, "source_published": source_published,
+        "site_published": site_published, "image_url": safe_url(item.get("image_url")),
         "importance": int(item.get("importance") or 0),
         "scores": {key: int(scores.get(key) or 0) for key in ("signal", "structure", "consequence", "confidence", "momentum")},
         "tags": tags,
@@ -242,6 +269,7 @@ def load_database():
                        a.consequence_score, a.confidence_score, a.momentum_score,
                        a.tags, a.category, COALESCE(a.published_at, a.created_at) AS published_at,
                        COALESCE(a.source_published_at, a.published_at, a.created_at) AS source_published_at,
+                       a.created_at AS site_published_at,
                        rs.name AS source_name
                 FROM articles a
                 LEFT JOIN rss_sources rs ON rs.id = a.rss_source_id
@@ -262,6 +290,7 @@ def load_database():
             "category": normalize_category(row["category"], title, source, tags),
             "published": parse_datetime(row["published_at"]),
             "source_published": parse_datetime(row["source_published_at"]),
+            "site_published": parse_datetime(row["site_published_at"]), "image_url": "#",
             "importance": int(row["importance_score"] or 0),
             "scores": {"signal": int(row["signal_score"] or 0), "structure": int(row["structure_score"] or 0), "consequence": int(row["consequence_score"] or 0), "confidence": int(row["confidence_score"] or 0), "momentum": int(row["momentum_score"] or 0)},
             "tags": tags,
@@ -304,8 +333,14 @@ def merge_current_feed(records, feed_path):
     if not feed_path.exists():
         return records
     current = load_json(feed_path)
-    known_ids = {str(record["id"]) for record in records}
-    records.extend(record for record in current if str(record["id"]) not in known_ids)
+    known = {str(record["id"]): record for record in records}
+    for record in current:
+        existing = known.get(str(record["id"]))
+        if existing:
+            if record.get("image_url") not in (None, "", "#"):
+                existing["image_url"] = record["image_url"]
+            continue
+        records.append(record)
     return records
 
 
@@ -332,29 +367,83 @@ def page_shell(locale, title, description, canonical, alternate, body, structure
 <link rel="alternate" type="application/rss+xml" title="{esc(c['brand'])} RSS" href="/feed-{locale}.xml">
 <meta property="og:type" content="{esc(og_type)}"><meta property="og:site_name" content="{esc(c['brand'])}"><meta property="og:title" content="{esc(title)}"><meta property="og:description" content="{esc(description)}"><meta property="og:url" content="{esc(canonical)}"><meta property="og:image" content="{SITE}/assets/social-preview.png">
 <meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="{esc(title)}"><meta name="twitter:description" content="{esc(description)}"><meta name="twitter:image" content="{SITE}/assets/social-preview.png">
-<link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="/styles.css?v=20261109-21"><link rel="stylesheet" href="/archive.css?v=4">{structured_html}</head>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="/styles.css?v=20261109-21"><link rel="stylesheet" href="/archive.css?v=5">{structured_html}</head>
 <body><header class="site-header"><a class="brand" href="/{locale}/" aria-label="{esc(c['brand'])}"><img src="/assets/{logo}" alt="{esc(c['brand'])}" width="420" height="70"></a>
 <nav class="desktop-nav" aria-label="Primary"><a href="/{locale}/#brief">{esc(c['brief'])}</a><a href="/{locale}/archive/" aria-current="page">{esc(c['archive'])}</a><a href="/{locale}/#about">{esc(c['method'])}</a></nav>
 <div class="header-tools"><span class="edition">{esc(c['edition'])}</span><div class="language-switch"><a href="{esc(alternate)}" hreflang="{COPY[other]['lang']}">{'中' if other == 'zh' else 'EN'}</a><span>|</span><a href="{esc(canonical)}" aria-current="page">{'中' if locale == 'zh' else 'EN'}</a></div></div></header>
 <main class="archive-main">{body}</main><footer><div class="footer-brand"><img src="/assets/{logo}" alt="{esc(c['brand'])}" width="360"></div><div class="footer-copy"><p>{esc(c['footer'])}</p><p class="company-note">{esc(c['company'])}</p><nav class="footer-topics" aria-label="AI topics">{topic_links}</nav><p class="footer-meta"><a href="/{locale}/standards/">{esc(c['standards'])}</a> · <a href="/{locale}/corrections/">{esc(c['corrections'])}</a> · <a href="/feed-{locale}.xml">{esc(c['feed'])}</a> · <a href="/developers/">API / MCP</a></p></div></footer></body></html>'''
 
 
-def story_html(record, locale):
+def editorial_analysis(record, locale):
+    """Explain the ranking in reader language without inventing new facts."""
+    why = {
+        "models": ("Model capability, cost and access can quickly change product economics and competitive positioning.", "模型能力、成本与开放方式会迅速改变产品经济性和竞争格局。"),
+        "company": ("Moves by a major AI company can reshape platform access, distribution and the pace of industry investment.", "主要 AI 公司的动作可能改变平台入口、产品分发与行业投资节奏。"),
+        "startups": ("This is an early signal of where founders and capital expect durable AI demand to emerge.", "这是创业者与资本判断 AI 长期需求将在哪里形成的早期信号。"),
+        "research": ("The work may change what AI systems can do or how reliably those capabilities can be measured.", "这项工作可能改变 AI 系统的能力边界，或改变这些能力的可靠评估方式。"),
+        "academia": ("The result offers an early, research-stage signal that should be followed before broad real-world conclusions are drawn.", "这项成果提供了研究阶段的早期信号，在得出广泛现实结论前仍需继续验证。"),
+        "open_source": ("Open availability can accelerate adoption, independent testing and downstream product experimentation.", "开放获取能够加速采用、独立验证与下游产品实验。"),
+        "interviews": ("The conversation reveals how decision-makers are framing the next competitive and technical constraints.", "这场对话揭示了决策者如何判断下一阶段的竞争与技术约束。"),
+        "policy": ("Policy decisions can determine who may build, deploy and profit from AI across markets.", "政策决定可能直接影响谁能在不同市场开发、部署并从 AI 中获益。"),
+        "business": ("The development connects AI capability with capital allocation, pricing power and commercial adoption.", "这一变化把 AI 能力与资本配置、定价权和商业采用联系起来。"),
+        "society": ("The story shows how AI is changing institutions, work and public expectations beyond the technology sector.", "这条新闻反映 AI 正如何改变科技行业之外的制度、工作与公众预期。"),
+    }[record["category"]][0 if locale == "en" else 1]
+    scores = record["scores"]
+    dimensions = [("signal", scores["signal"]), ("structure", scores["structure"]), ("consequence", scores["consequence"])]
+    strongest, score = max(dimensions, key=lambda item: item[1])
+    dimension_names = {
+        "en": {"signal": "signal", "structure": "structure", "consequence": "consequence"},
+        "zh": {"signal": "信号", "structure": "结构", "consequence": "影响"},
+    }
+    if locale == "en":
+        signal = f"Its strongest dimension is {dimension_names[locale][strongest]} ({score}/100). The {record['importance']}/100 importance score treats this as a material industry development, not simply a high-volume headline."
+    else:
+        signal = f"本条新闻得分最高的维度是{dimension_names[locale][strongest]}（{score}/100）。{record['importance']}/100 的重要性评分意味着它被视为具有实质行业意义的变化，而不只是高热度标题。"
+    watch = {
+        "models": ("Watch independent evaluations, pricing, access terms and evidence of production use.", "继续观察独立评测、定价、使用门槛与实际生产采用证据。"),
+        "company": ("Watch for product availability, customer adoption and responses from direct competitors.", "继续观察产品可用性、客户采用情况及直接竞争者的回应。"),
+        "startups": ("Watch whether funding converts into repeatable customer demand and a defensible distribution advantage.", "继续观察融资能否转化为可重复的客户需求和可防御的分发优势。"),
+        "research": ("Watch for replication, released artifacts and performance outside the authors’ chosen benchmarks.", "继续观察复现结果、公开产物及其在作者所选基准之外的表现。"),
+        "academia": ("Watch for peer review, replication and evidence that the result generalizes beyond the reported setup.", "继续观察同行评议、复现情况以及结果能否超越论文设定实现泛化。"),
+        "open_source": ("Watch maintainer activity, real adoption, security review and whether the project develops a durable community.", "继续观察维护活跃度、真实采用、安全审查及能否形成长期社区。"),
+        "interviews": ("Watch for concrete product, hiring, funding or research decisions that confirm the stated direction.", "继续观察是否出现产品、招聘、融资或研究决策来验证受访者所述方向。"),
+        "policy": ("Watch the final text, implementation timetable, enforcement authority and cross-border effects.", "继续观察最终文本、实施时间表、执法权限与跨境影响。"),
+        "business": ("Watch disclosed revenue, margins, customer concentration and whether competitors follow the same move.", "继续观察披露的收入、利润率、客户集中度以及竞争者是否跟进。"),
+        "society": ("Watch for measured outcomes, institutional responses and whether the effect persists beyond the initial attention cycle.", "继续观察可量化结果、机构回应以及影响能否持续超过最初的关注周期。"),
+    }[record["category"]][0 if locale == "en" else 1]
+    return why, signal, watch
+
+
+def editorial_analysis_html(record, locale):
+    if record["importance"] < 75:
+        return ""
+    why, signal, watch = editorial_analysis(record, locale)
+    labels = SEO_COPY[locale]
+    return f'''<aside class="editorial-analysis" aria-label="{esc(labels['signal'])}">
+<div><h3>{esc(labels['why'])}</h3><p>{esc(why)}</p></div>
+<div><h3>{esc(labels['signal'])}</h3><p>{esc(signal)}</p></div>
+<div><h3>{esc(labels['watch'])}</h3><p>{esc(watch)}</p></div>
+</aside>'''
+
+
+def story_html(record, locale, detail=False):
     c = COPY[locale]
     text = record[locale]
     scores = record["scores"]
-    published_local = record["published"].astimezone(LOCAL_TZ)
+    published_local = record["site_published"].astimezone(LOCAL_TZ)
     tags = "".join(f'<span>{esc(tag)}</span>' for tag in record["tags"])
     score_html = "".join(f'<span><small>{esc(c[key])}</small><strong>{scores[key]}</strong></span>' for key in ("signal", "structure", "consequence", "confidence", "momentum"))
     anchor = anchor_for(record)
     day = record["published"].astimezone(LOCAL_TZ).date()
     share_url = f"{SITE}{article_path(locale, day, record)}?utm_source=share&amp;utm_medium=organic&amp;utm_campaign=article"
     share_summary = re.sub(r"\s+", " ", clean_text(text["summary"] or text["full"])).strip()[:180]
+    heading = "h1" if detail else "h2"
+    title_html = esc(clean_text(text["title"])) if detail else f'<a href="{article_path(locale, day, record)}">{esc(clean_text(text["title"]))}</a>'
     share_button = f'''<button class="share-button" type="button" data-share-button data-share-id="{esc(record['id'])}" data-share-locale="{locale}" data-share-title="{esc(clean_text(text['title']))}" data-share-summary="{esc(share_summary)}" data-share-url="{share_url}" aria-label="{esc(c['share'])}: {esc(clean_text(text['title']))}"><svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="18" cy="5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="19" r="2.5"/><path d="m8.2 10.8 7.6-4.5M8.2 13.2l7.6 4.5"/></svg><span>{esc(c['share'])}</span></button>'''
     return f'''<article class="archive-story" id="{anchor_for(record)}">
-<div class="archive-story-meta"><span>{esc(record['source'])}</span><span>{esc(CATEGORY_LABELS[locale][record['category']])}</span><time datetime="{record['published'].isoformat()}">{published_local:%H:%M} SGT</time><strong>{esc(c['importance'])} {record['importance']}</strong></div>
-<h2><a href="{article_path(locale, day, record)}">{esc(clean_text(text['title']))}</a></h2><p>{esc(clean_text(text['full'] or text['summary']))}</p>
-<div class="archive-scores" aria-label="Polyemergence Method scores">{score_html}</div>{trust_box(record, locale)}<div class="archive-story-footer"><div class="archive-tags">{tags}</div><div class="archive-actions">{share_button}<a class="archive-original" href="{esc(record['url'])}" target="_blank" rel="noopener noreferrer">{esc(c['original'])} ↗</a></div></div></article>'''
+<div class="archive-story-meta"><span>{esc(record['source'])}</span><span>{esc(CATEGORY_LABELS[locale][record['category']])}</span><span>{esc(SEO_COPY[locale]['site_published'])}</span><time datetime="{record['site_published'].isoformat()}">{published_local:%Y-%m-%d %H:%M} SGT</time><strong>{esc(c['importance'])} {record['importance']}</strong></div>
+<{heading}>{title_html}</{heading}><p>{esc(clean_text(text['full'] or text['summary']))}</p>
+<div class="archive-scores" aria-label="Polyemergence Method scores">{score_html}</div>{editorial_analysis_html(record, locale)}{trust_box(record, locale)}<div class="archive-story-footer"><div class="archive-tags">{tags}</div><div class="archive-actions">{share_button}<a class="archive-original" href="{esc(record['url'])}" target="_blank" rel="noopener noreferrer">{esc(c['original'])} ↗</a></div></div></article>'''
 
 
 def render_daily(output, locale, day, items, ordered_days):
@@ -368,6 +457,7 @@ def render_daily(output, locale, day, items, ordered_days):
     if older:
         nav.append(f'<a href="{archive_path(locale, older)}">← {esc(c["older"])}</a>')
     nav.append(f'<a href="/{locale}/archive/{day:%Y/%m}/">{esc(c["month"])}</a>')
+    nav.append(f'<a href="{daily_brief_path(locale, day)}">{esc(SEO_COPY[locale]["daily"])}</a>')
     if newer:
         nav.append(f'<a href="{archive_path(locale, newer)}">{esc(c["newer"])} →</a>')
     body = f'''<section class="archive-hero"><p class="section-index">{esc(c['archive']).upper()}</p><h1>{day:%Y · %m · %d}</h1><p>{len(items)} {esc(c['stories'])}</p></section><nav class="archive-period-nav">{"".join(nav)}</nav><section class="archive-list">{"".join(story_html(item, locale) for item in items)}</section>'''
@@ -375,6 +465,51 @@ def render_daily(output, locale, day, items, ordered_days):
     path = output / locale / "archive" / f"{day:%Y}" / f"{day:%m}" / f"{day:%d}" / "index.html"
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(page_shell(locale, f"{day.isoformat()} | {c['title']}", c["intro"], canonical, alternate, body, structured), encoding="utf-8")
+
+
+def render_daily_brief(output, locale, day, items):
+    c = COPY[locale]
+    top = sorted(items, key=lambda item: (item["importance"], item["published"]), reverse=True)[:5]
+    category_counts = Counter(item["category"] for item in items)
+    leading_categories = [CATEGORY_LABELS[locale][key] for key, _ in category_counts.most_common(3)]
+    lead_title = clean_text(top[0][locale]["title"])
+    if locale == "en":
+        title = f"AI News Today — {day:%B %-d, %Y} | Polyemergence"
+        description = f"The most important AI news for {day:%B %-d, %Y}, ranked and explained by Polyemergence across models, companies, research, policy and business."
+        lede = f"Today’s brief ranks {len(items)} AI developments. The leading signal is “{lead_title}”. The day’s strongest coverage clusters are {', '.join(leading_categories)}, selected for structural importance rather than headline volume."
+        heading = f"AI NEWS TODAY · {day:%B %-d, %Y}"
+    else:
+        title = f"今日 AI 新闻 — {day:%Y年%m月%d日} | 多重涌现"
+        description = f"多重涌现筛选并解读 {day:%Y年%m月%d日} 最重要的 AI 新闻，覆盖模型、公司、研究、政策与商业。"
+        lede = f"本期共评估 {len(items)} 条 AI 动态，首要信号是“{lead_title}”。当日最集中的领域为{'、'.join(leading_categories)}；排序依据是结构性重要程度，而不是标题热度。"
+        heading = f"今日 AI 新闻 · {day:%Y年%m月%d日}"
+    canonical = SITE + daily_brief_path(locale, day)
+    other = "zh" if locale == "en" else "en"
+    alternate = SITE + daily_brief_path(other, day)
+    cards = []
+    for index, record in enumerate(top, 1):
+        text = record[locale]
+        summary = re.sub(r"\s+", " ", clean_text(text["summary"] or text["full"])).strip()
+        cards.append(f'''<article class="daily-signal">
+<div class="daily-signal-meta"><strong>{index:02d}</strong><span>{esc(CATEGORY_LABELS[locale][record['category']])}</span><span>{esc(c['importance'])} {record['importance']}</span></div>
+<h2><a href="{article_path(locale, day, record)}">{esc(clean_text(text['title']))}</a></h2><p>{esc(summary)}</p>
+{editorial_analysis_html(record, locale)}</article>''')
+    body = f'''<section class="archive-hero"><p class="section-index">{esc(SEO_COPY[locale]['daily']).upper()}</p><h1>{esc(heading)}</h1><p class="daily-brief-lede">{esc(lede)}</p></section>
+<nav class="archive-period-nav"><a href="/{locale}/">{esc(c['brief'])}</a><a href="{archive_path(locale, day)}">{esc(SEO_COPY[locale]['full_archive'])} →</a></nav>
+<section class="daily-brief-list">{"".join(cards)}</section>'''
+    structured = {
+        "@context": "https://schema.org", "@type": "CollectionPage", "name": title,
+        "url": canonical, "datePublished": max(item["site_published"] for item in items).astimezone(LOCAL_TZ).isoformat(),
+        "inLanguage": c["lang"], "isPartOf": {"@type": "WebSite", "@id": SITE + "/#website"},
+        "mainEntity": {"@type": "ItemList", "numberOfItems": len(top), "itemListElement": [
+            {"@type": "ListItem", "position": position, "url": SITE + article_path(locale, day, record), "name": clean_text(record[locale]["title"])}
+            for position, record in enumerate(top, 1)
+        ]},
+    }
+    slug = "daily-ai-news" if locale == "en" else "ai-news-daily"
+    path = output / locale / slug / day.isoformat() / "index.html"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(page_shell(locale, title, description, canonical, alternate, body, structured), encoding="utf-8")
 
 
 def render_article(output, locale, record):
@@ -386,12 +521,16 @@ def render_article(output, locale, record):
     description = re.sub(r"\s+", " ", clean_text(text["summary"] or text["full"])).strip()[:240]
     canonical = SITE + article_path(locale, day, record)
     alternate = SITE + article_path(other, day, record)
-    body = f'''<nav class="archive-period-nav"><a href="{archive_path(locale, day)}">← {day.isoformat()}</a><a href="/{locale}/archive/">{esc(c['all'])}</a></nav><section class="archive-list archive-article-page">{story_html(record, locale)}</section>'''
+    body = f'''<nav class="archive-period-nav"><a href="{archive_path(locale, day)}">← {day.isoformat()}</a><a href="{daily_brief_path(locale, day)}">{esc(SEO_COPY[locale]['daily'])}</a><a href="/{locale}/archive/">{esc(c['all'])}</a></nav><section class="archive-list archive-article-page">{story_html(record, locale, detail=True)}</section>'''
+    schema_image = record.get("image_url")
+    if not schema_image or schema_image == "#":
+        schema_image = SITE + "/assets/social-preview.png"
     structured = {
         "@context": "https://schema.org", "@type": "NewsArticle", "headline": title,
         "description": description,
-        "datePublished": (record.get("source_published") or record["published"]).astimezone(LOCAL_TZ).isoformat(),
-        "dateModified": record["published"].isoformat(), "inLanguage": c["lang"],
+        "image": [schema_image],
+        "datePublished": record["site_published"].astimezone(LOCAL_TZ).isoformat(),
+        "dateModified": record["site_published"].astimezone(LOCAL_TZ).isoformat(), "inLanguage": c["lang"],
         "articleSection": CATEGORY_LABELS[locale][record["category"]],
         "keywords": record["tags"],
         "mainEntityOfPage": canonical, "url": canonical,
@@ -514,6 +653,12 @@ def render_sitemap(output, grouped):
             for lang, locale in (("en", "en"), ("zh-Hans", "zh"), ("x-default", "en")):
                 ET.SubElement(node, f"{{{xhtml}}}link", {"rel": "alternate", "hreflang": lang, "href": f"{SITE}/{locale}/{suffix}"})
     for day in sorted(grouped, reverse=True):
+        for current_locale in ("en", "zh"):
+            node = ET.SubElement(root, f"{{{namespace}}}url")
+            ET.SubElement(node, f"{{{namespace}}}loc").text = SITE + daily_brief_path(current_locale, day)
+            ET.SubElement(node, f"{{{namespace}}}lastmod").text = max(record["site_published"] for record in grouped[day]).date().isoformat()
+            for lang, locale in (("en", "en"), ("zh-Hans", "zh"), ("x-default", "en")):
+                ET.SubElement(node, f"{{{xhtml}}}link", {"rel": "alternate", "hreflang": lang, "href": SITE + daily_brief_path(locale, day)})
         for record in grouped[day]:
             for current_locale in ("en", "zh"):
                 node = ET.SubElement(root, f"{{{namespace}}}url")
@@ -538,6 +683,31 @@ def render_sitemap(output, grouped):
     ET.ElementTree(root).write(output / "archive-sitemap.xml", encoding="utf-8", xml_declaration=True)
 
 
+def render_news_sitemap(output, grouped):
+    namespace = "http://www.sitemaps.org/schemas/sitemap/0.9"
+    news = "http://www.google.com/schemas/sitemap-news/0.9"
+    ET.register_namespace("", namespace)
+    ET.register_namespace("news", news)
+    root = ET.Element(f"{{{namespace}}}urlset")
+    cutoff = datetime.now(timezone.utc) - timedelta(days=2)
+    recent = sorted(
+        (record for items in grouped.values() for record in items if record["site_published"] >= cutoff),
+        key=lambda record: record["site_published"], reverse=True,
+    )[:500]
+    for record in recent:
+        day = record["published"].astimezone(LOCAL_TZ).date()
+        for locale in ("en", "zh"):
+            node = ET.SubElement(root, f"{{{namespace}}}url")
+            ET.SubElement(node, f"{{{namespace}}}loc").text = SITE + article_path(locale, day, record)
+            news_node = ET.SubElement(node, f"{{{news}}}news")
+            publication = ET.SubElement(news_node, f"{{{news}}}publication")
+            ET.SubElement(publication, f"{{{news}}}name").text = COPY[locale]["brand"]
+            ET.SubElement(publication, f"{{{news}}}language").text = "en" if locale == "en" else "zh"
+            ET.SubElement(news_node, f"{{{news}}}publication_date").text = record["site_published"].isoformat().replace("+00:00", "Z")
+            ET.SubElement(news_node, f"{{{news}}}title").text = clean_text(record[locale]["title"])
+    ET.ElementTree(root).write(output / "news-sitemap.xml", encoding="utf-8", xml_declaration=True)
+
+
 def render_public_data(output, records):
     """Export the permanent public corpus consumed by the REST API and MCP server."""
     items = []
@@ -548,7 +718,9 @@ def render_public_data(output, records):
             "category": record["category"], "importance": record["importance"],
             "scores": record["scores"],
             "published_at": record["published"].isoformat().replace("+00:00", "Z"),
+            "site_published_at": record["site_published"].isoformat().replace("+00:00", "Z"),
             "source_published_at": record["source_published"].isoformat().replace("+00:00", "Z"),
+            "image_url": None if record.get("image_url") == "#" else record.get("image_url"),
             "tags": record["tags"],
             "canonical_urls": {locale: SITE + article_path(locale, day, record) for locale in ("en", "zh")},
             "en": {"title": clean_text(record["en"]["title"]), "summary": clean_text(record["en"]["summary"]), "full_summary": clean_text(record["en"]["full"])},
@@ -573,8 +745,9 @@ def main():
     args = parser.parse_args()
     output = Path(args.output)
     output.mkdir(parents=True, exist_ok=True)
-    records = load_json(args.input_json) if args.input_json else merge_current_feed(
-        load_database(), output / "data" / "latest.json"
+    records = merge_current_feed(
+        load_json(args.input_json) if args.input_json else load_database(),
+        output / "data" / "latest.json",
     )
     grouped = select_daily(records)
     if not grouped:
@@ -584,6 +757,7 @@ def main():
         render_indexes(output, locale, grouped)
         for day in ordered_days:
             render_daily(output, locale, day, grouped[day], ordered_days)
+            render_daily_brief(output, locale, day, grouped[day])
             for record in grouped[day]:
                 render_article(output, locale, record)
         all_records = [record for day in ordered_days for record in grouped[day]]
@@ -592,6 +766,7 @@ def main():
         render_rss(output, locale, grouped)
     render_public_data(output, [record for day in ordered_days for record in grouped[day]])
     render_sitemap(output, grouped)
+    render_news_sitemap(output, grouped)
     print(f"Generated {len(grouped)} daily archives containing {sum(map(len, grouped.values()))} stories")
 
 

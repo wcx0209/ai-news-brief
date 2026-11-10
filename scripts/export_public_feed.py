@@ -306,6 +306,7 @@ def main():
                 "momentum": int(row["momentum_score"] or 0),
             },
             "published_at": iso(row["published_at"] or row["created_at"]),
+            "site_published_at": iso(row["created_at"]),
             "source_published_at": iso(
                 row["source_published_at"] or row["published_at"] or row["created_at"]
             ),
