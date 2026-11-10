@@ -6,6 +6,8 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 import json
 import os
 import re
+import sys
+from pathlib import Path
 from datetime import datetime, timedelta, timezone
 from urllib.parse import parse_qs, urlparse
 
@@ -13,6 +15,11 @@ import psycopg2
 import psycopg2.extras
 import requests
 from bs4 import BeautifulSoup
+
+
+ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT / "src"))
+from relevance_filter import passes_source_ai_filter
 
 
 TOPIC_CATEGORIES = {
@@ -124,6 +131,10 @@ def select_balanced_rows(rows, limit, max_open_source, max_academia,
     github_count = 0
     academia_count = 0
     for row in rows:
+        source_name = row.get("source_name") or ""
+        title = row.get("title") or row.get("title_en") or row.get("title_zh") or ""
+        if not passes_source_ai_filter(source_name, title):
+            continue
         category = normalize_category(
             row["category"], row.get("tags"), row.get("title") or "", row.get("source_name") or ""
         )
@@ -191,6 +202,9 @@ def merge_recent_items(current, previous, limit, max_github, max_academia,
     github_count = 0
     academia_count = 0
     for item in sorted(deduped.values(), key=rank, reverse=True):
+        title = (item.get("en") or {}).get("title") or (item.get("zh") or {}).get("title") or ""
+        if not passes_source_ai_filter(item.get("source") or "", title):
+            continue
         if item.get("source") == "GitHub Trending":
             if github_count >= max_github:
                 continue

@@ -6,6 +6,7 @@ import html
 import json
 import os
 import re
+import sys
 from collections import defaultdict
 from datetime import datetime, timezone
 from email.utils import format_datetime
@@ -13,6 +14,11 @@ from pathlib import Path
 from urllib.parse import urlparse
 from xml.etree import ElementTree as ET
 from zoneinfo import ZoneInfo
+
+
+ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT / "src"))
+from relevance_filter import passes_source_ai_filter
 
 
 SITE = "https://polyemergence.com"
@@ -199,6 +205,8 @@ def record_from_feed(item):
     tags = parse_tags(item.get("tags"))
     source = item.get("source") or "Unknown source"
     title = (item.get("en") or {}).get("title") or (item.get("zh") or {}).get("title") or ""
+    if not passes_source_ai_filter(source, title):
+        return None
     scores = item.get("scores") or {}
     return {
         "id": item.get("id"), "url": safe_url(item.get("url")), "source": source,
@@ -214,7 +222,8 @@ def record_from_feed(item):
 
 def load_json(path):
     payload = json.loads(Path(path).read_text(encoding="utf-8"))
-    return [record_from_feed(item) for item in payload.get("items", []) if item.get("published_at")]
+    records = [record_from_feed(item) for item in payload.get("items", []) if item.get("published_at")]
+    return [record for record in records if record]
 
 
 def load_database():
@@ -246,6 +255,8 @@ def load_database():
         tags = parse_tags(row["tags"])
         source = row["source_name"] or "Unknown source"
         title = row["title_en"] or row["title"] or row["title_zh"] or ""
+        if not passes_source_ai_filter(source, title):
+            continue
         records.append({
             "id": row["id"], "url": safe_url(row["url"]), "source": source,
             "category": normalize_category(row["category"], title, source, tags),
