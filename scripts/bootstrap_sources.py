@@ -27,6 +27,18 @@ SOURCES = [
     ("https://machinelearning.apple.com/rss.xml", "Apple Machine Learning", "Official ML research", "news", 82),
     ("https://huggingface.co/blog/feed.xml", "Hugging Face", "Model releases and the open-source AI ecosystem", "news", 78),
 
+    # Founder-led "neolabs": first-party updates from young frontier labs whose
+    # founding teams have led major models, landmark research, or AI products.
+    # Most publish HTML indexes rather than RSS; rss_fetcher has a narrow,
+    # same-domain adapter for these official pages.
+    ("https://thinkingmachines.ai/news/", "Thinking Machines Lab", "[FIRST_PARTY] Founder-led frontier lab; official model, product, and company announcements", "news", 94),
+    ("https://www.worldlabs.ai/blog", "World Labs", "[FIRST_PARTY] Fei-Fei Li's spatial-intelligence lab; official research and product updates", "news", 94),
+    ("https://sakana.ai/feed.xml", "Sakana AI", "[FIRST_PARTY] Founder-led Japanese frontier lab; official model, agent, product, and research updates", "news", 94),
+    ("https://www.pi.website/blog", "Physical Intelligence", "[FIRST_PARTY] Founder-led robotics foundation-model lab; official model and research updates", "news", 92),
+    ("https://reflection.ai/blog", "Reflection AI", "[FIRST_PARTY] Former DeepMind-led open frontier intelligence lab; official model and research updates", "news", 92),
+    ("https://www.lila.ai/news", "Lila Sciences", "[FIRST_PARTY] Founder-led scientific-superintelligence lab; official autonomous-science updates", "news", 90),
+    ("https://oumi.ai/blog/rss.xml", "Oumi", "[FIRST_PARTY] Former Google Gemini and AI Safety leaders; official open-model platform updates", "news", 88),
+
     # Official model release channels. GitHub Atom feeds are used where a
     # vendor does not publish a stable newsroom RSS feed.
     ("https://github.com/meta-llama/llama-models/releases.atom", "Meta Llama Releases", "[FIRST_PARTY] Official Meta Llama model releases", "models", 94),

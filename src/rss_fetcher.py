@@ -8,9 +8,21 @@ import re
 import json
 from datetime import datetime, timezone
 from calendar import timegm
-from urllib.parse import urljoin
+from urllib.parse import urljoin, urlparse
 
 from config_loader import ConfigLoader
+
+
+# Founder-led frontier labs often publish only an HTML news index, not RSS.
+# Keep this allowlist narrow and first-party: the adapter follows article links
+# on the same official domain and reads their own publication metadata.
+OFFICIAL_HTML_INDEX_RULES = {
+    'https://thinkingmachines.ai/news': ('/news/',),
+    'https://www.worldlabs.ai/blog': ('/blog/',),
+    'https://www.pi.website/blog': ('/blog/', '/research/'),
+    'https://reflection.ai/blog': ('/blog/',),
+    'https://www.lila.ai/news': ('/news/',),
+}
 
 
 class RSSFetcher:
@@ -333,6 +345,132 @@ class RSSFetcher:
             logging.warning("Tencent Newsroom fetch failed: %s", exc)
             return {'entries': [], 'error': str(exc), 'feed_config': feed_config}
 
+    @staticmethod
+    def _official_page_date(soup):
+        """Extract an official article's publication date without inventing one."""
+        selectors = (
+            'meta[property="article:published_time"]',
+            'meta[itemprop="datePublished"]',
+            'meta[name="datePublished"]',
+            'meta[name="date"]',
+            'time[datetime]',
+        )
+        raw_values = []
+        for selector in selectors:
+            node = soup.select_one(selector)
+            if node:
+                raw_values.append((node.get('content') or node.get('datetime') or '').strip())
+
+        # Some modern sites expose the date only in visible page text.
+        page_text = soup.get_text(' ', strip=True)
+        match = re.search(
+            r'\b(?:January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{1,2},\s+20\d{2}\b',
+            page_text,
+        )
+        if match:
+            raw_values.append(match.group(0))
+
+        for raw in raw_values:
+            if not raw:
+                continue
+            try:
+                parsed = datetime.fromisoformat(raw.replace('Z', '+00:00'))
+                if parsed.tzinfo is None:
+                    parsed = parsed.replace(tzinfo=timezone.utc)
+                return parsed.astimezone(timezone.utc).isoformat()
+            except ValueError:
+                pass
+            for fmt in ('%B %d, %Y', '%b %d, %Y', '%Y-%m-%d'):
+                try:
+                    return datetime.strptime(raw, fmt).replace(tzinfo=timezone.utc).isoformat()
+                except ValueError:
+                    continue
+        return None
+
+    def _fetch_official_html_index(self, feed_config, path_prefixes):
+        """Build feed entries from a first-party HTML news or research index."""
+        try:
+            from bs4 import BeautifulSoup
+            from curl_cffi import requests as cffi_requests
+
+            index_url = feed_config['url']
+            response = cffi_requests.get(
+                index_url, impersonate='chrome', timeout=self.timeout
+            )
+            response.raise_for_status()
+            soup = BeautifulSoup(response.text, 'html.parser')
+            source_host = urlparse(index_url).netloc.lower()
+            index_normalized = index_url.rstrip('/')
+
+            article_urls = []
+            seen = set()
+            for anchor in soup.select('a[href]'):
+                link = urljoin(index_url, (anchor.get('href') or '').strip())
+                parsed = urlparse(link)
+                normalized = link.split('#', 1)[0].split('?', 1)[0].rstrip('/')
+                if (
+                    parsed.netloc.lower() != source_host
+                    or normalized == index_normalized
+                    or not any(parsed.path.startswith(prefix) for prefix in path_prefixes)
+                    or parsed.path.lower().endswith(('.xml', '.rss', '.atom'))
+                    or re.search(r'/page/\d+/?$', parsed.path)
+                    or normalized in seen
+                ):
+                    continue
+                seen.add(normalized)
+                article_urls.append(normalized + ('/' if parsed.path.endswith('/') else ''))
+                if len(article_urls) >= 8:
+                    break
+
+            entries = []
+            for link in article_urls:
+                try:
+                    article_response = cffi_requests.get(
+                        link, impersonate='chrome', timeout=self.timeout
+                    )
+                    article_response.raise_for_status()
+                    article_soup = BeautifulSoup(article_response.text, 'html.parser')
+                    title_node = (
+                        article_soup.select_one('meta[property="og:title"]')
+                        or article_soup.select_one('h1')
+                    )
+                    title = (
+                        title_node.get('content')
+                        if title_node and title_node.name == 'meta'
+                        else title_node.get_text(' ', strip=True) if title_node else ''
+                    )
+                    published_at = self._official_page_date(article_soup)
+                    if not title or not published_at:
+                        logging.debug(
+                            'Skipping official page without title/date: %s', link
+                        )
+                        continue
+                    description_node = article_soup.select_one(
+                        'meta[property="og:description"]'
+                    )
+                    entries.append({
+                        'title': title.strip(),
+                        'link': link,
+                        'summary': (description_node.get('content') or '').strip()
+                        if description_node else '',
+                        'source': feed_config['name'],
+                        'source_id': feed_config.get('id'),
+                        'published_at': published_at,
+                        'orig_entry': {'title': title.strip(), 'link': link},
+                    })
+                except Exception as exc:
+                    logging.debug('Official article fetch failed for %s: %s', link, exc)
+
+            entries.sort(key=lambda entry: entry['published_at'], reverse=True)
+            logging.info(
+                'Fetched %d entries from %s official HTML index',
+                len(entries), feed_config['name']
+            )
+            return {'entries': entries, 'error': None, 'feed_config': feed_config}
+        except Exception as exc:
+            logging.warning('Official HTML index failed for %s: %s', feed_config['name'], exc)
+            return {'entries': [], 'error': str(exc), 'feed_config': feed_config}
+
     # Domains that require TLS fingerprint impersonation to bypass WAF
     DIFFICULT_RSS_DOMAINS = [
         'marktechpost.com',
@@ -360,6 +498,7 @@ class RSSFetcher:
         is_hf_papers = 'huggingface.co/api/daily_papers' in url
         is_bytedance_seed = 'seed.bytedance.com' in url
         is_tencent_newsroom = 'tencent.com/zh-cn/newsroom' in url
+        official_html_rule = OFFICIAL_HTML_INDEX_RULES.get(url.rstrip('/'))
         # Check if this is a YouTube feed
         is_youtube = 'youtube.com' in url or 'youtu.be' in url
         # Check if this is a The Verge feed
@@ -378,6 +517,9 @@ class RSSFetcher:
 
         if is_tencent_newsroom:
             return self._fetch_tencent_newsroom(feed_config)
+
+        if official_html_rule:
+            return self._fetch_official_html_index(feed_config, official_html_rule)
 
         # For YouTube, try API first (more stable than RSS)
         if is_youtube:
