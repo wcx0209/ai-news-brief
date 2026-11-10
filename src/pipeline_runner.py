@@ -83,6 +83,13 @@ def _is_first_party_source(source):
     )
 
 
+def _article_url_already_processed(user_db, url, is_first_party):
+    """Allow failed first-party ingests to retry until an article is stored."""
+    if is_first_party:
+        return user_db.get_article_by_url(url) is not None
+    return user_db.article_url_exists(url)
+
+
 def cleanup_old_articles():
     """Apply configured retention while allowing permanent article history."""
     logging.info("Starting Old Articles Cleanup...")
@@ -168,7 +175,7 @@ def _process_single_entry(entry, sources, source_map, user_db, ai_engine, vector
     # URL Deduplication
     # HN posts: use comments_url as canonical URL for dedup (topic_url is only for content fetching)
     dedup_url = entry['comments_url'] if entry.get('is_hackernews') and entry.get('comments_url') else url
-    if user_db.article_url_exists(dedup_url):
+    if _article_url_already_processed(user_db, dedup_url, is_first_party):
         logging.debug(f"{log_prefix}Skipping processed URL: {dedup_url}")
         fetch_stats.record_skip(rss_url, rss_desc, 'url_exists')
         return 0
