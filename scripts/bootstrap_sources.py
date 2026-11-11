@@ -134,6 +134,16 @@ SOURCES = [
     ("https://blog.ml.cmu.edu/feed/", "Carnegie Mellon ML Blog", "First-party machine-learning research from Carnegie Mellon", "academia", 90),
     ("https://www.csail.mit.edu/rss.xml", "MIT CSAIL", "First-party AI and computer-science research from MIT CSAIL", "academia", 90),
 
+    # Biotechnology and programmable life: primary research, academic labs,
+    # and specialist industry reporting. Ordinary healthcare and pharma news
+    # remains out of scope unless a platform technology is the core subject.
+    ("https://www.nature.com/nbt.rss", "Nature Biotechnology", "Peer-reviewed biotechnology research and analysis", "biotech", 94),
+    ("https://www.broadinstitute.org/rss/news-blog-feed", "Broad Institute", "[FIRST_PARTY] Official genomics, gene editing, therapeutic platform, and computational biology research", "biotech", 92),
+    ("https://news.mit.edu/topic/biological-engineering", "MIT Biological Engineering", "[FIRST_PARTY] Official MIT biological engineering, synthetic biology, and programmable-life research", "biotech", 90),
+    ("https://www.statnews.com/category/biotech/feed", "STAT Biotech", "High-impact biotechnology science, company, and policy reporting", "biotech", 84),
+    ("https://www.fiercebiotech.com/rss/biotech/xml", "Fierce Biotech", "Biotechnology platforms, clinical science, companies, and financing", "biotech", 82),
+    ("https://www.biospace.com/drug-development.rss", "BioSpace Drug Development", "Drug-development platforms, translational science, and biotechnology industry reporting", "biotech", 76),
+
     # Venture capital and startup ecosystem: first-party market theses, founder
     # guidance, and interviews. These are broad feeds, so the pipeline applies
     # the title-level AI gate before spending an LLM call on an item.

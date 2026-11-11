@@ -55,4 +55,12 @@
   <url>
     <loc>https://polyemergence.com/developers/</loc><lastmod>2026-11-10</lastmod><changefreq>monthly</changefreq><priority>0.6</priority>
   </url>
+  <url>
+    <loc>https://polyemergence.com/en/topics/biotech/</loc><lastmod>2026-11-11</lastmod><changefreq>daily</changefreq><priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://polyemergence.com/en/topics/biotech/"/><xhtml:link rel="alternate" hreflang="zh-Hans" href="https://polyemergence.com/zh/topics/biotech/"/><xhtml:link rel="alternate" hreflang="x-default" href="https://polyemergence.com/en/topics/biotech/"/>
+  </url>
+  <url>
+    <loc>https://polyemergence.com/zh/topics/biotech/</loc><lastmod>2026-11-11</lastmod><changefreq>daily</changefreq><priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://polyemergence.com/en/topics/biotech/"/><xhtml:link rel="alternate" hreflang="zh-Hans" href="https://polyemergence.com/zh/topics/biotech/"/><xhtml:link rel="alternate" hreflang="x-default" href="https://polyemergence.com/en/topics/biotech/"/>
+  </url>
 </urlset>

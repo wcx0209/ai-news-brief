@@ -17,7 +17,7 @@ class AiEnginePromptRoutingTests(unittest.TestCase):
     def test_public_news_categories_use_news_contract(self):
         news_prompt = self.engine._get_prompt_for_category("news")
         for category in (
-            "models", "company", "startups", "research",
+            "models", "company", "startups", "research", "biotech",
             "policy", "business", "society",
         ):
             self.assertEqual(

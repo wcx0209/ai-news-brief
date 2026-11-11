@@ -8,7 +8,7 @@
   }
 
   function shareText(button) {
-    var brand = button.dataset.shareLocale === "zh" ? "多重涌现 · AI 情报" : "Polyemergence · AI Intelligence";
+    var brand = button.dataset.shareLocale === "zh" ? "多重涌现 · 前沿科技情报" : "Polyemergence · Emerging Intelligence";
     return [button.dataset.shareTitle, button.dataset.shareSummary, brand].filter(Boolean).join("\n\n");
   }
 

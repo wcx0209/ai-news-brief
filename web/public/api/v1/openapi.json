@@ -2,8 +2,8 @@
   "openapi": "3.1.0",
   "info": {
     "title": "Polyemergence Public API",
-    "version": "1.0.0",
-    "description": "Read-only bilingual AI news, archives, sources, and Polyemergence Method scores from PolyEmergence Pte Ltd. Preserve canonical URLs when citing results.",
+    "version": "1.1.0",
+    "description": "Read-only bilingual AI and programmable-life intelligence, archives, sources, and Polyemergence Method scores from PolyEmergence Pte Ltd. Preserve canonical URLs when citing results.",
     "contact": { "url": "https://polyemergence.com/en/#feedback" }
   },
   "servers": [{ "url": "https://polyemergence.com/api/v1" }],
@@ -11,7 +11,7 @@
     "/brief": {
       "get": {
         "operationId": "getDailyBrief",
-        "summary": "Get the latest AI news ranked by importance",
+        "summary": "Get the latest AI and programmable-life intelligence ranked by importance",
         "parameters": [
           { "$ref": "#/components/parameters/lang" },
           { "$ref": "#/components/parameters/category" },
@@ -65,7 +65,7 @@
   "components": {
     "parameters": {
       "lang": { "name": "lang", "in": "query", "schema": { "type": "string", "enum": ["en", "zh"], "default": "en" } },
-      "category": { "name": "category", "in": "query", "schema": { "type": "string", "enum": ["models", "company", "startups", "research", "academia", "open_source", "interviews", "policy", "business", "society"] } },
+      "category": { "name": "category", "in": "query", "description": "Category slug from /data/editorial-domains.json", "schema": { "type": "string", "pattern": "^[a-z][a-z0-9_]{1,31}$", "examples": ["models", "biotech"] } },
       "limit": { "name": "limit", "in": "query", "schema": { "type": "integer", "minimum": 1, "maximum": 100, "default": 20 } }
     },
     "schemas": {

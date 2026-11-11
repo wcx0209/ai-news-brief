@@ -1,8 +1,4 @@
 const SITE = "https://polyemergence.com";
-const CATEGORIES = new Set([
-  "models", "company", "startups", "research", "academia",
-  "open_source", "interviews", "policy", "business", "society",
-]);
 
 export const API_HEADERS = {
   "Access-Control-Allow-Origin": "*",
@@ -39,7 +35,7 @@ export function language(value) {
 
 export function category(value) {
   const normalized = String(value || "").trim().toLowerCase().replaceAll("-", "_");
-  return CATEGORIES.has(normalized) ? normalized : "";
+  return /^[a-z][a-z0-9_]{1,31}$/.test(normalized) ? normalized : "";
 }
 
 export async function loadArticles(env, request) {

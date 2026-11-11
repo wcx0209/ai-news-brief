@@ -3,7 +3,7 @@ import {
   METHODOLOGY, publicArticle, searchArticles,
 } from "./_lib/public-data.js";
 
-const SERVER = { name: "polyemergence", title: "Polyemergence AI Intelligence", version: "1.0.0" };
+const SERVER = { name: "polyemergence", title: "Polyemergence Emerging Intelligence", version: "1.1.0" };
 const PROTOCOL_VERSIONS = ["2026-07-28", "2025-11-25"];
 const HEADERS = {
   "Access-Control-Allow-Origin": "*",
@@ -20,7 +20,7 @@ const TOOLS = [
   {
     name: "search",
     title: "Search Polyemergence",
-    description: "Search Polyemergence AI news and permanent archives. Returns canonical, citation-ready article URLs.",
+    description: "Search Polyemergence AI, biotech, programmable-life news and permanent archives. Returns canonical, citation-ready article URLs.",
     inputSchema: {
       type: "object",
       properties: {
@@ -48,13 +48,13 @@ const TOOLS = [
   },
   {
     name: "get_daily_brief",
-    title: "Get the latest AI news brief",
-    description: "Get the latest Polyemergence AI news ranked by importance, optionally filtered by category.",
+    title: "Get the latest Polyemergence brief",
+    description: "Get the latest AI and programmable-life intelligence ranked by importance, optionally filtered by a registered category.",
     inputSchema: {
       type: "object",
       properties: {
         language: { type: "string", enum: ["en", "zh"], default: "en" },
-        category: { type: "string", enum: ["models", "company", "startups", "research", "academia", "open_source", "interviews", "policy", "business", "society"] },
+        category: { type: "string", description: "A category slug from the public editorial-domain registry, such as models or biotech." },
         hours: { type: "integer", minimum: 1, maximum: 168, default: 48 },
         limit: { type: "integer", minimum: 1, maximum: 50, default: 20 },
       },
@@ -162,7 +162,7 @@ export async function onRequestPost({ env, request }) {
     const protocolVersion = PROTOCOL_VERSIONS.includes(requested) ? requested : PROTOCOL_VERSIONS[0];
     return rpcResult(id, {
       protocolVersion, capabilities: { tools: { listChanged: false } }, serverInfo: SERVER,
-      instructions: "Use search for discovery, fetch for a citation-ready article, and get_daily_brief for the latest ranked AI news. Preserve canonical URLs when citing Polyemergence.",
+      instructions: "Use search for discovery, fetch for a citation-ready article, and get_daily_brief for the latest ranked emerging-technology intelligence. Preserve canonical URLs when citing Polyemergence.",
     });
   }
   if (method === "tools/list") return rpcResult(id, { tools: TOOLS });

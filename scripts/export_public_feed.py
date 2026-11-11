@@ -20,12 +20,10 @@ from bs4 import BeautifulSoup
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "src"))
 from relevance_filter import passes_source_ai_filter
+from editorial_domains import category_ids, match_category
 
 
-TOPIC_CATEGORIES = {
-    "models", "company", "startups", "research", "academia",
-    "open_source", "interviews", "policy", "business", "society",
-}
+TOPIC_CATEGORIES = set(category_ids())
 
 
 def safe_http_url(value):
@@ -103,6 +101,9 @@ def normalize_category(value, tags=None, title="", source=""):
         return "open_source"
 
     haystack = " ".join([title or "", source or "", " ".join(parse_tags(tags))]).lower()
+    matched = match_category(haystack)
+    if matched:
+        return matched
     if re.search(r"interview|podcast|conversation|访谈|对谈|播客", haystack):
         return "interviews"
     if re.search(r"policy|regulat|law|government|election|治理|监管|政策|法规", haystack):

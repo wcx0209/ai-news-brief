@@ -22,6 +22,7 @@ OFFICIAL_HTML_INDEX_RULES = {
     'https://www.pi.website/blog': {'path_prefixes': ('/blog/', '/research/')},
     'https://reflection.ai/blog': {'path_prefixes': ('/blog/',)},
     'https://www.lila.ai/news': {'path_prefixes': ('/news/',)},
+    'https://news.mit.edu/topic/biological-engineering': {'path_prefixes': ('/20',)},
 
     # Official company, model, research, and product indexes. Many vendors do
     # not expose a stable RSS feed, so these narrow same-domain rules keep the

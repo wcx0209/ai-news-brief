@@ -19,48 +19,18 @@ from zoneinfo import ZoneInfo
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "src"))
 from relevance_filter import passes_source_ai_filter
+from editorial_domains import category_ids, category_labels, category_titles, match_category
 
 
 SITE = "https://polyemergence.com"
 LOCAL_TZ = ZoneInfo("Asia/Singapore")
-CATEGORIES = {
-    "models", "company", "startups", "research", "academia",
-    "open_source", "interviews", "policy", "business", "society",
-}
-CATEGORY_ORDER = ["models", "company", "startups", "research", "academia", "open_source", "interviews", "policy", "business", "society"]
-CATEGORY_LABELS = {
-    "en": {"models": "Models", "company": "Company", "startups": "Startups", "research": "Research", "academia": "Academia", "open_source": "Open Source", "interviews": "Interviews", "policy": "Policy", "business": "Business", "society": "Society"},
-    "zh": {"models": "模型", "company": "公司", "startups": "创业", "research": "研究", "academia": "学术", "open_source": "开源", "interviews": "访谈", "policy": "政策", "business": "商业", "society": "社会"},
-}
-TOPIC_TITLES = {
-    "en": {
-        "models": "AI Model News: LLM Releases, Benchmarks & Updates",
-        "company": "AI Company News: OpenAI, Anthropic, Google & More",
-        "startups": "AI Startup News: Funding, Products & Venture Capital",
-        "research": "AI Research News: Papers, Benchmarks & Breakthroughs",
-        "academia": "AI Academic News: University Research & Papers",
-        "open_source": "Open Source AI News: Models, Tools & GitHub Projects",
-        "interviews": "AI Interviews: Founders, Researchers & Industry Leaders",
-        "policy": "AI Policy News: Regulation, Safety & Government",
-        "business": "AI Business News: Markets, Investment & Strategy",
-        "society": "AI and Society News: Work, Culture & Public Impact",
-    },
-    "zh": {
-        "models": "AI模型新闻：大模型发布、评测与更新",
-        "company": "AI公司新闻：OpenAI、Anthropic、Google与全球动态",
-        "startups": "AI创业资讯：融资、产品与风险投资",
-        "research": "AI研究资讯：论文、基准与技术突破",
-        "academia": "AI学术资讯：高校研究与前沿论文",
-        "open_source": "开源AI资讯：模型、工具与GitHub项目",
-        "interviews": "AI深度访谈：创始人、研究者与行业领袖",
-        "policy": "AI政策与监管：安全、法规与政府动态",
-        "business": "AI商业资讯：市场、投资与企业战略",
-        "society": "AI与社会：工作、文化与公共影响",
-    },
-}
+CATEGORY_ORDER = category_ids()
+CATEGORIES = set(CATEGORY_ORDER)
+CATEGORY_LABELS = {locale: category_labels(locale) for locale in ("en", "zh")}
+TOPIC_TITLES = {locale: category_titles(locale) for locale in ("en", "zh")}
 COPY = {
-    "en": {"lang": "en", "brand": "Polyemergence", "brief": "Brief", "archive": "Archive", "method": "Method", "edition": "GLOBAL EDITION", "title": "AI News Archive", "intro": "A permanent record of Polyemergence AI intelligence, organized by Singapore publication date.", "stories": "stories", "months": "Months", "days": "Daily editions", "day_count": "days", "original": "Read original", "share": "Share", "importance": "Importance", "signal": "Signal", "structure": "Structure", "consequence": "Consequence", "confidence": "Confidence", "momentum": "Momentum", "older": "Older edition", "newer": "Newer edition", "month": "Month overview", "all": "All archives", "feed": "RSS feed", "footer": "Independent AI intelligence for a changing world.", "company": "Published by PolyEmergence Pte Ltd., Singapore. No current financial or commercial conflict declared.", "standards": "Editorial standards", "corrections": "Corrections", "about_brief": "About this brief", "content_type": "Content type", "source_type": "Source type", "source": "Original source", "published": "Source published", "process": "Process", "verification": "Verification", "byline": "Published by", "conflict": "Conflict disclosure"},
-    "zh": {"lang": "zh-Hans", "brand": "多重涌现", "brief": "简报", "archive": "历史归档", "method": "方法", "edition": "全球版", "title": "AI 新闻历史归档", "intro": "按新加坡发布日期整理的多重涌现 AI 情报永久记录。", "stories": "条内容", "months": "月份", "days": "每日归档", "day_count": "天", "original": "阅读原文", "share": "分享", "importance": "重要性", "signal": "信号", "structure": "结构", "consequence": "影响", "confidence": "可信度", "momentum": "热度", "older": "较早一期", "newer": "较新一期", "month": "本月总览", "all": "全部归档", "feed": "RSS 订阅", "footer": "面向变化世界的独立 AI 情报媒体。", "company": "由新加坡 PolyEmergence Pte Ltd. 发布。目前无已声明的财务或商业利益冲突。", "standards": "编辑标准", "corrections": "纠错记录", "about_brief": "关于这篇简报", "content_type": "内容类型", "source_type": "信源类型", "source": "原始来源", "published": "原文发布时间", "process": "处理方式", "verification": "核验边界", "byline": "发布方", "conflict": "利益冲突"},
+    "en": {"lang": "en", "brand": "Polyemergence", "brief": "Brief", "archive": "Archive", "method": "Method", "edition": "GLOBAL EDITION", "title": "Emerging Intelligence Archive", "intro": "A permanent record of Polyemergence intelligence across AI and programmable life, organized by Singapore publication date.", "stories": "stories", "months": "Months", "days": "Daily editions", "day_count": "days", "original": "Read original", "share": "Share", "importance": "Importance", "signal": "Signal", "structure": "Structure", "consequence": "Consequence", "confidence": "Confidence", "momentum": "Momentum", "older": "Older edition", "newer": "Newer edition", "month": "Month overview", "all": "All archives", "feed": "RSS feed", "footer": "Independent intelligence on AI and programmable life.", "company": "Published by PolyEmergence Pte Ltd., Singapore. No current financial or commercial conflict declared.", "standards": "Editorial standards", "corrections": "Corrections", "about_brief": "About this brief", "content_type": "Content type", "source_type": "Source type", "source": "Original source", "published": "Source published", "process": "Process", "verification": "Verification", "byline": "Published by", "conflict": "Conflict disclosure"},
+    "zh": {"lang": "zh-Hans", "brand": "多重涌现", "brief": "简报", "archive": "历史归档", "method": "方法", "edition": "全球版", "title": "前沿科技情报归档", "intro": "按新加坡发布日期整理的多重涌现 AI 与可编程生命情报永久记录。", "stories": "条内容", "months": "月份", "days": "每日归档", "day_count": "天", "original": "阅读原文", "share": "分享", "importance": "重要性", "signal": "信号", "structure": "结构", "consequence": "影响", "confidence": "可信度", "momentum": "热度", "older": "较早一期", "newer": "较新一期", "month": "本月总览", "all": "全部归档", "feed": "RSS 订阅", "footer": "面向变化世界的 AI 与可编程生命独立情报。", "company": "由新加坡 PolyEmergence Pte Ltd. 发布。目前无已声明的财务或商业利益冲突。", "standards": "编辑标准", "corrections": "纠错记录", "about_brief": "关于这篇简报", "content_type": "内容类型", "source_type": "信源类型", "source": "原始来源", "published": "原文发布时间", "process": "处理方式", "verification": "核验边界", "byline": "发布方", "conflict": "利益冲突"},
 }
 
 SEO_COPY = {
@@ -135,6 +105,9 @@ def normalize_category(value, title="", source="", tags=None):
     if category == "opensource":
         return "open_source"
     text = " ".join([title or "", source or "", " ".join(tags or [])]).lower()
+    matched = match_category(text)
+    if matched:
+        return matched
     checks = [
         ("interviews", r"interview|podcast|conversation|访谈|对谈|播客"),
         ("policy", r"policy|regulat|law|government|治理|监管|政策|法规"),
@@ -176,8 +149,8 @@ def daily_brief_path(locale, day):
 
 def content_type(record, locale):
     labels = {
-        "en": {"interviews": "Interview summary", "academia": "Research summary", "research": "Research summary", "default": "News summary"},
-        "zh": {"interviews": "访谈摘要", "academia": "研究摘要", "research": "研究摘要", "default": "新闻摘要"},
+        "en": {"interviews": "Interview summary", "academia": "Research summary", "research": "Research summary", "biotech": "Research summary", "default": "News summary"},
+        "zh": {"interviews": "访谈摘要", "academia": "研究摘要", "research": "研究摘要", "biotech": "研究摘要", "default": "新闻摘要"},
     }
     return labels[locale].get(record["category"], labels[locale]["default"])
 
@@ -189,6 +162,7 @@ def source_type(record, locale):
         "anthropic.com", "deepmind.google", "blogs.nvidia.com", "tencent.com",
         "graphcore.ai", "sambanova.ai", "skhynix.com", "cloudflare.com",
         "databricks.com", "pinecone.io", "wandb.ai", "vercel.com",
+        "broadinstitute.org", "news.mit.edu",
     )
     if host.endswith(".gov") or host.endswith(".gov.sg") or "europa.eu" in host or any(domain in host for domain in first_party):
         return "First-party / official source" if locale == "en" else "第一方／官方来源"
@@ -382,6 +356,7 @@ def editorial_analysis(record, locale):
         "startups": ("This is an early signal of where founders and capital expect durable AI demand to emerge.", "这是创业者与资本判断 AI 长期需求将在哪里形成的早期信号。"),
         "research": ("The work may change what AI systems can do or how reliably those capabilities can be measured.", "这项工作可能改变 AI 系统的能力边界，或改变这些能力的可靠评估方式。"),
         "academia": ("The result offers an early, research-stage signal that should be followed before broad real-world conclusions are drawn.", "这项成果提供了研究阶段的早期信号，在得出广泛现实结论前仍需继续验证。"),
+        "biotech": ("The development may change how biological systems are read, designed, manufactured or treated.", "这项进展可能改变生命系统的读取、设计、制造或治疗方式。"),
         "open_source": ("Open availability can accelerate adoption, independent testing and downstream product experimentation.", "开放获取能够加速采用、独立验证与下游产品实验。"),
         "interviews": ("The conversation reveals how decision-makers are framing the next competitive and technical constraints.", "这场对话揭示了决策者如何判断下一阶段的竞争与技术约束。"),
         "policy": ("Policy decisions can determine who may build, deploy and profit from AI across markets.", "政策决定可能直接影响谁能在不同市场开发、部署并从 AI 中获益。"),
@@ -405,6 +380,7 @@ def editorial_analysis(record, locale):
         "startups": ("Watch whether funding converts into repeatable customer demand and a defensible distribution advantage.", "继续观察融资能否转化为可重复的客户需求和可防御的分发优势。"),
         "research": ("Watch for replication, released artifacts and performance outside the authors’ chosen benchmarks.", "继续观察复现结果、公开产物及其在作者所选基准之外的表现。"),
         "academia": ("Watch for peer review, replication and evidence that the result generalizes beyond the reported setup.", "继续观察同行评议、复现情况以及结果能否超越论文设定实现泛化。"),
+        "biotech": ("Watch peer review, reproducibility, safety evidence, regulatory milestones and scalable manufacturing.", "继续观察同行评议、可重复性、安全证据、监管里程碑与规模化制造能力。"),
         "open_source": ("Watch maintainer activity, real adoption, security review and whether the project develops a durable community.", "继续观察维护活跃度、真实采用、安全审查及能否形成长期社区。"),
         "interviews": ("Watch for concrete product, hiring, funding or research decisions that confirm the stated direction.", "继续观察是否出现产品、招聘、融资或研究决策来验证受访者所述方向。"),
         "policy": ("Watch the final text, implementation timetable, enforcement authority and cross-border effects.", "继续观察最终文本、实施时间表、执法权限与跨境影响。"),
@@ -474,15 +450,15 @@ def render_daily_brief(output, locale, day, items):
     leading_categories = [CATEGORY_LABELS[locale][key] for key, _ in category_counts.most_common(3)]
     lead_title = clean_text(top[0][locale]["title"])
     if locale == "en":
-        title = f"AI News Today — {day:%B %-d, %Y} | Polyemergence"
-        description = f"The most important AI news for {day:%B %-d, %Y}, ranked and explained by Polyemergence across models, companies, research, policy and business."
-        lede = f"Today’s brief ranks {len(items)} AI developments. The leading signal is “{lead_title}”. The day’s strongest coverage clusters are {', '.join(leading_categories)}, selected for structural importance rather than headline volume."
-        heading = f"AI NEWS TODAY · {day:%B %-d, %Y}"
+        title = f"AI News & Programmable Life — {day:%B %-d, %Y} | Polyemergence"
+        description = f"The most important AI and programmable-life developments for {day:%B %-d, %Y}, ranked and explained by Polyemergence."
+        lede = f"Today’s brief ranks {len(items)} emerging-technology developments. The leading signal is “{lead_title}”. The day’s strongest coverage clusters are {', '.join(leading_categories)}, selected for structural importance rather than headline volume."
+        heading = f"AI & PROGRAMMABLE LIFE · {day:%B %-d, %Y}"
     else:
-        title = f"今日 AI 新闻 — {day:%Y年%m月%d日} | 多重涌现"
-        description = f"多重涌现筛选并解读 {day:%Y年%m月%d日} 最重要的 AI 新闻，覆盖模型、公司、研究、政策与商业。"
-        lede = f"本期共评估 {len(items)} 条 AI 动态，首要信号是“{lead_title}”。当日最集中的领域为{'、'.join(leading_categories)}；排序依据是结构性重要程度，而不是标题热度。"
-        heading = f"今日 AI 新闻 · {day:%Y年%m月%d日}"
+        title = f"今日 AI 与可编程生命 — {day:%Y年%m月%d日} | 多重涌现"
+        description = f"多重涌现筛选并解读 {day:%Y年%m月%d日} 最重要的 AI 与可编程生命动态。"
+        lede = f"本期共评估 {len(items)} 条前沿科技动态，首要信号是“{lead_title}”。当日最集中的领域为{'、'.join(leading_categories)}；排序依据是结构性重要程度，而不是标题热度。"
+        heading = f"今日 AI 与可编程生命 · {day:%Y年%m月%d日}"
     canonical = SITE + daily_brief_path(locale, day)
     other = "zh" if locale == "en" else "en"
     alternate = SITE + daily_brief_path(other, day)

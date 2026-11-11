@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "domains": [
+    {
+      "id": "ai",
+      "label": {"en": "Artificial Intelligence", "zh": "人工智能"},
+      "description": {"en": "Models, companies, research, policy and social impact.", "zh": "模型、公司、研究、政策及社会影响。"}
+    },
+    {
+      "id": "programmable_life",
+      "label": {"en": "Biotech & Programmable Life", "zh": "生物技术与可编程生命"},
+      "description": {"en": "Technologies that read, design and engineer living systems.", "zh": "读取、设计和工程化生命系统的技术。"}
+    }
+  ],
+  "categories": [
+    {"id":"models","domain":"ai","order":10,"label":{"en":"Models","zh":"模型"},"title":{"en":"AI Model News: LLM Releases, Benchmarks & Updates","zh":"AI模型新闻：大模型发布、评测与更新"},"keywords":["model","llm","gpt","claude","gemini","qwen","deepseek","模型","推理"]},
+    {"id":"company","domain":"ai","order":20,"label":{"en":"Company","zh":"公司"},"title":{"en":"AI Company News: OpenAI, Anthropic, Google & More","zh":"AI公司新闻：OpenAI、Anthropic、Google与全球动态"},"keywords":["company","公司"]},
+    {"id":"startups","domain":"ai","order":30,"label":{"en":"Startups","zh":"创业"},"title":{"en":"AI Startup News: Funding, Products & Venture Capital","zh":"AI创业资讯：融资、产品与风险投资"},"keywords":["startup","venture","seed round","series a","初创","创业","融资轮"]},
+    {"id":"research","domain":"ai","order":40,"label":{"en":"Research","zh":"研究"},"title":{"en":"AI Research News: Papers, Benchmarks & Breakthroughs","zh":"AI研究资讯：论文、基准与技术突破"},"keywords":["research","paper","study","benchmark","论文","研究","评测","基准"]},
+    {"id":"academia","domain":"ai","order":50,"label":{"en":"Academia","zh":"学术"},"title":{"en":"AI Academic News: University Research & Papers","zh":"AI学术资讯：高校研究与前沿论文"},"keywords":["arxiv","academic","university","bair","csail","预印本","学术"]},
+    {"id":"biotech","domain":"programmable_life","order":60,"label":{"en":"Programmable Life","zh":"可编程生命"},"title":{"en":"Biotech & Programmable Life: Synthetic Biology, Gene Editing & More","zh":"生物技术与可编程生命：合成生物、基因编辑与前沿进展"},"keywords":["biotech","biotechnology","synthetic biology","gene editing","crispr","genomics","cell therapy","protein design","programmable life","生物技术","合成生物","基因编辑","基因组","细胞治疗","蛋白质设计","可编程生命"]},
+    {"id":"open_source","domain":"ai","order":70,"label":{"en":"Open Source","zh":"开源"},"title":{"en":"Open Source AI News: Models, Tools & GitHub Projects","zh":"开源AI资讯：模型、工具与GitHub项目"},"keywords":["open source","github","开源","开放权重"]},
+    {"id":"interviews","domain":"ai","order":80,"label":{"en":"Interviews","zh":"访谈"},"title":{"en":"AI Interviews: Founders, Researchers & Industry Leaders","zh":"AI深度访谈：创始人、研究者与行业领袖"},"keywords":["interview","podcast","conversation","访谈","对谈","播客"]},
+    {"id":"policy","domain":"ai","order":90,"label":{"en":"Policy","zh":"政策"},"title":{"en":"AI Policy News: Regulation, Safety & Government","zh":"AI政策与监管：安全、法规与政府动态"},"keywords":["policy","regulation","law","government","治理","监管","政策","法规"]},
+    {"id":"business","domain":"ai","order":100,"label":{"en":"Business","zh":"商业"},"title":{"en":"AI Business News: Markets, Investment & Strategy","zh":"AI商业资讯：市场、投资与企业战略"},"keywords":["funding","revenue","earnings","acquisition","data center","chip","enterprise","融资","营收","收购","数据中心","芯片","企业"]},
+    {"id":"society","domain":"ai","order":110,"label":{"en":"Society","zh":"社会"},"title":{"en":"AI and Society News: Work, Culture & Public Impact","zh":"AI与社会：工作、文化与公共影响"},"keywords":["jobs","labor","education","culture","public","environment","社会","就业","教育","文化","环境","公众"]}
+  ]
+}

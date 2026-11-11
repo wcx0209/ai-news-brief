@@ -4,11 +4,9 @@ import json
 import logging
 import threading
 import time
+from editorial_domains import category_ids, taxonomy_prompt
 
-TOPIC_CATEGORIES = {
-    'models', 'company', 'startups', 'research', 'academia',
-    'open_source', 'interviews', 'policy', 'business', 'society'
-}
+TOPIC_CATEGORIES = set(category_ids())
 
 
 def normalize_topic_category(value, source_category=None):
@@ -71,6 +69,7 @@ class AIEngine:
             'company': 'news',
             'startups': 'news',
             'research': 'news',
+            'biotech': 'news',
             'policy': 'news',
             'business': 'news',
             'society': 'news',
@@ -138,9 +137,9 @@ Score the item with five separate integer fields from 0 to 100:
 - momentum_score: observable attention and rate of adoption or discussion. Popularity belongs here, not in importance.
 
 Set importance_score to round(signal_score * 0.35 + structure_score * 0.35 + consequence_score * 0.30).
-Company fame, source prestige, follower counts, likes, comments, stars, and trending rank MUST NOT directly raise signal_score, structure_score, consequence_score, or importance_score. They may affect confidence_score or momentum_score only. Preserve the existing AI relevance rule: unrelated content must receive importance_score 0.
+Company fame, source prestige, follower counts, likes, comments, stars, and trending rank MUST NOT directly raise signal_score, structure_score, consequence_score, or importance_score. They may affect confidence_score or momentum_score only. Preserve the editorial relevance rule: AI or biotechnology/programmable life must be a core subject; unrelated content must receive importance_score 0.
 Include all five component fields plus importance_score in the JSON output.
-"""
+""" + taxonomy_prompt()
         
         # 文章内容作为 user 消息，末尾追加格式提醒以利用结尾高注意力
         user_content = f"""{title_section}Text:

@@ -2,13 +2,13 @@ const COPY = {
   en: {
     brand: "POLYEMERGENCE", navNews: "Brief", navSignals: "Signals", navArchive: "Archive", navInsight: "Method", navFeedback: "Feedback",
     edition: "GLOBAL EDITION", latest: "LATEST INTELLIGENCE",
-    seoTitle: "AI News Today: Daily Artificial Intelligence News | Polyemergence",
-    seoDescription: "AI news today, ranked by importance. Follow the latest artificial intelligence news on models, companies, startups, research, policy, business, and society.",
-    eyebrow: "DAILY AI NEWS · INDUSTRY SIGNALS · ANALYSIS", tagline: "What’s next,<br>made visible.",
-    promise: "AI news today, ranked by importance across models, companies, startups, research, open source, policy, business, and society.",
-    loading: "Loading today’s brief…", updated: "Updated", stories: "stories", dailyBrief: "AI News Today",
+    seoTitle: "AI News Today & Programmable Life | Polyemergence",
+    seoDescription: "AI news today and programmable life, ranked by importance. Follow models, companies, research, biotech, synthetic biology, policy, business, and society.",
+    eyebrow: "AI NEWS · BIOTECH & PROGRAMMABLE LIFE · FORESIGHT", tagline: "What’s next,<br>made visible.",
+    promise: "Essential signals across artificial intelligence, biotechnology, and programmable life—ranked by structural importance.",
+    loading: "Loading today’s brief…", updated: "Updated", stories: "stories", dailyBrief: "AI & Programmable Life",
     refreshFeed: "Refresh", refreshingFeed: "Refreshing…",
-    filters: { all: "All", models: "Models", company: "Company", startups: "Startups", research: "Research", academia: "Academia", open_source: "Open Source", interviews: "Interviews", policy: "Policy", business: "Business", society: "Society" }, importance: "Importance", published: "Published",
+    filters: { all: "All", models: "Models", company: "Company", startups: "Startups", research: "Research", academia: "Academia", biotech: "Programmable Life", open_source: "Open Source", interviews: "Interviews", policy: "Policy", business: "Business", society: "Society" }, importance: "Importance", published: "Published",
     expandSummary: "Expand full summary", collapseSummary: "Collapse summary", share: "Share", like: "Like", comments: "Comments",
     commentPlaceholder: "Add to the conversation…", commentSubmit: "Post", commentSending: "Posting…", commentEmpty: "No comments yet. Start the conversation.",
     commentIdentity: "You’ll appear as", commentPrivacy: "Only an approximate IP location and the last three characters are public. Your full IP is not stored.",
@@ -34,18 +34,18 @@ const COPY = {
     installIntro: "Open Polyemergence like an app, directly from your phone.", installDone: "Got it",
     installIosSteps: ["Open this page in Safari.", "Tap the Share button in the browser toolbar.", "Choose “Add to Home Screen”, then tap “Add”."],
     installGenericSteps: ["Open your browser menu.", "Choose “Install app” or “Add to Home screen”.", "Confirm to place the Polyemergence icon on your device."],
-    footer: "Independent AI intelligence for a changing world."
+    footer: "Independent intelligence on AI and programmable life."
   },
   zh: {
     brand: "多重涌现", navNews: "简报", navSignals: "信号", navArchive: "归档", navInsight: "方法", navFeedback: "反馈",
     edition: "全球版", latest: "最新情报",
-    seoTitle: "AI新闻｜每日人工智能资讯、模型与行业动态｜多重涌现",
-    seoDescription: "每日AI资讯与全球AI新闻聚合，按重要性筛选模型、公司、创业、研究、开源、政策、商业与社会领域的人工智能最新动态。",
-    eyebrow: "AI 新闻 · 人工智能行业动态 · 趋势洞察", tagline: "看见<br>下一步。",
-    promise: "每日AI资讯与全球AI新闻聚合，按重要性追踪模型、公司、创业、研究、开源、政策、商业与社会动态。",
-    loading: "正在载入今日简报…", updated: "更新于", stories: "条内容", dailyBrief: "今日 AI 新闻",
+    seoTitle: "AI新闻与可编程生命｜每日人工智能与生物科技资讯｜多重涌现",
+    seoDescription: "每日AI新闻与可编程生命情报，按重要性筛选模型、公司、研究、生物技术、合成生物、政策、商业与社会动态。",
+    eyebrow: "AI 新闻 · 生物技术与可编程生命 · 趋势洞察", tagline: "看见<br>下一步。",
+    promise: "聚合人工智能、生物技术与可编程生命的重要信号，并按结构性影响排序。",
+    loading: "正在载入今日简报…", updated: "更新于", stories: "条内容", dailyBrief: "AI 与可编程生命",
     refreshFeed: "刷新", refreshingFeed: "正在刷新…",
-    filters: { all: "全部", models: "模型", company: "公司", startups: "创业", research: "研究", academia: "学术", open_source: "开源", interviews: "访谈", policy: "政策", business: "商业", society: "社会" }, importance: "重要性", published: "发布",
+    filters: { all: "全部", models: "模型", company: "公司", startups: "创业", research: "研究", academia: "学术", biotech: "可编程生命", open_source: "开源", interviews: "访谈", policy: "政策", business: "商业", society: "社会" }, importance: "重要性", published: "发布",
     expandSummary: "展开全文", collapseSummary: "收起全文", share: "分享", like: "点赞", comments: "评论",
     commentPlaceholder: "加入讨论……", commentSubmit: "发布", commentSending: "正在发布……", commentEmpty: "还没有评论，来说第一句。",
     commentIdentity: "你将显示为", commentPrivacy: "只公开粗略 IP 归属地和末三位，完整 IP 不会入库。",
@@ -71,7 +71,7 @@ const COPY = {
     installIntro: "像打开 App 一样，从手机桌面直接进入多重涌现。", installDone: "知道了",
     installIosSteps: ["请使用 Safari 打开本页面。", "点击浏览器工具栏中的“分享”按钮。", "选择“添加到主屏幕”，再点击“添加”。"],
     installGenericSteps: ["打开浏览器菜单。", "选择“安装应用”或“添加到主屏幕”。", "确认后，多重涌现图标会出现在设备桌面。"],
-    footer: "面向变化世界的独立 AI 情报媒体。"
+    footer: "面向变化世界的 AI 与可编程生命独立情报。"
   }
 };
 
@@ -80,7 +80,19 @@ const state = {
   locale: routeLocale === "zh" ? "zh" : routeLocale === "en" ? "en" : (navigator.language.startsWith("zh") ? "zh" : "en"),
   category: "all", feed: null, interactions: {}, viewer: null, openComments: new Set()
 };
-const categories = ["all", "models", "company", "startups", "research", "academia", "open_source", "interviews", "policy", "business", "society"];
+let categories = ["all", "models", "company", "startups", "research", "academia", "biotech", "open_source", "interviews", "policy", "business", "society"];
+
+async function loadEditorialDomains() {
+  const response = await fetch("/data/editorial-domains.json", { cache: "no-cache" });
+  if (!response.ok) throw new Error("Editorial taxonomy unavailable");
+  const registry = await response.json();
+  const ordered = [...(registry.categories || [])].sort((a, b) => (a.order || 999) - (b.order || 999));
+  categories = ["all", ...ordered.map(item => item.id)];
+  ordered.forEach(item => {
+    if (item.label?.en) COPY.en.filters[item.id] = item.label.en;
+    if (item.label?.zh) COPY.zh.filters[item.id] = item.label.zh;
+  });
+}
 const $ = (selector) => document.querySelector(selector);
 const $$ = (selector) => [...document.querySelectorAll(selector)];
 
@@ -296,6 +308,15 @@ function coverGeometry(category) {
         <path class="cover-line" d="M430 105v245"/>
         <circle class="cover-orange" cx="430" cy="378" r="38"/>
         <rect class="cover-orange" x="172" y="224" width="106" height="106"/>
+      </g>`,
+    biotech: `
+      <g transform="translate(570 105)">
+        <path class="cover-line cover-line-heavy" d="M45 0c370 90 370 330 0 420M405 0C35 90 35 330 405 420"/>
+        <path class="cover-line" d="M92 55h266M45 140h360M45 280h360M92 365h266"/>
+        <circle class="cover-muted" cx="92" cy="55" r="24"/>
+        <circle class="cover-muted" cx="358" cy="55" r="24"/>
+        <circle class="cover-orange" cx="45" cy="280" r="34"/>
+        <circle class="cover-orange" cx="405" cy="280" r="34"/>
       </g>`,
     open_source: `
       <g transform="translate(610 105)">
@@ -877,4 +898,4 @@ window.setInterval(refreshFeedIfStale, 5 * 60_000);
 
 setLocale(state.locale);
 renderInstallSteps();
-loadFeed();
+loadEditorialDomains().catch(() => {}).finally(() => loadFeed());
