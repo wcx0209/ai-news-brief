@@ -7,6 +7,7 @@ const COPY = {
     eyebrow: "DAILY AI NEWS · INDUSTRY SIGNALS · ANALYSIS", tagline: "What’s next,<br>made visible.",
     promise: "AI news today, ranked by importance across models, companies, startups, research, open source, policy, business, and society.",
     loading: "Loading today’s brief…", updated: "Updated", stories: "stories", dailyBrief: "AI News Today",
+    refreshFeed: "Refresh", refreshingFeed: "Refreshing…",
     filters: { all: "All", models: "Models", company: "Company", startups: "Startups", research: "Research", academia: "Academia", open_source: "Open Source", interviews: "Interviews", policy: "Policy", business: "Business", society: "Society" }, importance: "Importance", published: "Published",
     expandSummary: "Expand full summary", collapseSummary: "Collapse summary", share: "Share", like: "Like", comments: "Comments",
     commentPlaceholder: "Add to the conversation…", commentSubmit: "Post", commentSending: "Posting…", commentEmpty: "No comments yet. Start the conversation.",
@@ -43,6 +44,7 @@ const COPY = {
     eyebrow: "AI 新闻 · 人工智能行业动态 · 趋势洞察", tagline: "看见<br>下一步。",
     promise: "每日AI资讯与全球AI新闻聚合，按重要性追踪模型、公司、创业、研究、开源、政策、商业与社会动态。",
     loading: "正在载入今日简报…", updated: "更新于", stories: "条内容", dailyBrief: "今日 AI 新闻",
+    refreshFeed: "刷新", refreshingFeed: "正在刷新…",
     filters: { all: "全部", models: "模型", company: "公司", startups: "创业", research: "研究", academia: "学术", open_source: "开源", interviews: "访谈", policy: "政策", business: "商业", society: "社会" }, importance: "重要性", published: "发布",
     expandSummary: "展开全文", collapseSummary: "收起全文", share: "分享", like: "点赞", comments: "评论",
     commentPlaceholder: "加入讨论……", commentSubmit: "发布", commentSending: "正在发布……", commentEmpty: "还没有评论，来说第一句。",
@@ -719,15 +721,16 @@ $$('[data-filter-link]').forEach(link => link.addEventListener("click", () => { 
 
 let lastFeedRequestAt = 0;
 
-async function loadFeed({ background = false } = {}) {
+async function loadFeed({ background = false, force = false } = {}) {
   lastFeedRequestAt = Date.now();
   try {
-    const response = await fetch("/data/latest.json", { cache: "no-store", credentials: "omit" });
+    const endpoint = force ? `/data/latest.json?refresh=${Date.now()}` : "/data/latest.json";
+    const response = await fetch(endpoint, { cache: "no-store", credentials: "omit" });
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     state.feed = applyBriefWindow(await response.json());
   } catch (error) {
     $("#update-status").textContent = COPY[state.locale].error;
-    if (background && state.feed) return;
+    if (state.feed) return false;
     state.feed = { generated_at: new Date().toISOString(), items: [], demo: true };
   }
   setLocale(state.locale);
@@ -741,6 +744,7 @@ async function loadFeed({ background = false } = {}) {
       requestAnimationFrame(() => { document.documentElement.style.scrollBehavior = previousBehavior; });
     }));
   }
+  return true;
 }
 
 function refreshFeedIfStale() {
@@ -748,6 +752,25 @@ function refreshFeedIfStale() {
   if (Date.now() - lastFeedRequestAt < 60_000) return;
   loadFeed({ background: true });
 }
+
+const refreshFeedButton = $("#refresh-feed");
+
+refreshFeedButton?.addEventListener("click", async () => {
+  if (refreshFeedButton.disabled) return;
+  const label = refreshFeedButton.querySelector("span");
+  refreshFeedButton.disabled = true;
+  refreshFeedButton.classList.add("is-refreshing");
+  refreshFeedButton.setAttribute("aria-busy", "true");
+  if (label) label.textContent = COPY[state.locale].refreshingFeed;
+  try {
+    await loadFeed({ force: true });
+  } finally {
+    refreshFeedButton.disabled = false;
+    refreshFeedButton.classList.remove("is-refreshing");
+    refreshFeedButton.removeAttribute("aria-busy");
+    if (label) label.textContent = COPY[state.locale].refreshFeed;
+  }
+});
 
 const feedbackForm = $("#feedback-form");
 const feedbackMessage = $("#feedback-message");
