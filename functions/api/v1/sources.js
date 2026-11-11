@@ -8,13 +8,14 @@ export async function onRequestGet({ env, request }) {
     const sources = new Map();
     for (const article of payload.items || []) {
       const name = article.source || "Unknown source";
-      const entry = sources.get(name) || { name, article_count: 0, categories: new Set() };
+      const entry = sources.get(name) || { name, article_count: 0, domains: new Set(), categories: new Set() };
       entry.article_count += 1;
+      if (article.domain) entry.domains.add(article.domain);
       if (article.category) entry.categories.add(article.category);
       sources.set(name, entry);
     }
     const items = [...sources.values()]
-      .map((entry) => ({ ...entry, categories: [...entry.categories].sort() }))
+      .map((entry) => ({ ...entry, domains: [...entry.domains].sort(), categories: [...entry.categories].sort() }))
       .sort((a, b) => b.article_count - a.article_count || a.name.localeCompare(b.name));
     return json({ object: "list", generated_at: payload.generated_at, count: items.length, items });
   } catch {

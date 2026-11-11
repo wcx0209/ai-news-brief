@@ -125,6 +125,37 @@ def normalize_category(value, tags=None, title="", source=""):
     return "company"
 
 
+def _row_domain(row):
+    return infer_domain(
+        row.get("category"), row.get("source_category"),
+        " ".join([
+            row.get("title") or row.get("title_en") or row.get("title_zh") or "",
+            row.get("source_name") or "", " ".join(parse_tags(row.get("tags"))),
+        ]),
+    )
+
+
+def _balanced_domain_limit(items, limit, domain_getter, key_getter):
+    """Reserve one highest-ranked story per represented specialist field."""
+    if len(items) <= limit:
+        return items
+    reserved = {}
+    for item in items:  # Input is already importance-ranked.
+        domain = domain_getter(item)
+        if domain and domain != "ai" and domain not in reserved:
+            reserved[domain] = item
+    reserved_keys = {key_getter(item) for item in reserved.values()}
+    ordinary_slots = max(0, limit - len(reserved_keys))
+    selected = []
+    for item in items:
+        key = key_getter(item)
+        if key in reserved_keys or ordinary_slots > 0:
+            selected.append(item)
+            if key not in reserved_keys:
+                ordinary_slots -= 1
+    return selected[:limit]
+
+
 def select_balanced_rows(rows, limit, max_open_source, max_academia,
                          min_academia_importance, min_academia_confidence):
     """Apply source/category caps while keeping the strongest eligible rows."""
@@ -152,9 +183,10 @@ def select_balanced_rows(rows, limit, max_open_source, max_academia,
                 continue
             academia_count += 1
         selected.append(row)
-        if len(selected) >= limit:
-            break
-    return selected
+    return _balanced_domain_limit(
+        selected, limit, _row_domain,
+        lambda row: row.get("id") or row.get("url"),
+    )
 
 
 def load_previous_items(path, max_age_hours=48):
@@ -199,7 +231,7 @@ def merge_recent_items(current, previous, limit, max_github, max_academia,
         published = str(item.get("source_published_at") or item.get("published_at") or "")
         return int(item.get("importance") or 0), published
 
-    merged = []
+    eligible = []
     github_count = 0
     academia_count = 0
     for item in sorted(deduped.values(), key=rank, reverse=True):
@@ -219,10 +251,19 @@ def merge_recent_items(current, previous, limit, max_github, max_academia,
             if academia_count >= max_academia:
                 continue
             academia_count += 1
-        merged.append(item)
-        if len(merged) >= limit:
-            break
-    return merged
+        eligible.append(item)
+    return _balanced_domain_limit(
+        eligible, limit,
+        lambda item: item.get("domain") or infer_domain(
+            item.get("category"), None,
+            " ".join([
+                (item.get("en") or {}).get("title") or "",
+                (item.get("zh") or {}).get("title") or "",
+                item.get("source") or "", " ".join(item.get("tags") or []),
+            ]),
+        ),
+        lambda item: item.get("id") or item.get("url"),
+    )
 
 
 def main():

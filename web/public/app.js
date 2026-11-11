@@ -2,12 +2,14 @@ const COPY = {
   en: {
     brand: "POLYEMERGENCE", navNews: "Brief", navSignals: "Signals", navArchive: "Archive", navInsight: "Method", navFeedback: "Feedback",
     edition: "GLOBAL EDITION", latest: "LATEST INTELLIGENCE",
-    seoTitle: "AI News Today & Programmable Life | Polyemergence",
-    seoDescription: "AI news today and programmable life, ranked by importance. Follow models, companies, research, biotech, synthetic biology, policy, business, and society.",
-    eyebrow: "AI NEWS · BIOTECH & PROGRAMMABLE LIFE · FORESIGHT", tagline: "What’s next,<br>made visible.",
-    promise: "Essential signals across artificial intelligence, biotechnology, and programmable life—ranked by structural importance.",
-    loading: "Loading today’s brief…", updated: "Updated", stories: "stories", dailyBrief: "AI & Programmable Life",
+    seoTitle: "Emerging Technology News & Foresight | Polyemergence",
+    seoDescription: "Daily intelligence on AI, programmable life, energy, robotics, quantum, space, materials, neurotechnology, climate, agrifood, and advanced manufacturing.",
+    eyebrow: "EMERGING TECHNOLOGY · DAILY INTELLIGENCE · FORESIGHT", tagline: "What’s next,<br>made visible.",
+    promise: "Essential signals across the technologies reshaping life, industry, energy, and the physical world—ranked by structural importance.",
+    loading: "Loading today’s brief…", updated: "Updated", stories: "stories", dailyBrief: "Emerging Intelligence",
     refreshFeed: "Refresh", refreshingFeed: "Refreshing…",
+    domainGroup: "Fields", angleGroup: "Story angle", allDomains: "All fields", allAngles: "All angles",
+    domainFilters: { all: "All fields" },
     filters: { all: "All", models: "Models", company: "Company", startups: "Startups", research: "Research", academia: "Academia", biotech: "Programmable Life", open_source: "Open Source", interviews: "Interviews", policy: "Policy", business: "Business", society: "Society" }, importance: "Importance", published: "Published",
     expandSummary: "Expand full summary", collapseSummary: "Collapse summary", share: "Share", like: "Like", comments: "Comments",
     commentPlaceholder: "Add to the conversation…", commentSubmit: "Post", commentSending: "Posting…", commentEmpty: "No comments yet. Start the conversation.",
@@ -34,17 +36,19 @@ const COPY = {
     installIntro: "Open Polyemergence like an app, directly from your phone.", installDone: "Got it",
     installIosSteps: ["Open this page in Safari.", "Tap the Share button in the browser toolbar.", "Choose “Add to Home Screen”, then tap “Add”."],
     installGenericSteps: ["Open your browser menu.", "Choose “Install app” or “Add to Home screen”.", "Confirm to place the Polyemergence icon on your device."],
-    footer: "Independent intelligence on AI and programmable life."
+    footer: "Independent intelligence on emerging technologies and the systems they reshape."
   },
   zh: {
     brand: "多重涌现", navNews: "简报", navSignals: "信号", navArchive: "归档", navInsight: "方法", navFeedback: "反馈",
     edition: "全球版", latest: "最新情报",
-    seoTitle: "AI新闻与可编程生命｜每日人工智能与生物科技资讯｜多重涌现",
-    seoDescription: "每日AI新闻与可编程生命情报，按重要性筛选模型、公司、研究、生物技术、合成生物、政策、商业与社会动态。",
-    eyebrow: "AI 新闻 · 生物技术与可编程生命 · 趋势洞察", tagline: "看见<br>下一步。",
-    promise: "聚合人工智能、生物技术与可编程生命的重要信号，并按结构性影响排序。",
-    loading: "正在载入今日简报…", updated: "更新于", stories: "条内容", dailyBrief: "AI 与可编程生命",
+    seoTitle: "前沿科技新闻与未来趋势｜多重涌现 Polyemergence",
+    seoDescription: "每日追踪人工智能、可编程生命、能源、机器人、量子、太空、新材料、神经科技、气候、农业食品与新制造。",
+    eyebrow: "前沿科技 · 每日情报 · 趋势洞察", tagline: "看见<br>下一步。",
+    promise: "聚合正在重塑生命、产业、能源与物理世界的重要信号，并按结构性影响排序。",
+    loading: "正在载入今日简报…", updated: "更新于", stories: "条内容", dailyBrief: "涌现情报",
     refreshFeed: "刷新", refreshingFeed: "正在刷新…",
+    domainGroup: "领域", angleGroup: "报道分类", allDomains: "全部领域", allAngles: "全部分类",
+    domainFilters: { all: "全部领域" },
     filters: { all: "全部", models: "模型", company: "公司", startups: "创业", research: "研究", academia: "学术", biotech: "可编程生命", open_source: "开源", interviews: "访谈", policy: "政策", business: "商业", society: "社会" }, importance: "重要性", published: "发布",
     expandSummary: "展开全文", collapseSummary: "收起全文", share: "分享", like: "点赞", comments: "评论",
     commentPlaceholder: "加入讨论……", commentSubmit: "发布", commentSending: "正在发布……", commentEmpty: "还没有评论，来说第一句。",
@@ -71,24 +75,31 @@ const COPY = {
     installIntro: "像打开 App 一样，从手机桌面直接进入多重涌现。", installDone: "知道了",
     installIosSteps: ["请使用 Safari 打开本页面。", "点击浏览器工具栏中的“分享”按钮。", "选择“添加到主屏幕”，再点击“添加”。"],
     installGenericSteps: ["打开浏览器菜单。", "选择“安装应用”或“添加到主屏幕”。", "确认后，多重涌现图标会出现在设备桌面。"],
-    footer: "面向变化世界的 AI 与可编程生命独立情报。"
+    footer: "面向变化世界的前沿科技独立情报。"
   }
 };
 
 const routeLocale = location.pathname.split("/").filter(Boolean)[0];
 const state = {
   locale: routeLocale === "zh" ? "zh" : routeLocale === "en" ? "en" : (navigator.language.startsWith("zh") ? "zh" : "en"),
-  category: "all", feed: null, interactions: {}, viewer: null, openComments: new Set()
+  domain: "all", category: "all", feed: null, interactions: {}, viewer: null, openComments: new Set()
 };
-let categories = ["all", "models", "company", "startups", "research", "academia", "biotech", "open_source", "interviews", "policy", "business", "society"];
+let domains = ["all", "ai", "programmable_life"];
+let categories = ["all", "models", "company", "startups", "research", "academia", "open_source", "interviews", "policy", "business", "society"];
 
 async function loadEditorialDomains() {
   const response = await fetch("/data/editorial-domains.json", { cache: "no-cache" });
   if (!response.ok) throw new Error("Editorial taxonomy unavailable");
   const registry = await response.json();
-  const ordered = [...(registry.categories || [])].sort((a, b) => (a.order || 999) - (b.order || 999));
-  categories = ["all", ...ordered.map(item => item.id)];
-  ordered.forEach(item => {
+  const orderedDomains = [...(registry.domains || [])].sort((a, b) => (a.order || 999) - (b.order || 999));
+  const orderedCategories = [...(registry.categories || [])].filter(item => item.is_angle !== false).sort((a, b) => (a.order || 999) - (b.order || 999));
+  domains = ["all", ...orderedDomains.map(item => item.id)];
+  categories = ["all", ...orderedCategories.map(item => item.id)];
+  orderedDomains.forEach(item => {
+    if (item.short_label?.en || item.label?.en) COPY.en.domainFilters[item.id] = item.short_label?.en || item.label.en;
+    if (item.short_label?.zh || item.label?.zh) COPY.zh.domainFilters[item.id] = item.short_label?.zh || item.label.zh;
+  });
+  orderedCategories.forEach(item => {
     if (item.label?.en) COPY.en.filters[item.id] = item.label.en;
     if (item.label?.zh) COPY.zh.filters[item.id] = item.label.zh;
   });
@@ -249,11 +260,19 @@ function categoryFor(item) {
   return "company";
 }
 
+function domainFor(item) {
+  const value = String(item.domain || "").toLowerCase().replace(/[ -]/g, "_");
+  if (domains.includes(value)) return value;
+  if (String(item.category || "").toLowerCase() === "biotech") return "programmable_life";
+  return "ai";
+}
+
+function matchesDomain(item, domain) {
+  return domain === "all" || domainFor(item) === domain;
+}
+
 function matchesFilter(item, filter) {
   if (filter === "all") return true;
-  if (filter === "biotech") {
-    return item.domain === "programmable_life" || categoryFor(item) === "biotech";
-  }
   return categoryFor(item) === filter;
 }
 
@@ -530,7 +549,7 @@ function renderFeed() {
   if (!state.feed) return;
   const items = state.feed.items || [];
   renderHero(items);
-  const filtered = items.filter(item => matchesFilter(item, state.category));
+  const filtered = items.filter(item => matchesDomain(item, state.domain) && matchesFilter(item, state.category));
   renderLead(filtered[0]);
   $("#story-grid").innerHTML = filtered.slice(1).map(renderCard).join("");
   $("#story-grid").hidden = filtered.length < 2;
@@ -715,11 +734,22 @@ document.addEventListener("submit", async event => {
 
 function renderFilters() {
   const items = state.feed?.items || [];
-  const available = categories.filter(category => category === "all" || items.some(item => matchesFilter(item, category)));
-  if (!available.includes(state.category)) state.category = "all";
-  $("#filters").innerHTML = available.map(category => {
-    const count = items.filter(item => matchesFilter(item, category)).length;
-    return `<button type="button" data-category="${category}" aria-pressed="${category === state.category}">${COPY[state.locale].filters[category]} <span>${count}</span></button>`;
+  const availableDomains = domains.filter(domain => domain === "all" || items.some(item => matchesDomain(item, domain)));
+  if (!availableDomains.includes(state.domain)) state.domain = "all";
+  $("#domain-filters").innerHTML = availableDomains.map(domain => {
+    const count = items.filter(item => matchesDomain(item, domain)).length;
+    const label = domain === "all" ? COPY[state.locale].allDomains : COPY[state.locale].domainFilters[domain];
+    return `<button type="button" data-domain="${domain}" aria-pressed="${domain === state.domain}">${escapeHtml(label)} <span>${count}</span></button>`;
+  }).join("");
+  $$('[data-domain]').forEach(button => button.addEventListener("click", () => { state.domain = button.dataset.domain; renderFilters(); renderFeed(); }));
+
+  const scopedItems = items.filter(item => matchesDomain(item, state.domain));
+  const availableCategories = categories.filter(category => category === "all" || scopedItems.some(item => matchesFilter(item, category)));
+  if (!availableCategories.includes(state.category)) state.category = "all";
+  $("#filters").innerHTML = availableCategories.map(category => {
+    const count = scopedItems.filter(item => matchesFilter(item, category)).length;
+    const label = category === "all" ? COPY[state.locale].allAngles : COPY[state.locale].filters[category];
+    return `<button type="button" data-category="${category}" aria-pressed="${category === state.category}">${escapeHtml(label)} <span>${count}</span></button>`;
   }).join("");
   $$('[data-category]').forEach(button => button.addEventListener("click", () => { state.category = button.dataset.category; renderFilters(); renderFeed(); }));
 }

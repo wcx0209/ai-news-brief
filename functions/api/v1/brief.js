@@ -11,6 +11,7 @@ export async function onRequestGet({ env, request }) {
       object: "list",
       generated_at: payload.generated_at,
       window_hours: result.hours,
+      domain: result.selectedDomain || null,
       category: result.selectedCategory || null,
       count: result.items.length,
       items: result.items,

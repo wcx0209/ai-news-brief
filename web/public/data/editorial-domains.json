@@ -1,15 +1,104 @@
 {
-  "version": 1,
+  "version": 2,
   "domains": [
     {
       "id": "ai",
+      "order": 10,
       "label": {"en": "Artificial Intelligence", "zh": "人工智能"},
-      "description": {"en": "Models, companies, research, policy and social impact.", "zh": "模型、公司、研究、政策及社会影响。"}
+      "short_label": {"en": "AI", "zh": "人工智能"},
+      "description": {"en": "Models, companies, research, policy and social impact.", "zh": "模型、公司、研究、政策及社会影响。"},
+      "source_categories": ["ai"],
+      "keywords": ["artificial intelligence", "machine learning", "foundation model", "large language model", "ai agent", "人工智能", "机器学习", "大模型", "智能体"]
     },
     {
       "id": "programmable_life",
+      "order": 20,
       "label": {"en": "Biotech & Programmable Life", "zh": "生物技术与可编程生命"},
-      "description": {"en": "Technologies that read, design and engineer living systems.", "zh": "读取、设计和工程化生命系统的技术。"}
+      "short_label": {"en": "Programmable Life", "zh": "可编程生命"},
+      "description": {"en": "Technologies that read, design and engineer living systems.", "zh": "读取、设计和工程化生命系统的技术。"},
+      "source_categories": ["programmable_life", "biotech"],
+      "keywords": ["biotech", "synthetic biology", "gene editing", "crispr", "genomics", "cell therapy", "protein design", "biomanufacturing", "生物技术", "合成生物", "基因编辑", "细胞治疗", "蛋白质设计", "生物制造", "可编程生命"]
+    },
+    {
+      "id": "energy_storage",
+      "order": 30,
+      "label": {"en": "Energy & Storage", "zh": "新能源与能源储存"},
+      "short_label": {"en": "Energy", "zh": "能源储存"},
+      "description": {"en": "Batteries, long-duration storage, geothermal, advanced nuclear and fusion.", "zh": "电池、长时储能、地热、先进核能与核聚变。"},
+      "source_categories": ["energy_storage", "energy"],
+      "keywords": ["energy storage", "battery", "solid-state battery", "sodium-ion", "geothermal", "small modular reactor", "nuclear fusion", "储能", "电池", "固态电池", "钠离子", "地热", "小型核反应堆", "核聚变"]
+    },
+    {
+      "id": "robotics_autonomy",
+      "order": 40,
+      "label": {"en": "Robotics & Autonomous Systems", "zh": "机器人与自主系统"},
+      "short_label": {"en": "Robotics", "zh": "机器人"},
+      "description": {"en": "Robots, drones, autonomous vehicles and adaptive physical systems.", "zh": "机器人、无人机、自动驾驶与可适应环境的实体系统。"},
+      "source_categories": ["robotics_autonomy", "robotics"],
+      "keywords": ["robotics", "humanoid robot", "industrial robot", "autonomous vehicle", "self-driving", "drone", "warehouse automation", "机器人", "人形机器人", "工业机器人", "自动驾驶", "无人机", "仓储自动化"]
+    },
+    {
+      "id": "quantum_technology",
+      "order": 50,
+      "label": {"en": "Quantum Technology", "zh": "量子技术"},
+      "short_label": {"en": "Quantum", "zh": "量子"},
+      "description": {"en": "Quantum computing, sensing, communications and precision measurement.", "zh": "量子计算、传感、通信与精密测量。"},
+      "source_categories": ["quantum_technology", "quantum"],
+      "keywords": ["quantum computing", "quantum computer", "quantum sensing", "quantum communication", "quantum network", "qubit", "量子计算", "量子传感", "量子通信", "量子网络", "量子比特"]
+    },
+    {
+      "id": "space_economy",
+      "order": 60,
+      "label": {"en": "Space Economy", "zh": "太空经济"},
+      "short_label": {"en": "Space", "zh": "太空"},
+      "description": {"en": "Launch, satellites, Earth observation, in-orbit services and manufacturing.", "zh": "发射、卫星、地球观测、在轨服务与制造。"},
+      "source_categories": ["space_economy", "space"],
+      "keywords": ["space economy", "reusable rocket", "satellite", "earth observation", "satellite internet", "in-orbit", "launch vehicle", "太空经济", "可重复使用火箭", "卫星", "地球观测", "卫星互联网", "在轨", "运载火箭"]
+    },
+    {
+      "id": "advanced_materials",
+      "order": 70,
+      "label": {"en": "Advanced Materials & Nanotechnology", "zh": "新材料与纳米技术"},
+      "short_label": {"en": "Materials", "zh": "新材料"},
+      "description": {"en": "Programmable, structural, nanoscale and low-carbon materials.", "zh": "可编程、结构、纳米与低碳材料。"},
+      "source_categories": ["advanced_materials", "materials", "nanotechnology"],
+      "keywords": ["advanced materials", "materials science", "nanotechnology", "two-dimensional material", "self-healing material", "low-carbon cement", "metamaterial", "新材料", "材料科学", "纳米技术", "二维材料", "自修复材料", "低碳水泥", "超材料"]
+    },
+    {
+      "id": "neurotechnology",
+      "order": 80,
+      "label": {"en": "Neurotechnology & Human Interfaces", "zh": "神经科技与人机接口"},
+      "short_label": {"en": "Neurotech", "zh": "神经科技"},
+      "description": {"en": "Brain-computer interfaces, neurostimulation, sensory restoration and cognition.", "zh": "脑机接口、神经刺激、感觉恢复与认知技术。"},
+      "source_categories": ["neurotechnology", "neurotech"],
+      "keywords": ["neurotechnology", "brain-computer interface", "brain machine interface", "neural interface", "neurostimulation", "neural implant", "脑机接口", "神经科技", "神经刺激", "神经植入", "感觉恢复"]
+    },
+    {
+      "id": "climate_water_environment",
+      "order": 90,
+      "label": {"en": "Climate, Water & Environmental Engineering", "zh": "气候、水与环境工程"},
+      "short_label": {"en": "Climate & Water", "zh": "气候与水"},
+      "description": {"en": "Carbon removal, water systems, industrial decarbonisation and environmental infrastructure.", "zh": "碳移除、水系统、工业脱碳与环境基础设施。"},
+      "source_categories": ["climate_water_environment", "climate", "environment"],
+      "keywords": ["carbon removal", "direct air capture", "desalination", "water technology", "industrial decarbonization", "green steel", "climate engineering", "碳移除", "直接空气捕集", "海水淡化", "水技术", "工业脱碳", "绿色钢铁", "气候工程"]
+    },
+    {
+      "id": "agrifood_technology",
+      "order": 100,
+      "label": {"en": "Agriculture & Food Technology", "zh": "农业与食品科技"},
+      "short_label": {"en": "AgriFood", "zh": "农业食品"},
+      "description": {"en": "Precision fermentation, resilient crops, agricultural automation and alternative proteins.", "zh": "精准发酵、韧性作物、农业自动化与替代蛋白。"},
+      "source_categories": ["agrifood_technology", "agrifood", "food_technology"],
+      "keywords": ["agritech", "foodtech", "precision fermentation", "cultivated meat", "gene-edited crop", "agricultural robot", "alternative protein", "农业科技", "食品科技", "精准发酵", "培养肉", "基因编辑作物", "农业机器人", "替代蛋白"]
+    },
+    {
+      "id": "advanced_manufacturing",
+      "order": 110,
+      "label": {"en": "Advanced Manufacturing & Industrial Infrastructure", "zh": "新制造与产业基础设施"},
+      "short_label": {"en": "Manufacturing", "zh": "新制造"},
+      "description": {"en": "Additive manufacturing, digital twins, advanced packaging and automated laboratories.", "zh": "增材制造、数字孪生、先进封装与自动化实验室。"},
+      "source_categories": ["advanced_manufacturing", "manufacturing"],
+      "keywords": ["advanced manufacturing", "additive manufacturing", "3d printing", "digital twin", "advanced packaging", "automated laboratory", "smart factory", "新制造", "先进制造", "增材制造", "3d打印", "数字孪生", "先进封装", "自动化实验室", "智能工厂"]
     }
   ],
   "categories": [
@@ -18,7 +107,7 @@
     {"id":"startups","domain":"ai","order":30,"label":{"en":"Startups","zh":"创业"},"title":{"en":"AI Startup News: Funding, Products & Venture Capital","zh":"AI创业资讯：融资、产品与风险投资"},"keywords":["startup","venture","seed round","series a","初创","创业","融资轮"]},
     {"id":"research","domain":"ai","order":40,"label":{"en":"Research","zh":"研究"},"title":{"en":"AI Research News: Papers, Benchmarks & Breakthroughs","zh":"AI研究资讯：论文、基准与技术突破"},"keywords":["research","paper","study","benchmark","论文","研究","评测","基准"]},
     {"id":"academia","domain":"ai","order":50,"label":{"en":"Academia","zh":"学术"},"title":{"en":"AI Academic News: University Research & Papers","zh":"AI学术资讯：高校研究与前沿论文"},"keywords":["arxiv","academic","university","bair","csail","预印本","学术"]},
-    {"id":"biotech","domain":"programmable_life","order":60,"label":{"en":"Programmable Life","zh":"可编程生命"},"title":{"en":"Biotech & Programmable Life: Synthetic Biology, Gene Editing & More","zh":"生物技术与可编程生命：合成生物、基因编辑与前沿进展"},"keywords":["biotech","biotechnology","synthetic biology","gene editing","crispr","genomics","cell therapy","protein design","programmable life","生物技术","合成生物","基因编辑","基因组","细胞治疗","蛋白质设计","可编程生命"]},
+    {"id":"biotech","domain":"programmable_life","order":60,"is_angle":false,"label":{"en":"Programmable Life","zh":"可编程生命"},"title":{"en":"Biotech & Programmable Life: Synthetic Biology, Gene Editing & More","zh":"生物技术与可编程生命：合成生物、基因编辑与前沿进展"},"keywords":["biotech","biotechnology","synthetic biology","gene editing","crispr","genomics","cell therapy","protein design","programmable life","生物技术","合成生物","基因编辑","基因组","细胞治疗","蛋白质设计","可编程生命"]},
     {"id":"open_source","domain":"ai","order":70,"label":{"en":"Open Source","zh":"开源"},"title":{"en":"Open Source AI News: Models, Tools & GitHub Projects","zh":"开源AI资讯：模型、工具与GitHub项目"},"keywords":["open source","github","开源","开放权重"]},
     {"id":"interviews","domain":"ai","order":80,"label":{"en":"Interviews","zh":"访谈"},"title":{"en":"AI Interviews: Founders, Researchers & Industry Leaders","zh":"AI深度访谈：创始人、研究者与行业领袖"},"keywords":["interview","podcast","conversation","访谈","对谈","播客"]},
     {"id":"policy","domain":"ai","order":90,"label":{"en":"Policy","zh":"政策"},"title":{"en":"AI Policy News: Regulation, Safety & Government","zh":"AI政策与监管：安全、法规与政府动态"},"keywords":["policy","regulation","law","government","治理","监管","政策","法规"]},

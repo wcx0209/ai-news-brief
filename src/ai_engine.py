@@ -137,7 +137,7 @@ Score the item with five separate integer fields from 0 to 100:
 - momentum_score: observable attention and rate of adoption or discussion. Popularity belongs here, not in importance.
 
 Set importance_score to round(signal_score * 0.35 + structure_score * 0.35 + consequence_score * 0.30).
-Company fame, source prestige, follower counts, likes, comments, stars, and trending rank MUST NOT directly raise signal_score, structure_score, consequence_score, or importance_score. They may affect confidence_score or momentum_score only. Preserve the editorial relevance rule: AI or biotechnology/programmable life must be a core subject; unrelated content must receive importance_score 0.
+Company fame, source prestige, follower counts, likes, comments, stars, and trending rank MUST NOT directly raise signal_score, structure_score, consequence_score, or importance_score. They may affect confidence_score or momentum_score only. Preserve the editorial relevance rule: at least one registered Polyemergence domain must be a core subject; unrelated content must receive importance_score 0.
 Include all five component fields plus importance_score in the JSON output.
 """ + taxonomy_prompt()
         

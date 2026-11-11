@@ -38,6 +38,8 @@ export function category(value) {
   return /^[a-z][a-z0-9_]{1,31}$/.test(normalized) ? normalized : "";
 }
 
+export const domain = category;
+
 export async function loadArticles(env, request) {
   if (!env?.ASSETS?.fetch) {
     throw new Error("Static asset binding is unavailable");
@@ -76,21 +78,19 @@ export function publicArticle(article, locale = "en", includeFull = false) {
 export function filterArticles(payload, params, { defaultHours = 48 } = {}) {
   const lang = language(params.get("lang"));
   const selectedCategory = category(params.get("category"));
+  const selectedDomain = domain(params.get("domain"));
   const limit = clampInt(params.get("limit"), 20, 1, 100);
   const hours = clampInt(params.get("hours"), defaultHours, 1, 8760);
   const generatedAt = Date.parse(payload.generated_at) || Date.now();
   const cutoff = generatedAt - hours * 60 * 60 * 1000;
   const items = (payload.items || [])
-    .filter((item) => !selectedCategory || (
-      selectedCategory === "biotech"
-        ? item.domain === "programmable_life" || item.category === "biotech"
-        : item.category === selectedCategory
-    ))
+    .filter((item) => !selectedDomain || (item.domain || "ai") === selectedDomain)
+    .filter((item) => !selectedCategory || item.category === selectedCategory)
     .filter((item) => Date.parse(item.source_published_at || item.published_at) >= cutoff)
     .sort((a, b) => (b.importance - a.importance) || Date.parse(b.published_at) - Date.parse(a.published_at))
     .slice(0, limit)
     .map((item) => publicArticle(item, lang, false));
-  return { lang, selectedCategory, limit, hours, items };
+  return { lang, selectedCategory, selectedDomain, limit, hours, items };
 }
 
 function searchableText(article, lang) {
@@ -98,7 +98,7 @@ function searchableText(article, lang) {
   const secondary = article[lang === "en" ? "zh" : "en"] || {};
   return [
     primary.title, primary.summary, primary.full_summary,
-    secondary.title, article.source, article.category, ...(article.tags || []),
+    secondary.title, article.source, article.domain, article.category, ...(article.tags || []),
   ].join(" ").toLocaleLowerCase();
 }
 

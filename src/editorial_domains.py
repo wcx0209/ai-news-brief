@@ -18,6 +18,23 @@ def categories():
     return sorted(registry()["categories"], key=lambda item: item.get("order", 999))
 
 
+def domains():
+    return sorted(registry()["domains"], key=lambda item: item.get("order", 999))
+
+
+def domain_ids():
+    return [item["id"] for item in domains()]
+
+
+def source_category_domain(value):
+    normalized = str(value or "").strip().lower().replace("-", "_")
+    for item in domains():
+        aliases = {item["id"], *item.get("source_categories", [])}
+        if normalized in aliases:
+            return item["id"]
+    return None
+
+
 def category_ids():
     return [item["id"] for item in categories()]
 
@@ -40,24 +57,60 @@ def category_domain(category):
 def infer_domain(category=None, source_category=None, text=""):
     """Resolve the broad editorial domain independently of the story angle."""
     for value in (source_category, category):
-        if value and category_domain(str(value).strip().lower().replace("-", "_")) != "ai":
-            return category_domain(str(value).strip().lower().replace("-", "_"))
-    matched = match_category(text)
-    return category_domain(matched) if matched else "ai"
+        explicit = source_category_domain(value)
+        if explicit:
+            return explicit
+        mapped = category_domain(str(value or "").strip().lower().replace("-", "_"))
+        if mapped != "ai":
+            return mapped
+    matched = match_domain(text)
+    if matched:
+        return matched
+    matched_category = match_category(text)
+    return category_domain(matched_category) if matched_category else "ai"
+
+
+def _contains_keyword(value, keyword):
+    term = keyword.lower()
+    # Unicode \w treats adjacent Han characters as one word, so ASCII-style
+    # boundaries incorrectly reject phrases such as "脑机接口恢复交流能力".
+    if re.search(r"[\u3400-\u9fff]", term):
+        return term in value
+    return bool(re.search(r"(?<!\w)" + re.escape(term) + r"(?!\w)", value))
+
+
+def match_domain(text):
+    value = str(text or "").lower()
+    # AI is the platform default and has intentionally broad vocabulary, so
+    # test every specialist field first to preserve cross-domain signals.
+    for item in [domain for domain in domains() if domain["id"] != "ai"]:
+        for keyword in item.get("keywords", []):
+            if _contains_keyword(value, keyword):
+                return item["id"]
+    return None
 
 
 def match_category(text):
     value = str(text or "").lower()
     for item in categories():
         for keyword in item.get("keywords", []):
-            if re.search(r"(?<!\w)" + re.escape(keyword.lower()) + r"(?!\w)", value):
+            if _contains_keyword(value, keyword):
                 return item["id"]
     return None
 
 
 def taxonomy_prompt():
-    lines = []
-    for item in categories():
+    domain_lines = []
+    for item in domains():
         terms = ", ".join(item.get("keywords", [])[:6])
-        lines.append(f'- {item["id"]}: {item["label"]["en"]} ({terms})')
-    return "\n# Current editorial taxonomy\n" + "\n".join(lines)
+        domain_lines.append(f'- {item["id"]}: {item["label"]["en"]} ({terms})')
+    category_lines = []
+    for item in categories():
+        if item.get("is_angle") is False:
+            continue
+        terms = ", ".join(item.get("keywords", [])[:6])
+        category_lines.append(f'- {item["id"]}: {item["label"]["en"]} ({terms})')
+    return (
+        "\n# Current editorial domains\n" + "\n".join(domain_lines)
+        + "\n# Story angles (category must be one of these)\n" + "\n".join(category_lines)
+    )

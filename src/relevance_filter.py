@@ -1,8 +1,8 @@
 """Deterministic editorial relevance gates for broad feeds.
 
 Topic-labelled RSS feeds can still contain cross-promoted general business or
-technology stories.  These sources must carry an explicit AI signal in the
-headline before an item reaches the LLM or a public export.
+technology stories. These broad sources must carry an explicit registered-field
+signal in the headline before an item reaches the LLM or a public export.
 """
 
 import re
@@ -48,7 +48,24 @@ EDITORIAL_TITLE_PATTERN = re.compile(
     r"AI时代|AI 时代|Claude Code|Codex|AGI|模型训练|推理模型|数据中心|"
     r"深度求索|通义千问|豆包|文心一言|混元|盘古|百川|智谱|"
     r"biotech(?:nology)?|synthetic biology|gene edit(?:ing)?|crispr|genomics?|"
-    r"cell therapy|protein design|programmable life|生物技术|合成生物|基因编辑|基因组|细胞治疗|蛋白质设计|可编程生命)",
+    r"cell therapy|protein design|programmable life|biomanufacturing|"
+    r"energy storage|solid.state batter(?:y|ies)|sodium.ion|geothermal|small modular reactor|nuclear fusion|"
+    r"quantum comput(?:ing|er)|quantum sens(?:ing|or)|quantum communication|quantum network|qubit|"
+    r"reusable rocket|satellite internet|earth observation|in.orbit|launch vehicle|space economy|"
+    r"advanced materials?|materials science|nanotechnology|two.dimensional materials?|self.healing materials?|metamaterials?|"
+    r"neurotechnology|brain.computer interface|brain.machine interface|neural interface|neurostimulation|neural implant|"
+    r"carbon removal|direct air capture|desalination|water technology|green steel|climate engineering|"
+    r"agritech|foodtech|precision fermentation|cultivated meat|gene.edited crops?|agricultural robots?|alternative proteins?|"
+    r"advanced manufacturing|additive manufacturing|3d print(?:ing|er)|digital twin|advanced packaging|smart factory|"
+    r"生物技术|合成生物|基因编辑|基因组|细胞治疗|蛋白质设计|生物制造|可编程生命|"
+    r"储能|固态电池|钠离子|地热|小型核反应堆|核聚变|"
+    r"量子计算|量子传感|量子通信|量子网络|量子比特|"
+    r"太空经济|可重复使用火箭|卫星互联网|地球观测|在轨|运载火箭|"
+    r"新材料|材料科学|纳米技术|二维材料|自修复材料|超材料|"
+    r"神经科技|脑机接口|神经刺激|神经植入|感觉恢复|"
+    r"碳移除|直接空气捕集|海水淡化|水技术|工业脱碳|绿色钢铁|气候工程|"
+    r"农业科技|食品科技|精准发酵|培养肉|基因编辑作物|农业机器人|替代蛋白|"
+    r"新制造|先进制造|增材制造|3d打印|数字孪生|先进封装|自动化实验室|智能工厂)",
 )
 
 # Compatibility for existing imports and tests.

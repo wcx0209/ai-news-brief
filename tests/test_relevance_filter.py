@@ -31,6 +31,10 @@ class RelevanceFilterTests(unittest.TestCase):
             passes_source_ai_filter("Anthropic News", "Introducing Fable 5.2")
         )
 
+    def test_keeps_registered_non_ai_fields(self):
+        self.assertTrue(passes_source_ai_filter("US NIST", "New quantum sensing network reaches field trial"))
+        self.assertTrue(passes_source_ai_filter("US NIST", "Advanced manufacturing method cuts alloy waste"))
+
 
 if __name__ == "__main__":
     unittest.main()

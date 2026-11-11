@@ -3,7 +3,7 @@ import {
   METHODOLOGY, publicArticle, searchArticles,
 } from "./_lib/public-data.js";
 
-const SERVER = { name: "polyemergence", title: "Polyemergence Emerging Intelligence", version: "1.1.0" };
+const SERVER = { name: "polyemergence", title: "Polyemergence Emerging Intelligence", version: "1.2.0" };
 const PROTOCOL_VERSIONS = ["2026-07-28", "2025-11-25"];
 const HEADERS = {
   "Access-Control-Allow-Origin": "*",
@@ -20,7 +20,7 @@ const TOOLS = [
   {
     name: "search",
     title: "Search Polyemergence",
-    description: "Search Polyemergence AI, biotech, programmable-life news and permanent archives. Returns canonical, citation-ready article URLs.",
+    description: "Search Polyemergence emerging-technology news and permanent archives across eleven registered fields. Returns canonical, citation-ready article URLs.",
     inputSchema: {
       type: "object",
       properties: {
@@ -49,12 +49,13 @@ const TOOLS = [
   {
     name: "get_daily_brief",
     title: "Get the latest Polyemergence brief",
-    description: "Get the latest AI and programmable-life intelligence ranked by importance, optionally filtered by a registered category.",
+    description: "Get the latest emerging-technology intelligence ranked by importance, optionally filtered by field and story angle.",
     inputSchema: {
       type: "object",
       properties: {
         language: { type: "string", enum: ["en", "zh"], default: "en" },
-        category: { type: "string", description: "A category slug from the public editorial-domain registry, such as models or biotech." },
+        domain: { type: "string", description: "A field slug from the public registry, such as ai, programmable_life, or quantum_technology." },
+        category: { type: "string", description: "A story-angle slug from the public registry, such as research, business, or policy." },
         hours: { type: "integer", minimum: 1, maximum: 168, default: 48 },
         limit: { type: "integer", minimum: 1, maximum: 50, default: 20 },
       },
@@ -122,6 +123,7 @@ async function callTool(name, args, env, request) {
       hours: String(clampInt(args.hours, 48, 1, 168)),
       limit: String(clampInt(args.limit, 20, 1, 50)),
     });
+    if (args.domain) params.set("domain", args.domain);
     if (args.category) params.set("category", args.category);
     const result = filterArticles(payload, params);
     return toolResult({ generated_at: payload.generated_at, window_hours: result.hours, count: result.items.length, items: result.items });

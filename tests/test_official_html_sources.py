@@ -9,10 +9,13 @@ from bs4 import BeautifulSoup
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(ROOT, "src"))
 
-from rss_fetcher import RSSFetcher
+from rss_fetcher import OFFICIAL_HTML_INDEX_RULES, RSSFetcher
 
 
 class OfficialHtmlSourceTests(unittest.TestCase):
+    def test_ibm_quantum_uses_first_party_index_adapter(self):
+        self.assertIn("https://www.ibm.com/quantum/blog", OFFICIAL_HTML_INDEX_RULES)
+
     def test_discovers_same_domain_articles_and_rejects_navigation(self):
         soup = BeautifulSoup(
             """

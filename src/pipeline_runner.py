@@ -129,7 +129,7 @@ def _process_single_entry(entry, sources, source_map, user_db, ai_engine, vector
     logging.debug(f"{log_prefix}Processing entry: {title[:80]}  ->  {url}")
 
     if not _passes_broad_source_ai_filter(_rss_name, title):
-        logging.info(f"{log_prefix}Skipping broad-feed story without an AI or biotech signal in the title: {title}")
+        logging.info(f"{log_prefix}Skipping broad-feed story without a registered Polyemergence field signal in the title: {title}")
         fetch_stats.record_skip(rss_url, rss_desc, 'broad_feed_not_relevant')
         return 0
 
@@ -435,7 +435,7 @@ def _process_single_entry(entry, sources, source_map, user_db, ai_engine, vector
 
     # 领域相关性硬过滤：AI 或生物技术必须是核心主题，否则直接丢弃。
     if ai_importance_score == 0:
-        logging.info(f"{log_prefix}Outside AI/biotech scope (score=0). Skipping. URL: {url}")
+        logging.info(f"{log_prefix}Outside registered Polyemergence fields (score=0). Skipping. URL: {url}")
         fetch_stats.record_skip(rss_url, rss_desc, 'not_editorially_relevant')
         return 0
 

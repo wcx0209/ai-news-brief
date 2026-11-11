@@ -2,8 +2,8 @@
   "openapi": "3.1.0",
   "info": {
     "title": "Polyemergence Public API",
-    "version": "1.1.0",
-    "description": "Read-only bilingual AI and programmable-life intelligence, archives, sources, and Polyemergence Method scores from PolyEmergence Pte Ltd. Preserve canonical URLs when citing results.",
+    "version": "1.2.0",
+    "description": "Read-only bilingual emerging-technology intelligence, archives, sources, and Polyemergence Method scores from PolyEmergence Pte Ltd. Preserve canonical URLs when citing results.",
     "contact": { "url": "https://polyemergence.com/en/#feedback" }
   },
   "servers": [{ "url": "https://polyemergence.com/api/v1" }],
@@ -11,9 +11,10 @@
     "/brief": {
       "get": {
         "operationId": "getDailyBrief",
-        "summary": "Get the latest AI and programmable-life intelligence ranked by importance",
+        "summary": "Get the latest emerging-technology intelligence ranked by importance",
         "parameters": [
           { "$ref": "#/components/parameters/lang" },
+          { "$ref": "#/components/parameters/domain" },
           { "$ref": "#/components/parameters/category" },
           { "name": "hours", "in": "query", "schema": { "type": "integer", "minimum": 1, "maximum": 8760, "default": 48 } },
           { "$ref": "#/components/parameters/limit" }
@@ -65,7 +66,8 @@
   "components": {
     "parameters": {
       "lang": { "name": "lang", "in": "query", "schema": { "type": "string", "enum": ["en", "zh"], "default": "en" } },
-      "category": { "name": "category", "in": "query", "description": "Category slug from /data/editorial-domains.json", "schema": { "type": "string", "pattern": "^[a-z][a-z0-9_]{1,31}$", "examples": ["models", "biotech"] } },
+      "domain": { "name": "domain", "in": "query", "description": "Field slug from /data/editorial-domains.json", "schema": { "type": "string", "enum": ["ai", "programmable_life", "energy_storage", "robotics_autonomy", "quantum_technology", "space_economy", "advanced_materials", "neurotechnology", "climate_water_environment", "agrifood_technology", "advanced_manufacturing"] } },
+      "category": { "name": "category", "in": "query", "description": "Story-angle slug from /data/editorial-domains.json", "schema": { "type": "string", "pattern": "^[a-z][a-z0-9_]{1,31}$", "examples": ["research", "business", "policy"] } },
       "limit": { "name": "limit", "in": "query", "schema": { "type": "integer", "minimum": 1, "maximum": 100, "default": 20 } }
     },
     "schemas": {
@@ -82,7 +84,7 @@
         "properties": {
           "id": { "type": "string" }, "title": { "type": "string" }, "summary": { "type": "string" }, "full_summary": { "type": "string" },
           "source": { "type": "string" }, "source_url": { "type": "string", "format": "uri" }, "canonical_url": { "type": "string", "format": "uri" },
-          "language": { "type": "string" }, "category": { "type": "string" }, "domain": { "type": "string", "enum": ["ai", "programmable_life"] }, "importance": { "type": "integer" }, "scores": { "$ref": "#/components/schemas/Scores" },
+          "language": { "type": "string" }, "category": { "type": "string" }, "domain": { "type": "string", "enum": ["ai", "programmable_life", "energy_storage", "robotics_autonomy", "quantum_technology", "space_economy", "advanced_materials", "neurotechnology", "climate_water_environment", "agrifood_technology", "advanced_manufacturing"] }, "importance": { "type": "integer" }, "scores": { "$ref": "#/components/schemas/Scores" },
           "published_at": { "type": "string", "format": "date-time" }, "source_published_at": { "type": "string", "format": "date-time" },
           "tags": { "type": "array", "items": { "type": "string" } }
         }

@@ -144,6 +144,36 @@ SOURCES = [
     ("https://www.fiercebiotech.com/rss/biotech/xml", "Fierce Biotech", "Biotechnology platforms, clinical science, companies, and financing", "biotech", 82),
     ("https://www.biospace.com/drug-development.rss", "BioSpace Drug Development", "Drug-development platforms, translational science, and biotechnology industry reporting", "biotech", 76),
 
+    # The other nine long-horizon Polyemergence fields. Two focused sources
+    # per field provide an intentionally small, high-signal launch set; domain
+    # and story angle remain separate in the public taxonomy.
+    ("https://news.mit.edu/rss/topic/energy", "MIT Energy", "[FIRST_PARTY] Energy storage, batteries, nuclear, geothermal, fusion, and energy-system research", "energy_storage", 90),
+    ("https://www.energy-storage.news/feed/", "Energy-Storage.news", "Specialist reporting on batteries, long-duration storage, markets, and grid deployment", "energy_storage", 82),
+
+    ("https://news.mit.edu/topic/mitrobotics-rss.xml", "MIT Robotics", "[FIRST_PARTY] Robotics, autonomous systems, embodied machines, and physical automation research", "robotics_autonomy", 90),
+    ("https://www.therobotreport.com/feed/", "The Robot Report", "Robotics companies, products, deployments, and industrial automation", "robotics_autonomy", 82),
+
+    ("https://www.ibm.com/quantum/blog", "IBM Quantum", "[FIRST_PARTY] Official quantum computing, error correction, hardware, and ecosystem updates", "quantum_technology", 94),
+    ("https://www.nature.com/subjects/quantum-information.rss", "Nature Quantum Information", "Quantum computing, sensing, communications, and information research", "quantum_technology", 90),
+
+    ("https://www.nasa.gov/rss/dyn/breaking_news.rss", "NASA News", "[FIRST_PARTY] Official missions, launch, exploration, and space-technology announcements", "space_economy", 92),
+    ("https://www.jpl.nasa.gov/feeds/news/", "NASA JPL", "[FIRST_PARTY] Official spacecraft, planetary systems, sensing, autonomy, and mission technology", "space_economy", 90),
+
+    ("https://www.nature.com/nmat.rss", "Nature Materials", "Peer-reviewed advances in materials science, nanotechnology, devices, and manufacturing", "advanced_materials", 92),
+    ("https://news.mit.edu/rss/topic/materials-science-and-engineering", "MIT Materials", "[FIRST_PARTY] Materials science, nanotechnology, semiconductor materials, and low-carbon materials", "advanced_materials", 90),
+
+    ("https://news.mit.edu/rss/topic/neuroscience-neurology-and-cognitive-sciences", "MIT Neuroscience", "[FIRST_PARTY] Neural interfaces, neurostimulation, cognition, and sensory-restoration research", "neurotechnology", 90),
+    ("https://www.nature.com/natbiomedeng.rss", "Nature Biomedical Engineering", "Peer-reviewed neural engineering, bioelectronics, implants, and human-interface research", "neurotechnology", 90),
+
+    ("https://news.mit.edu/rss/topic/climate-change-and-sustainability", "MIT Climate", "[FIRST_PARTY] Climate engineering, carbon removal, industrial decarbonisation, and resilient systems", "climate_water_environment", 90),
+    ("https://www.carbonbrief.org/feed/", "Carbon Brief", "Evidence-led climate science, technology, policy, carbon removal, and industrial transition reporting", "climate_water_environment", 84),
+
+    ("https://news.mit.edu/rss/topic/food-and-water-security", "MIT Food & Water", "[FIRST_PARTY] Food systems, water technology, agricultural engineering, and supply resilience", "agrifood_technology", 90),
+    ("https://agfundernews.com/feed", "AgFunderNews", "Agrifood technology, alternative protein, precision fermentation, automation, and investment reporting", "agrifood_technology", 82),
+
+    ("https://www.nist.gov/news-events/manufacturing/rss.xml", "NIST Manufacturing", "[FIRST_PARTY] Official advanced manufacturing, metrology, standards, digital production, and industrial infrastructure", "advanced_manufacturing", 92),
+    ("https://news.mit.edu/rss/topic/mechanical-engineering", "MIT Advanced Manufacturing", "[FIRST_PARTY] Additive manufacturing, industrial systems, digital fabrication, and automation research", "advanced_manufacturing", 88),
+
     # Venture capital and startup ecosystem: first-party market theses, founder
     # guidance, and interviews. These are broad feeds, so the pipeline applies
     # the title-level AI gate before spending an LLM call on an item.

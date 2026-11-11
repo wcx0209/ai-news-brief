@@ -67,6 +67,7 @@ OFFICIAL_HTML_INDEX_RULES = {
     'https://www.llamaindex.ai/blog': {'path_prefixes': ('/blog/',)},
     'https://crewai.com/blog': {'path_prefixes': ('/blog/',)},
     'https://ollama.com/blog': {'path_prefixes': ('/blog/',)},
+    'https://www.ibm.com/quantum/blog': {'path_prefixes': ('/quantum/blog/',)},
 }
 
 
