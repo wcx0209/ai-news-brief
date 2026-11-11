@@ -249,6 +249,14 @@ function categoryFor(item) {
   return "company";
 }
 
+function matchesFilter(item, filter) {
+  if (filter === "all") return true;
+  if (filter === "biotech") {
+    return item.domain === "programmable_life" || categoryFor(item) === "biotech";
+  }
+  return categoryFor(item) === filter;
+}
+
 function trustStrip(item) {
   const category = categoryFor(item);
   const type = category === "interviews" ? COPY[state.locale].trustInterview : ["research", "academia"].includes(category) ? COPY[state.locale].trustResearch : COPY[state.locale].trustNews;
@@ -522,7 +530,7 @@ function renderFeed() {
   if (!state.feed) return;
   const items = state.feed.items || [];
   renderHero(items);
-  const filtered = state.category === "all" ? items : items.filter(item => categoryFor(item) === state.category);
+  const filtered = items.filter(item => matchesFilter(item, state.category));
   renderLead(filtered[0]);
   $("#story-grid").innerHTML = filtered.slice(1).map(renderCard).join("");
   $("#story-grid").hidden = filtered.length < 2;
@@ -707,10 +715,10 @@ document.addEventListener("submit", async event => {
 
 function renderFilters() {
   const items = state.feed?.items || [];
-  const available = categories.filter(category => category === "all" || items.some(item => categoryFor(item) === category));
+  const available = categories.filter(category => category === "all" || items.some(item => matchesFilter(item, category)));
   if (!available.includes(state.category)) state.category = "all";
   $("#filters").innerHTML = available.map(category => {
-    const count = category === "all" ? items.length : items.filter(item => categoryFor(item) === category).length;
+    const count = items.filter(item => matchesFilter(item, category)).length;
     return `<button type="button" data-category="${category}" aria-pressed="${category === state.category}">${COPY[state.locale].filters[category]} <span>${count}</span></button>`;
   }).join("");
   $$('[data-category]').forEach(button => button.addEventListener("click", () => { state.category = button.dataset.category; renderFilters(); renderFeed(); }));

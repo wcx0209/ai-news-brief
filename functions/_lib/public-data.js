@@ -62,6 +62,7 @@ export function publicArticle(article, locale = "en", includeFull = false) {
     canonical_url: article.canonical_urls?.[lang] || `${SITE}/${lang}/`,
     language: lang === "zh" ? "zh-Hans" : "en",
     category: article.category,
+    domain: article.domain || "ai",
     importance: article.importance,
     scores: article.scores,
     published_at: article.published_at,
@@ -80,7 +81,11 @@ export function filterArticles(payload, params, { defaultHours = 48 } = {}) {
   const generatedAt = Date.parse(payload.generated_at) || Date.now();
   const cutoff = generatedAt - hours * 60 * 60 * 1000;
   const items = (payload.items || [])
-    .filter((item) => !selectedCategory || item.category === selectedCategory)
+    .filter((item) => !selectedCategory || (
+      selectedCategory === "biotech"
+        ? item.domain === "programmable_life" || item.category === "biotech"
+        : item.category === selectedCategory
+    ))
     .filter((item) => Date.parse(item.source_published_at || item.published_at) >= cutoff)
     .sort((a, b) => (b.importance - a.importance) || Date.parse(b.published_at) - Date.parse(a.published_at))
     .slice(0, limit)

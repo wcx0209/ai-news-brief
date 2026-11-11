@@ -82,7 +82,7 @@
         "properties": {
           "id": { "type": "string" }, "title": { "type": "string" }, "summary": { "type": "string" }, "full_summary": { "type": "string" },
           "source": { "type": "string" }, "source_url": { "type": "string", "format": "uri" }, "canonical_url": { "type": "string", "format": "uri" },
-          "language": { "type": "string" }, "category": { "type": "string" }, "importance": { "type": "integer" }, "scores": { "$ref": "#/components/schemas/Scores" },
+          "language": { "type": "string" }, "category": { "type": "string" }, "domain": { "type": "string", "enum": ["ai", "programmable_life"] }, "importance": { "type": "integer" }, "scores": { "$ref": "#/components/schemas/Scores" },
           "published_at": { "type": "string", "format": "date-time" }, "source_published_at": { "type": "string", "format": "date-time" },
           "tags": { "type": "array", "items": { "type": "string" } }
         }

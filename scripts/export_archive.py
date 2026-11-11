@@ -19,7 +19,7 @@ from zoneinfo import ZoneInfo
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "src"))
 from relevance_filter import passes_source_ai_filter
-from editorial_domains import category_ids, category_labels, category_titles, match_category
+from editorial_domains import category_ids, category_labels, category_titles, infer_domain, match_category
 
 
 SITE = "https://polyemergence.com"
@@ -211,6 +211,7 @@ def record_from_feed(item):
     return {
         "id": item.get("id"), "url": safe_url(item.get("url")), "source": source,
         "category": normalize_category(item.get("category"), title, source, tags),
+        "domain": item.get("domain") or infer_domain(item.get("category"), None, " ".join([title, source, " ".join(tags)])),
         "published": published, "source_published": source_published,
         "site_published": site_published, "image_url": safe_url(item.get("image_url")),
         "importance": int(item.get("importance") or 0),
@@ -244,7 +245,8 @@ def load_database():
                        a.tags, a.category, COALESCE(a.published_at, a.created_at) AS published_at,
                        COALESCE(a.source_published_at, a.published_at, a.created_at) AS source_published_at,
                        a.created_at AS site_published_at,
-                       rs.name AS source_name
+                       rs.name AS source_name,
+                       rs.category AS source_category
                 FROM articles a
                 LEFT JOIN rss_sources rs ON rs.id = a.rss_source_id
                 WHERE a.importance_score > 0
@@ -262,6 +264,7 @@ def load_database():
         records.append({
             "id": row["id"], "url": safe_url(row["url"]), "source": source,
             "category": normalize_category(row["category"], title, source, tags),
+            "domain": infer_domain(row["category"], row.get("source_category"), " ".join([title, source, " ".join(tags)])),
             "published": parse_datetime(row["published_at"]),
             "source_published": parse_datetime(row["source_published_at"]),
             "site_published": parse_datetime(row["site_published_at"]), "image_url": "#",
@@ -691,7 +694,7 @@ def render_public_data(output, records):
         day = record["published"].astimezone(LOCAL_TZ).date()
         items.append({
             "id": str(record["id"]), "url": record["url"], "source": record["source"],
-            "category": record["category"], "importance": record["importance"],
+            "category": record["category"], "domain": record.get("domain", "ai"), "importance": record["importance"],
             "scores": record["scores"],
             "published_at": record["published"].isoformat().replace("+00:00", "Z"),
             "site_published_at": record["site_published"].isoformat().replace("+00:00", "Z"),
@@ -738,7 +741,10 @@ def main():
                 render_article(output, locale, record)
         all_records = [record for day in ordered_days for record in grouped[day]]
         for category in CATEGORY_ORDER:
-            render_topic(output, locale, category, [record for record in all_records if record["category"] == category])
+            render_topic(output, locale, category, [
+                record for record in all_records
+                if (record.get("domain") == "programmable_life" if category == "biotech" else record["category"] == category)
+            ])
         render_rss(output, locale, grouped)
     render_public_data(output, [record for day in ordered_days for record in grouped[day]])
     render_sitemap(output, grouped)

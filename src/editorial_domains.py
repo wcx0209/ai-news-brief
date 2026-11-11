@@ -30,6 +30,22 @@ def category_titles(locale="en"):
     return {item["id"]: item["title"][locale] for item in categories()}
 
 
+def category_domain(category):
+    for item in categories():
+        if item["id"] == category:
+            return item.get("domain", "ai")
+    return "ai"
+
+
+def infer_domain(category=None, source_category=None, text=""):
+    """Resolve the broad editorial domain independently of the story angle."""
+    for value in (source_category, category):
+        if value and category_domain(str(value).strip().lower().replace("-", "_")) != "ai":
+            return category_domain(str(value).strip().lower().replace("-", "_"))
+    matched = match_category(text)
+    return category_domain(matched) if matched else "ai"
+
+
 def match_category(text):
     value = str(text or "").lower()
     for item in categories():

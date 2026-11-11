@@ -20,7 +20,7 @@ from bs4 import BeautifulSoup
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "src"))
 from relevance_filter import passes_source_ai_filter
-from editorial_domains import category_ids, match_category
+from editorial_domains import category_ids, infer_domain, match_category
 
 
 TOPIC_CATEGORIES = set(category_ids())
@@ -254,7 +254,8 @@ def main():
                        a.consequence_score, a.confidence_score, a.momentum_score,
                        a.tags, a.category, a.published_at,
                        COALESCE(a.source_published_at, a.published_at) AS source_published_at,
-                       a.created_at, rs.name AS source_name
+                       a.created_at, rs.name AS source_name,
+                       rs.category AS source_category
                 FROM articles a
                 LEFT JOIN rss_sources rs ON rs.id = a.rss_source_id
                 WHERE COALESCE(a.source_published_at, a.published_at, a.created_at)
@@ -298,6 +299,10 @@ def main():
             "category": normalize_category(
                 row["category"], row["tags"], row["title"] or "", row["source_name"] or ""
             ),
+            "domain": infer_domain(
+                row["category"], row.get("source_category"),
+                " ".join([row["title"] or "", row["source_name"] or "", " ".join(parse_tags(row["tags"]))]),
+            ),
             "importance": int(row["importance_score"] or 0),
             "scores": {
                 "signal": int(row["signal_score"] or 0),
@@ -331,6 +336,15 @@ def main():
         args.min_academia_confidence,
     )
     for item in items:
+        item["domain"] = item.get("domain") or infer_domain(
+            item.get("category"), None,
+            " ".join([
+                (item.get("en") or {}).get("title") or "",
+                (item.get("zh") or {}).get("title") or "",
+                item.get("source") or "",
+                " ".join(item.get("tags") or []),
+            ]),
+        )
         scores = item.get("scores") or {}
         item["scores"] = {
             key: max(0, min(100, int(scores.get(key) or 0)))

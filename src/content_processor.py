@@ -11,7 +11,7 @@ DIFFICULT_DOMAINS = [
     'medium.com', 'towardsdatascience.com', 'levelup.gitconnected.com',
     'betterprogramming.pub', 'hackernoon.com',
     'marktechpost.com', 'artificialintelligence-news.com',
-    'theverge.com',
+    'theverge.com', 'fiercebiotech.com',
 ]
 
 # Domains that require TLS fingerprint impersonation (curl_cffi) to bypass WAF
@@ -21,7 +21,7 @@ CURLCFFI_DOMAINS = [
     'nytimes.com', 'washingtonpost.com',
     'theverge.com',
     'awesomeagents.ai',
-    'tencent.com',
+    'tencent.com', 'fiercebiotech.com',
 ]
 
 # Realistic browser headers to avoid 403

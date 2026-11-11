@@ -17,6 +17,8 @@ fetching:
   concurrency: 1
   max_entries: 18
   max_entries_per_source: 1
+  max_entries_per_source_by_category:
+    biotech: 3
   llm_min_interval_seconds: 15
   article_max_age_days: 2
   # Official vendor newsrooms can publish less frequently than media feeds.

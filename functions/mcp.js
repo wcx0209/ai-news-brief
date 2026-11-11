@@ -98,7 +98,7 @@ async function callTool(name, args, env, request) {
     const results = items.map((item) => ({
       id: item.id, title: item.title, url: item.canonical_url,
       text: item.summary,
-      metadata: { source: item.source, category: item.category, importance: item.importance, published_at: item.published_at },
+      metadata: { source: item.source, domain: item.domain, category: item.category, importance: item.importance, published_at: item.published_at },
     }));
     return toolResult({ results });
   }
@@ -110,7 +110,7 @@ async function callTool(name, args, env, request) {
       id: item.id, title: item.title, text: item.full_summary, url: item.canonical_url,
       metadata: {
         summary: item.summary, source: item.source, source_url: item.source_url,
-        category: item.category, importance: item.importance, scores: item.scores,
+        domain: item.domain, category: item.category, importance: item.importance, scores: item.scores,
         published_at: item.published_at, source_published_at: item.source_published_at,
         tags: item.tags, language: item.language,
       },
