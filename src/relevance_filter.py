@@ -37,6 +37,20 @@ TITLE_GATED_SOURCES = {
     "SK hynix Newsroom",
     "Databricks",
     "Vercel",
+    "EIA Today in Energy",
+    "UK Atomic Energy Authority",
+    "Utility Dive",
+    "Advanced Science News",
+    "NIMS Materials News",
+    "Neuroscience News Neurotech",
+    "Neurotech Newsletter",
+    "International Water Management Institute",
+    "Yale Environment 360",
+    "Environmental Protection",
+    "AgFunderNews",
+    "FoodNavigator",
+    "Green Queen",
+    "Siemens Blog",
 }
 
 EDITORIAL_TITLE_PATTERN = re.compile(
@@ -50,13 +64,19 @@ EDITORIAL_TITLE_PATTERN = re.compile(
     r"biotech(?:nology)?|synthetic biology|gene edit(?:ing)?|crispr|genomics?|"
     r"cell therapy|protein design|programmable life|biomanufacturing|"
     r"energy storage|solid.state batter(?:y|ies)|sodium.ion|geothermal|small modular reactor|nuclear fusion|"
+    r"\b(?:batter(?:y|ies)|fusion|photovoltaics?|solar cells?|wind turbines?|renewables?|nuclear|smart grids?|virtual power plants?|hydrogen)\b|"
     r"quantum comput(?:ing|er)|quantum sens(?:ing|or)|quantum communication|quantum network|qubit|"
     r"reusable rocket|satellite internet|earth observation|in.orbit|launch vehicle|space economy|"
     r"advanced materials?|materials science|nanotechnology|two.dimensional materials?|self.healing materials?|metamaterials?|"
+    r"\b(?:nanomaterials?|nanoelectronics|nanodevices?|bioelectronics|composites?|polymers?)\b|"
     r"neurotechnology|brain.computer interface|brain.machine interface|neural interface|neurostimulation|neural implant|"
+    r"\b(?:neurotech|BCI|EEG|neuroprosthetics?|neuromodulation|neural decoding|neural recording|brain implants?)\b|"
     r"carbon removal|direct air capture|desalination|water technology|green steel|climate engineering|"
+    r"carbon capture|water treatment|wastewater|PFAS|pollution control|remediation|smart irrigation|water monitoring|recycling technolog|"
     r"agritech|foodtech|precision fermentation|cultivated meat|gene.edited crops?|agricultural robots?|alternative proteins?|"
+    r"food technolog|food science|cell.cultured|plant.based|precision agriculture|crop sensing|autonomous tractors?|fermentation|"
     r"advanced manufacturing|additive manufacturing|3d print(?:ing|er)|digital twin|advanced packaging|smart factory|"
+    r"industrial automation|smart factories|factory automation|digital fabrication|"
     r"生物技术|合成生物|基因编辑|基因组|细胞治疗|蛋白质设计|生物制造|可编程生命|"
     r"储能|固态电池|钠离子|地热|小型核反应堆|核聚变|"
     r"量子计算|量子传感|量子通信|量子网络|量子比特|"

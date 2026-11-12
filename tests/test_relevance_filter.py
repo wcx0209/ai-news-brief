@@ -35,6 +35,25 @@ class RelevanceFilterTests(unittest.TestCase):
         self.assertTrue(passes_source_ai_filter("US NIST", "New quantum sensing network reaches field trial"))
         self.assertTrue(passes_source_ai_filter("US NIST", "Advanced manufacturing method cuts alloy waste"))
 
+    def test_broad_emerging_field_feeds_filter_before_the_source_cap(self):
+        self.assertFalse(passes_source_ai_filter("EIA Today in Energy", "US crude oil imports rise"))
+        self.assertFalse(passes_source_ai_filter("AgFunderNews", "Iran denies cyberattacks on French supermarkets"))
+        self.assertFalse(passes_source_ai_filter("Green Queen", "The best restaurants to visit this summer"))
+        self.assertFalse(passes_source_ai_filter("Yale Environment 360", "A rare fish is making a comeback"))
+
+    def test_new_technical_vocabulary_survives_the_broad_feed_gate(self):
+        examples = (
+            ("UK Atomic Energy Authority", "Giant box lowered into place for fusion upgrade"),
+            ("Utility Dive", "Utilities test virtual power plants and new batteries"),
+            ("FoodNavigator", "Precision fermentation platform reaches commercial scale"),
+            ("Environmental Protection", "New PFAS remediation technology enters water treatment trials"),
+            ("Neurotech Newsletter", "BCI startup advances clinical trials"),
+            ("Siemens Blog", "Factory automation and digital twins cut production time"),
+        )
+        for source, title in examples:
+            with self.subTest(source=source):
+                self.assertTrue(passes_source_ai_filter(source, title))
+
 
 if __name__ == "__main__":
     unittest.main()

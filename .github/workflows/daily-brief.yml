@@ -72,5 +72,8 @@ jobs:
             echo "No feed changes"
           else
             git commit -m "data: refresh Polyemergence brief"
+            # A frontend/source update can be published while collection is
+            # running. Rebase the generated-data commit onto that update.
+            git pull --rebase origin "$GITHUB_REF_NAME"
             git push
           fi

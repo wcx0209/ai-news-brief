@@ -14,7 +14,9 @@ fetching:
   network_timeout: 60
   ai_timeout: 90
   max_input_chars: 30000
-  concurrency: 1
+  # Overlap feed/article network waits; AIEngine still serializes Gemini calls
+  # with the unchanged free-tier interval below.
+  concurrency: 2
   max_entries: 18
   max_entries_per_source: 1
   max_entries_per_source_by_category:

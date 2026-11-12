@@ -7,8 +7,9 @@ import sys
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(ROOT, "src"))
 
-from user_db import UserDatabase
-
+SOURCE_URL_UPDATES = {
+    "https://www.nasa.gov/rss/dyn/breaking_news.rss": "https://www.nasa.gov/news-release/feed/",
+}
 
 SOURCES = [
     # Global AI companies and labs
@@ -144,35 +145,71 @@ SOURCES = [
     ("https://www.fiercebiotech.com/rss/biotech/xml", "Fierce Biotech", "Biotechnology platforms, clinical science, companies, and financing", "biotech", 82),
     ("https://www.biospace.com/drug-development.rss", "BioSpace Drug Development", "Drug-development platforms, translational science, and biotechnology industry reporting", "biotech", 76),
 
-    # The other nine long-horizon Polyemergence fields. Two focused sources
-    # per field provide an intentionally small, high-signal launch set; domain
-    # and story angle remain separate in the public taxonomy.
+    # Nine emerging fields, each with six core feeds. Official announcements,
+    # research, and specialist media complement one another; broader feeds
+    # also pass the headline relevance gate before an LLM call is made.
     ("https://news.mit.edu/rss/topic/energy", "MIT Energy", "[FIRST_PARTY] Energy storage, batteries, nuclear, geothermal, fusion, and energy-system research", "energy_storage", 90),
     ("https://www.energy-storage.news/feed/", "Energy-Storage.news", "Specialist reporting on batteries, long-duration storage, markets, and grid deployment", "energy_storage", 82),
+    ("https://www.eia.gov/rss/todayinenergy.xml", "EIA Today in Energy", "[FIRST_PARTY] Official US energy-system data and analysis covering storage, renewables, nuclear, electricity, and energy transition", "energy_storage", 90),
+    ("https://www.gov.uk/government/organisations/uk-atomic-energy-authority.atom", "UK Atomic Energy Authority", "[FIRST_PARTY] Official UK fusion research, engineering milestones, infrastructure, and commercialisation updates", "energy_storage", 92),
+    ("https://www.pv-magazine.com/feed/", "pv magazine Global", "Specialist international reporting on photovoltaics, batteries, hydrogen, power electronics, and energy markets", "energy_storage", 84),
+    ("https://www.utilitydive.com/feeds/news/", "Utility Dive", "Specialist reporting on grid storage, renewable deployment, virtual power plants, nuclear, utility innovation, and regulation", "energy_storage", 84),
 
     ("https://news.mit.edu/topic/mitrobotics-rss.xml", "MIT Robotics", "[FIRST_PARTY] Robotics, autonomous systems, embodied machines, and physical automation research", "robotics_autonomy", 90),
     ("https://www.therobotreport.com/feed/", "The Robot Report", "Robotics companies, products, deployments, and industrial automation", "robotics_autonomy", 82),
+    ("https://spectrum.ieee.org/feeds/topic/robotics.rss", "IEEE Spectrum Robotics", "Engineering reporting on robotics research, humanoids, autonomous machines, and deployed robotic systems", "robotics_autonomy", 88),
+    ("https://robohub.org/feed/", "Robohub", "Research-community reporting, expert interviews, and analysis on robotics, embodied intelligence, and autonomous systems", "robotics_autonomy", 84),
+    ("https://clearpathrobotics.com/feed/", "Clearpath Robotics", "[FIRST_PARTY] Official Canadian robotics platform, field deployment, ROS, and mobile-robot research updates", "robotics_autonomy", 88),
+    ("https://blogs.nvidia.com/blog/category/robotics/feed/", "NVIDIA Robotics", "[FIRST_PARTY] Official physical AI, robotics simulation, Isaac, autonomous-machine, and robotics ecosystem announcements", "robotics_autonomy", 90),
 
     ("https://www.ibm.com/quantum/blog", "IBM Quantum", "[FIRST_PARTY] Official quantum computing, error correction, hardware, and ecosystem updates", "quantum_technology", 94),
     ("https://www.nature.com/subjects/quantum-information.rss", "Nature Quantum Information", "Quantum computing, sensing, communications, and information research", "quantum_technology", 90),
+    ("https://aws.amazon.com/blogs/quantum-computing/feed/", "AWS Quantum Technologies", "[FIRST_PARTY] Official quantum computing, quantum hardware, error correction, Braket, and hybrid workflow updates", "quantum_technology", 90),
+    ("https://ir.dwavequantum.com/rss/pressrelease.aspx", "D-Wave News", "[FIRST_PARTY] Official quantum hardware, annealing, hybrid solvers, deployments, partnerships, and company announcements", "quantum_technology", 90),
+    ("https://thequantuminsider.com/feed/", "The Quantum Insider", "Specialist global quantum computing, sensing, networking, company, investment, research, and policy reporting", "quantum_technology", 84),
+    ("https://quantumcomputingreport.com/feed/", "Quantum Computing Report", "Specialist quantum industry reporting on hardware, software, research milestones, government programmes, and commercialisation", "quantum_technology", 86),
 
-    ("https://www.nasa.gov/rss/dyn/breaking_news.rss", "NASA News", "[FIRST_PARTY] Official missions, launch, exploration, and space-technology announcements", "space_economy", 92),
+    ("https://www.nasa.gov/news-release/feed/", "NASA News", "[FIRST_PARTY] Official missions, launch, exploration, and space-technology announcements", "space_economy", 92),
     ("https://www.jpl.nasa.gov/feeds/news/", "NASA JPL", "[FIRST_PARTY] Official spacecraft, planetary systems, sensing, autonomy, and mission technology", "space_economy", 90),
+    ("https://spacenews.com/feed/", "SpaceNews", "Specialist reporting on commercial space companies, satellite infrastructure, launch services, investment, and space policy", "space_economy", 86),
+    ("https://spaceflightnow.com/feed/", "Spaceflight Now", "Specialist reporting on launch vehicles, missions, spacecraft operations, and commercial spaceflight", "space_economy", 82),
+    ("https://europeanspaceflight.com/feed/", "European Spaceflight", "Independent reporting on European launch companies, space infrastructure, industry contracts, and commercial space technology", "space_economy", 84),
+    ("https://global.jaxa.jp/rss/press.rdf", "JAXA Press Releases", "[FIRST_PARTY] Official Japanese spacecraft, launch vehicles, exploration missions, satellite systems, and space research announcements", "space_economy", 92),
 
     ("https://www.nature.com/nmat.rss", "Nature Materials", "Peer-reviewed advances in materials science, nanotechnology, devices, and manufacturing", "advanced_materials", 92),
     ("https://news.mit.edu/rss/topic/materials-science-and-engineering", "MIT Materials", "[FIRST_PARTY] Materials science, nanotechnology, semiconductor materials, and low-carbon materials", "advanced_materials", 90),
+    ("https://www.azom.com/syndication.axd", "AZoM Materials News", "Specialist reporting on advanced materials, polymers, coatings, composites, instrumentation, and materials commercialization", "advanced_materials", 82),
+    ("https://www.advancedsciencenews.com/feed/", "Advanced Science News", "Research reporting from Wiley on advanced materials, nanotechnology, smart devices, bioelectronics, and translational science", "advanced_materials", 84),
+    ("https://phys.org/rss-feed/nanotech-news/", "Phys.org Nanotechnology", "Nanotechnology research reporting covering nanoscale materials, nanodevices, nanoelectronics, and materials engineering", "advanced_materials", 80),
+    ("https://www.nims.go.jp/eng/news/news.xml", "NIMS Materials News", "[FIRST_PARTY] Official English announcements from Japan's National Institute for Materials Science on materials research, institutional collaborations, and technology development", "advanced_materials", 90),
 
     ("https://news.mit.edu/rss/topic/neuroscience-neurology-and-cognitive-sciences", "MIT Neuroscience", "[FIRST_PARTY] Neural interfaces, neurostimulation, cognition, and sensory-restoration research", "neurotechnology", 90),
     ("https://www.nature.com/natbiomedeng.rss", "Nature Biomedical Engineering", "Peer-reviewed neural engineering, bioelectronics, implants, and human-interface research", "neurotechnology", 90),
+    ("https://www.braingate.org/feed/", "BrainGate", "[FIRST_PARTY] Official brain-computer interface research, assistive communication, speech restoration, neural recording, and clinical trial updates", "neurotechnology", 92),
+    ("https://www.nature.com/subjects/brain-machine-interface.rss", "Nature Brain-Machine Interfaces", "Peer-reviewed brain-computer interfaces, neural decoding, neuroprosthetics, neural implants, and communication-restoration research", "neurotechnology", 92),
+    ("https://neurosciencenews.com/neuroscience-topics/neurotech/feed/", "Neuroscience News Neurotech", "Neurotechnology reporting on brain interfaces, neural sensing, neurostimulation, prosthetics, and neuroscience tools", "neurotechnology", 80),
+    ("https://theneurotechnewsletter.substack.com/feed", "Neurotech Newsletter", "Specialist industry reporting on neurotechnology companies, investment, clinical trials, product launches, and regulation", "neurotechnology", 78),
 
     ("https://news.mit.edu/rss/topic/climate-change-and-sustainability", "MIT Climate", "[FIRST_PARTY] Climate engineering, carbon removal, industrial decarbonisation, and resilient systems", "climate_water_environment", 90),
     ("https://www.carbonbrief.org/feed/", "Carbon Brief", "Evidence-led climate science, technology, policy, carbon removal, and industrial transition reporting", "climate_water_environment", 84),
+    ("https://www.nature.com/natwater.rss", "Nature Water", "Peer-reviewed water treatment, desalination, freshwater systems, water technology, and resource resilience research", "climate_water_environment", 90),
+    ("https://www.iwmi.org/feed/", "International Water Management Institute", "[FIRST_PARTY] Official CGIAR water research, monitoring technology, climate adaptation, irrigation, and transboundary water policy", "climate_water_environment", 90),
+    ("https://e360.yale.edu/feed.xml", "Yale Environment 360", "Environmental science, climate technology, carbon removal, water, conservation, and industrial transition reporting", "climate_water_environment", 84),
+    ("https://eponline.com/rss-feeds/news.aspx?admgarea=RSS", "Environmental Protection", "Specialist reporting on water treatment, pollution control, PFAS remediation, recycling, environmental technology, and regulation", "climate_water_environment", 82),
 
     ("https://news.mit.edu/rss/topic/food-and-water-security", "MIT Food & Water", "[FIRST_PARTY] Food systems, water technology, agricultural engineering, and supply resilience", "agrifood_technology", 90),
     ("https://agfundernews.com/feed", "AgFunderNews", "Agrifood technology, alternative protein, precision fermentation, automation, and investment reporting", "agrifood_technology", 82),
+    ("https://www.futurefarming.com/feed/", "Future Farming", "Precision agriculture, field robotics, autonomous tractors, smart irrigation, crop sensing, and farm automation reporting", "agrifood_technology", 84),
+    ("https://www.foodnavigator.com/arc/outboundfeeds/rss/", "FoodNavigator", "Food science, ingredient technology, fermentation, alternative proteins, industrial food innovation, and European regulation", "agrifood_technology", 84),
+    ("https://www.greenqueen.com.hk/feed/", "Green Queen", "Asia-focused reporting on cultivated meat, fermentation, alternative proteins, food technology companies, investment, and policy", "agrifood_technology", 82),
+    ("https://gfi-apac.org/feed/", "Good Food Institute APAC", "[FIRST_PARTY] Singapore-based alternative-protein research, cultivated meat, fermentation, commercialization, and Asia-Pacific food policy", "agrifood_technology", 88),
 
     ("https://www.nist.gov/news-events/manufacturing/rss.xml", "NIST Manufacturing", "[FIRST_PARTY] Official advanced manufacturing, metrology, standards, digital production, and industrial infrastructure", "advanced_manufacturing", 92),
     ("https://news.mit.edu/rss/topic/mechanical-engineering", "MIT Advanced Manufacturing", "[FIRST_PARTY] Additive manufacturing, industrial systems, digital fabrication, and automation research", "advanced_manufacturing", 88),
+    ("https://blog.siemens.com/feed/", "Siemens Blog", "[FIRST_PARTY] Official industrial automation, digital twins, smart factories, industrial software, manufacturing infrastructure, and electrification updates", "advanced_manufacturing", 90),
+    ("https://www.iff.fraunhofer.de/en/press/rss-press-en.rss", "Fraunhofer IFF", "[FIRST_PARTY] Official factory automation, industrial metrology, digital assistance systems, logistics, and advanced production research", "advanced_manufacturing", 90),
+    ("https://3dprintingindustry.com/feed/", "3D Printing Industry", "Specialist reporting on additive manufacturing, industrial 3D printing systems, production applications, materials, and commercialization", "advanced_manufacturing", 84),
+    ("https://www.tctmagazine.com/feed/", "TCT Magazine", "Specialist additive manufacturing and industrial 3D printing news, production systems, aerospace applications, and manufacturing investment", "advanced_manufacturing", 84),
 
     # Venture capital and startup ecosystem: first-party market theses, founder
     # guidance, and interviews. These are broad feeds, so the pipeline applies
@@ -205,11 +242,10 @@ SOURCES = [
 
 
 def main():
+    from user_db import UserDatabase
+
     db = UserDatabase()
-    for url, name, description, category, importance in SOURCES:
-        source_id = db.get_or_create_rss_source(
-            url, name, description, category, importance_score=importance
-        )
+    for source_id, name in db.seed_rss_sources(SOURCES, SOURCE_URL_UPDATES):
         print(f"{source_id}: {name}")
 
 

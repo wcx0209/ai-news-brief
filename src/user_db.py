@@ -443,6 +443,37 @@ class UserDatabase:
             )
 
     # ==================== RSS Sources CRUD ====================
+
+    def seed_rss_sources(self, sources, url_updates=None):
+        """Upsert the source catalog in one transaction, preserving source IDs."""
+        if not sources:
+            return []
+        with self._get_connection() as conn:
+            cursor = conn.cursor()
+            # Migrate renamed feeds in place so historical articles continue
+            # referencing their original source, without deleting any history.
+            for old_url, new_url in (url_updates or {}).items():
+                cursor.execute(
+                    '''UPDATE rss_sources SET url = %s
+                       WHERE url = %s AND NOT EXISTS
+                         (SELECT 1 FROM rss_sources WHERE url = %s)''',
+                    (new_url, old_url, new_url),
+                )
+            return psycopg2.extras.execute_values(
+                cursor,
+                '''INSERT INTO rss_sources
+                     (url, name, description, category, importance_score)
+                   VALUES %s
+                   ON CONFLICT (url) DO UPDATE SET
+                     name = EXCLUDED.name,
+                     description = EXCLUDED.description,
+                     category = EXCLUDED.category,
+                     importance_score = EXCLUDED.importance_score
+                   RETURNING id, name''',
+                sources,
+                page_size=500,
+                fetch=True,
+            )
     
     def add_rss_source(self, url: str, name: str, description: str = None, category: str = None, importance_score: int = 0) -> Optional[int]:
         """Add a new RSS source. Returns source_id or None if URL already exists."""
