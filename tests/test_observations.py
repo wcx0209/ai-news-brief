@@ -59,7 +59,10 @@ class ObservationTests(unittest.TestCase):
         card = self.cards(items)[0]
         self.assertEqual(card["status"], "unverified_signal")
         self.assertTrue(card["event_identity_uncertain"])
-        self.assertIn("Grouping does not establish distinct events", card["uncertainty"]["en"])
+        self.assertEqual(card["publisher_count"], 2)
+        self.assertIn("Reports may describe the same event.", card["uncertainty"]["en"])
+        self.assertIn("have not been independently verified", card["uncertainty"]["en"])
+        self.assertIn("不能据此认定趋势已经形成", card["uncertainty"]["zh"])
 
     def test_topic_matching_rejects_substring_and_semantic_false_positives(self):
         cases = [("ai", "Thai agent deploys new tourist workflow"),
