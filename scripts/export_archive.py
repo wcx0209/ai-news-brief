@@ -120,7 +120,9 @@ def prose_text(value):
     # Plain link labels are sufficient for this summary; the authoritative
     # source URL stays in the separately validated Read original control.
     text = re.sub(r"!?\[([^\]]*)\]\([^\n)]*\)", r"\1", text)
-    return re.sub(r"\*\*|__|`", "", text).strip()
+    # Double underscores can be real technical identifiers (__init__, etc.).
+    # Retaining an occasional Markdown marker is safer than changing a name.
+    return re.sub(r"\*\*|`", "", text).strip()
 
 
 def prose_heading(line):

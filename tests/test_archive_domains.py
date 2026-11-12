@@ -34,6 +34,11 @@ def structured_data(page):
 
 
 class ArchiveDomainTests(unittest.TestCase):
+    def test_prose_keeps_double_underscore_identifiers(self):
+        prose = archive.archive_prose("Use `__init__` and __name__ without changing identifiers.")
+        self.assertIn("__init__", prose)
+        self.assertIn("__name__", prose)
+
     def test_new_registered_domain_uses_safe_reading_guidance_fallback(self):
         record = fixture("new-field", "new_field", "New field research")
         with patch.dict(archive.DOMAIN_REGISTRY, {"new_field": {"label": {"en": "New Field", "zh": "新领域"}}}):
