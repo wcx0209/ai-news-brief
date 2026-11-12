@@ -34,6 +34,12 @@ fallback for newly registered fields.
 from the registry every cloud run and declared in `robots.txt`. The existing
 main sitemap is already registered successfully in Google Search Console.
 
+Verification on 2026-11-12: Google processed the new field sitemap successfully
+and discovered all 22 URLs. A live URL Inspection test of the English quantum
+page reported that Google can access and index the page, with one valid
+Breadcrumbs item. This is crawl/indexability verification, not confirmation that
+the newly published pages already rank in search results.
+
 Daily AI News historical routes contain AI stories only. Other story-angle
 pages and permanent archives may span fields and identify that scope explicitly.
 Archive summaries link back to their field page. These internal links let
