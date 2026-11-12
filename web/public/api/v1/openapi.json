@@ -88,7 +88,7 @@
           "related_domains": { "type": "array", "maxItems": 2, "items": { "type": "string" }, "description": "Related fields, without replacing the primary field." },
           "evidence": { "type": "object", "description": "Source provenance and explicitly supported maturity; not independent verification.", "properties": { "type": { "type": "string", "enum": ["official_release", "preprint", "research_paper", "media_report", "interview", "open_source", "unknown"] }, "stage": { "type": "string", "enum": ["laboratory", "demonstration", "pilot", "deployment", "unspecified"] } } },
           "reading_context": { "type": "string", "description": "Localized editorial reading lens, not a newly verified fact." },
-          "published_at": { "type": "string", "format": "date-time" }, "source_published_at": { "type": "string", "format": "date-time" },
+          "published_at": { "type": "string", "format": "date-time" }, "source_published_at": { "type": ["string", "null"], "format": "date-time", "description": "Original publication time, or null for undated discovery-only records." },
           "date_basis": { "type": "string", "description": "source_published or first_seen; discovery dates are not release dates." }, "first_seen_at": { "type": ["string", "null"], "format": "date-time" },
           "tags": { "type": "array", "items": { "type": "string" } }
         }
