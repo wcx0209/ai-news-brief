@@ -2,7 +2,7 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
     <loc>https://polyemergence.com/en/</loc>
-    <lastmod>2026-11-11</lastmod>
+    <lastmod>2026-11-12</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://polyemergence.com/en/"/>
@@ -11,7 +11,7 @@
   </url>
   <url>
     <loc>https://polyemergence.com/zh/</loc>
-    <lastmod>2026-11-11</lastmod>
+    <lastmod>2026-11-12</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://polyemergence.com/en/"/>
@@ -20,7 +20,7 @@
   </url>
   <url>
     <loc>https://polyemergence.com/en/open-source/</loc>
-    <lastmod>2026-11-11</lastmod>
+    <lastmod>2026-11-12</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.2</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://polyemergence.com/en/open-source/"/>
@@ -29,7 +29,7 @@
   </url>
   <url>
     <loc>https://polyemergence.com/zh/open-source/</loc>
-    <lastmod>2026-11-11</lastmod>
+    <lastmod>2026-11-12</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.2</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://polyemergence.com/en/open-source/"/>
@@ -37,30 +37,30 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://polyemergence.com/en/open-source/"/>
   </url>
   <url>
-    <loc>https://polyemergence.com/en/standards/</loc><lastmod>2026-11-11</lastmod><changefreq>monthly</changefreq><priority>0.6</priority>
+    <loc>https://polyemergence.com/en/standards/</loc><lastmod>2026-11-12</lastmod><changefreq>monthly</changefreq><priority>0.6</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://polyemergence.com/en/standards/"/><xhtml:link rel="alternate" hreflang="zh-Hans" href="https://polyemergence.com/zh/standards/"/><xhtml:link rel="alternate" hreflang="x-default" href="https://polyemergence.com/en/standards/"/>
   </url>
   <url>
-    <loc>https://polyemergence.com/zh/standards/</loc><lastmod>2026-11-11</lastmod><changefreq>monthly</changefreq><priority>0.6</priority>
+    <loc>https://polyemergence.com/zh/standards/</loc><lastmod>2026-11-12</lastmod><changefreq>monthly</changefreq><priority>0.6</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://polyemergence.com/en/standards/"/><xhtml:link rel="alternate" hreflang="zh-Hans" href="https://polyemergence.com/zh/standards/"/><xhtml:link rel="alternate" hreflang="x-default" href="https://polyemergence.com/en/standards/"/>
   </url>
   <url>
-    <loc>https://polyemergence.com/en/corrections/</loc><lastmod>2026-11-11</lastmod><changefreq>monthly</changefreq><priority>0.5</priority>
+    <loc>https://polyemergence.com/en/corrections/</loc><lastmod>2026-11-12</lastmod><changefreq>monthly</changefreq><priority>0.5</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://polyemergence.com/en/corrections/"/><xhtml:link rel="alternate" hreflang="zh-Hans" href="https://polyemergence.com/zh/corrections/"/><xhtml:link rel="alternate" hreflang="x-default" href="https://polyemergence.com/en/corrections/"/>
   </url>
   <url>
-    <loc>https://polyemergence.com/zh/corrections/</loc><lastmod>2026-11-11</lastmod><changefreq>monthly</changefreq><priority>0.5</priority>
+    <loc>https://polyemergence.com/zh/corrections/</loc><lastmod>2026-11-12</lastmod><changefreq>monthly</changefreq><priority>0.5</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://polyemergence.com/en/corrections/"/><xhtml:link rel="alternate" hreflang="zh-Hans" href="https://polyemergence.com/zh/corrections/"/><xhtml:link rel="alternate" hreflang="x-default" href="https://polyemergence.com/en/corrections/"/>
   </url>
   <url>
-    <loc>https://polyemergence.com/developers/</loc><lastmod>2026-11-11</lastmod><changefreq>monthly</changefreq><priority>0.6</priority>
+    <loc>https://polyemergence.com/developers/</loc><lastmod>2026-11-12</lastmod><changefreq>monthly</changefreq><priority>0.6</priority>
   </url>
   <url>
-    <loc>https://polyemergence.com/en/topics/biotech/</loc><lastmod>2026-11-11</lastmod><changefreq>daily</changefreq><priority>0.7</priority>
+    <loc>https://polyemergence.com/en/topics/biotech/</loc><lastmod>2026-11-12</lastmod><changefreq>daily</changefreq><priority>0.7</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://polyemergence.com/en/topics/biotech/"/><xhtml:link rel="alternate" hreflang="zh-Hans" href="https://polyemergence.com/zh/topics/biotech/"/><xhtml:link rel="alternate" hreflang="x-default" href="https://polyemergence.com/en/topics/biotech/"/>
   </url>
   <url>
-    <loc>https://polyemergence.com/zh/topics/biotech/</loc><lastmod>2026-11-11</lastmod><changefreq>daily</changefreq><priority>0.7</priority>
+    <loc>https://polyemergence.com/zh/topics/biotech/</loc><lastmod>2026-11-12</lastmod><changefreq>daily</changefreq><priority>0.7</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://polyemergence.com/en/topics/biotech/"/><xhtml:link rel="alternate" hreflang="zh-Hans" href="https://polyemergence.com/zh/topics/biotech/"/><xhtml:link rel="alternate" hreflang="x-default" href="https://polyemergence.com/en/topics/biotech/"/>
   </url>
 </urlset>
