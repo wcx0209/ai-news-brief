@@ -93,7 +93,8 @@ def clean_text(value):
     text = re.sub(r"(?m)^\s{0,3}#{1,6}\s+", "", text)
     text = re.sub(r"(?m)^\s*[-*+]\s+", "• ", text)
     text = re.sub(r"\[([^\]]+)\]\((?:https?://[^)]+)\)", r"\1", text)
-    text = re.sub(r"(\*\*|__|`)", "", text)
+    # Underscores can be part of names such as __init__; keep those intact.
+    text = re.sub(r"(\*\*|`)", "", text)
     text = re.sub(r"[ \t]+\n", "\n", text)
     return re.sub(r"\n{3,}", "\n\n", text).strip()
 
@@ -111,6 +112,7 @@ PROSE_HEADINGS = {
     "安装", "使用方法", "安装与使用", "快速开始", "应用场景", "实际应用",
     "研究方法", "研究结果", "主要发现", "局限", "限制", "局限性",
     "可用性", "定价", "未来影响", "行业实际影响", "未来展望", "下一步",
+    "背景与定位", "核心能力与表现", "效率与行业影响",
 }
 
 
@@ -230,6 +232,57 @@ def archive_excerpt(text, locale):
     elif locale == "en" and " " in excerpt:
         excerpt = excerpt.rsplit(" ", 1)[0]
     return excerpt.rstrip() + "…"
+
+
+def detail_dek(text, locale):
+    """Use the existing short summary as a lead, never invent a new takeaway.
+
+    When a short full text is identical, it is shown once as the lead. A long
+    text without a distinct short summary stays in the body rather than being
+    repeated, flattened or cut mid-claim merely to fill the lead slot.
+    """
+    summary = re.sub(r"\s+", " ", prose_text(text.get("summary"))).strip()
+    full = str(text.get("full") or text.get("summary") or "")
+    full_plain = re.sub(r"\s+", " ", prose_text(full)).strip()
+    maximum = 390 if locale == "en" else 190
+    if not summary:
+        return "", full
+    if summary == full_plain:
+        if len(summary) <= maximum and not any(prose_heading(line) for line in full.splitlines()):
+            return summary, ""
+        return "", full
+    dek = summary
+    if len(dek) > maximum:
+        # Sentence punctuation must be followed by whitespace for English,
+        # whereas Chinese sentence boundaries need no intervening space.
+        boundaries = [match.end() for match in re.finditer(r"[。！？]|[.!?](?=\s|$)", dek[:maximum])]
+        if not boundaries:
+            return "", full
+        dek = dek[:boundaries[-1]].strip()
+    # Some generated long summaries repeat the short summary verbatim as the
+    # first paragraph. Remove only an exact duplicate, not related analysis.
+    paragraphs = re.split(r"\n\s*\n", full, maxsplit=1)
+    first = re.sub(r"\s+", " ", prose_text(paragraphs[0])).strip()
+    if first == dek and len(paragraphs) == 2:
+        full = paragraphs[1]
+    return dek, full
+
+
+def archive_figure(record, locale):
+    """Caption only source provenance, not guessed photographers or rights."""
+    image = safe_url(record.get("image_url"))
+    if image == "#":
+        return ""
+    parts = urlparse(image)
+    if parts.hostname == "polyemergence.com" and parts.path.startswith("/assets/"):
+        return ""  # Our own fallback branding is not an original-source image.
+    source_host = (urlparse(record.get("url") or "").hostname or "").lower()
+    image_host = (parts.hostname or "").lower()
+    video = (source_host in {"youtube.com", "www.youtube.com", "youtu.be"}
+             or image_host == "ytimg.com" or image_host.endswith(".ytimg.com"))
+    label = ("Video thumbnail" if locale == "en" else "视频缩略图") if video else ("Source image" if locale == "en" else "原文配图")
+    unavailable = "Original image temporarily unavailable" if locale == "en" else "原文配图暂不可用"
+    return f'<figure class="archive-figure" data-archive-media><img src="{esc(image)}" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer"><figcaption>{label} · <a href="{esc(safe_url(record.get("url")))}" target="_blank" rel="noopener noreferrer">{esc(record.get("source"))}</a></figcaption><p class="archive-media-unavailable" data-archive-media-fallback role="status" hidden>{unavailable}</p></figure>'
 
 
 def safe_url(value):
@@ -627,6 +680,7 @@ def page_shell(locale, title, description, canonical, alternate, body, structure
     fields_current = ' aria-current="page"' if f"/{locale}/fields/" in current_path else ""
     archive_current = ' aria-current="page"' if f"/{locale}/archive/" in current_path else ""
     body_class = ' class="archive-detail"' if og_type == "article" else ""
+    media_script = '<script defer src="/archive-media.js?v=1"></script>' if og_type == "article" else ""
     return f'''<!doctype html>
 <html lang="{c['lang']}" data-locale="{locale}"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
@@ -637,7 +691,7 @@ def page_shell(locale, title, description, canonical, alternate, body, structure
 <link rel="alternate" type="application/rss+xml" title="{esc(c['brand'])} RSS" href="/feed-{locale}.xml">
 <meta property="og:type" content="{esc(og_type)}"><meta property="og:site_name" content="{esc(c['brand'])}"><meta property="og:title" content="{esc(title)}"><meta property="og:description" content="{esc(description)}"><meta property="og:url" content="{esc(canonical)}"><meta property="og:image" content="{SITE}/assets/social-preview.png">
 <meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="{esc(title)}"><meta name="twitter:description" content="{esc(description)}"><meta name="twitter:image" content="{SITE}/assets/social-preview.png">
-<link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="/styles.css?v=20261112-28"><link rel="stylesheet" href="/archive.css?v=6">{structured_html}</head>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="/styles.css?v=20261112-29"><link rel="stylesheet" href="/archive.css?v=7">{media_script}{structured_html}</head>
 <body{body_class}><header class="site-header"><a class="brand" href="/{locale}/" aria-label="{esc(c['brand'])}"><img src="/assets/{logo}" alt="{esc(c['brand'])}" width="420" height="70"></a>
 <nav class="desktop-nav" aria-label="{'Primary' if locale == 'en' else '主导航'}"><a href="/{locale}/#fields"{fields_current}>{esc(c['fields'])}</a><a href="/{locale}/archive/"{archive_current}>{esc(c['archive'])}</a><a href="/{locale}/#about">{esc(c['method'])}</a></nav>
 <div class="header-tools"><span class="edition">{esc(c['edition'])}</span><div class="language-switch"><a href="{esc(alternate)}" hreflang="{COPY[other]['lang']}">{'中' if other == 'zh' else 'EN'}</a><span>|</span><a href="{esc(canonical)}" aria-current="page">{'中' if locale == 'zh' else 'EN'}</a></div></div></header>
@@ -722,11 +776,17 @@ def story_html(record, locale, detail=False):
         "unspecified": ("Stage not established", "阶段未明确"),
     }
     evidence = "".join(f'<span>{esc(evidence_labels[value][0 if locale == "en" else 1])}</span>' for value in (record.get("evidence") or {}).values() if value in evidence_labels)
+    document_type = (record.get("evidence") or {}).get("type")
+    type_label = evidence_labels[document_type][0 if locale == "en" else 1] if document_type in evidence_labels and document_type != "unknown" else content_type(record, locale)
+    provenance = f'<div class="archive-story-meta archive-provenance"><a class="archive-source" href="{esc(safe_url(record["url"]))}" target="_blank" rel="noopener noreferrer">{esc(record["source"])} ↗</a><span class="archive-date"><span>{esc(date_label)}</span> {date_markup}</span><span class="archive-document-type">{esc(type_label)}</span><a class="archive-field" href="{field_path(locale, domain)}">{esc(field_label)}</a></div>'
     related = " × ".join(f'<a href="{field_path(locale, domain_id)}">{esc(DOMAIN_REGISTRY[domain_id]["label"][locale])}</a>' for domain_id in (record.get("related_domains") or [])[:2] if domain_id in DOMAIN_REGISTRY)
     context = (record.get("reading_context") or {}).get(locale)
     context_html = f'<p class="story-context"><strong>{"Observation focus (editorial lens)" if locale == "en" else "观察重点（编辑视角）"}</strong> {esc(context)}</p>' if context else ""
+    dek_html = ""
     if detail:
-        summary_html = archive_prose(text["full"] or text["summary"])
+        dek, body = detail_dek(text, locale)
+        dek_html = f'<p class="archive-dek">{esc(dek)}</p>' if dek else ""
+        summary_html = archive_figure(record, locale) + archive_prose(body)
     else:
         summary_label = "Read full summary" if locale == "en" else "阅读完整摘要"
         summary_html = f'<p class="archive-summary">{esc(archive_excerpt(text, locale))}</p><a class="archive-summary-link" href="{article_path(locale, day, record)}">{summary_label} →</a>'
@@ -734,9 +794,9 @@ def story_html(record, locale, detail=False):
     share_button = f'''<button class="share-button" type="button" data-share-button data-share-id="{esc(record['id'])}" data-share-locale="{locale}" data-share-title="{esc(clean_text(text['title']))}" data-share-summary="{esc(share_summary)}" data-share-url="{share_url}" aria-label="{esc(c['share'])}: {esc(clean_text(text['title']))}"><svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="18" cy="5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="19" r="2.5"/><path d="m8.2 10.8 7.6-4.5M8.2 13.2l7.6 4.5"/></svg><span>{esc(c['share'])}</span></button>'''
     return f'''<article class="archive-story" id="{anchor_for(record)}" data-story-id="{esc(record['id'])}">
 <{heading}>{title_html}</{heading}>
-<div class="archive-story-meta"><span>{esc(record['source'])}</span><a href="{field_path(locale, domain)}">{esc(field_label)}</a><span>{esc(CATEGORY_LABELS[locale][record['category']])}</span><span>{esc(date_label)}</span>{date_markup}</div>
-<div class="story-evidence">{evidence}</div><div class="story-related">{related}</div>{summary_html}
-<details class="screening-details"><summary>{screening}</summary>{context_html}<p>{esc(c['importance'])} {record['importance']}/100</p><div class="archive-scores" aria-label="Polyemergence Method scores">{score_html}</div>{editorial_analysis_html(record, locale)}</details>{trust_box(record, locale)}<div class="archive-story-footer"><div class="archive-tags">{tags}</div><div class="archive-actions">{share_button}<a class="archive-original" href="{esc(record['url'])}" target="_blank" rel="noopener noreferrer">{esc(c['original'])} ↗</a></div></div></article>'''
+{dek_html}{provenance}
+<div class="story-related">{related}</div>{summary_html}
+<details class="screening-details"><summary>{screening}</summary><div class="story-evidence">{evidence}</div>{context_html}<p>{esc(c['importance'])} {record['importance']}/100</p><div class="archive-scores" aria-label="Polyemergence Method scores">{score_html}</div>{editorial_analysis_html(record, locale)}</details>{trust_box(record, locale)}<div class="archive-story-footer"><div class="archive-tags">{tags}</div><div class="archive-actions">{share_button}<a class="archive-original" href="{esc(record['url'])}" target="_blank" rel="noopener noreferrer">{esc(c['original'])} ↗</a></div></div></article>'''
 
 
 def render_daily(output, locale, day, items, ordered_days):

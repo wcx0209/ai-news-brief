@@ -28,7 +28,7 @@ SHELL = '''<!doctype html><html lang="en"><head><title>Home</title>
 <a class="choose-field-link" href="#fields" data-fields-link>Choose field</a>
 <h1 id="intro-title" data-copy="tagline">Home</h1><p data-copy="promise">Home</p><p data-copy="eyebrow">Home</p>
 <span id="update-status">Loading</span><section id="fields"><div class="field-grid" id="field-grid" aria-label="News fields"><a href="/stale-card/">Stale card</a></div></section>
-<section id="brief" hidden><span id="selected-field-label"></span><h2 id="brief-title"></h2>
+<section id="brief" hidden><p id="edition-note" class="edition-note"></p><span id="selected-field-label"></span><h2 id="brief-title"></h2>
 <p id="field-description"></p><div id="lead-story"></div><div id="story-grid"></div><div id="empty-state" hidden></div></section>
 <section id="field-seo-content" class="field-seo-content" hidden></section>
 <footer>PolyEmergence Pte Ltd. Singapore <nav class="footer-topics" aria-label="Fields"><a href="/stale-footer/">Stale footer</a></nav><a href="/en/standards/">Editorial standards</a></footer>
@@ -129,8 +129,8 @@ class DomainPagesTests(unittest.TestCase):
         self.assertEqual(pages.field_sources("programmable_life", self.sources, self.domains)[0][1], 'Lab <R&D> "Official"')
 
     def test_reading_order_unique_h1_and_old_feed_screening_floor(self):
-        items = [self.item("normal"), self.item("weak", importance=64), self.item("academic-low", category="academia", importance=69, scores={"confidence": 90}),
-                 *[self.item(f"academic-{n}", category="academia", importance=90-n, scores={"confidence": 80}) for n in range(4)]]
+        items = [self.item("normal", image_url="https://research.example/image.png"), self.item("weak", importance=64), self.item("academic-low", category="academia", importance=69, scores={"confidence": 90}),
+                 *[self.item(f"academic-{n}", category="academia", importance=90-n, scores={"confidence": 80}, image_url="https://research.example/image.png") for n in range(4)]]
         with tempfile.TemporaryDirectory() as folder:
             result = self.render(items, Path(folder))
         self.assertEqual(len(re.findall(r'<h1\b', result)), 1)
@@ -139,7 +139,7 @@ class DomainPagesTests(unittest.TestCase):
         self.assertNotIn('Current biology academic-low', result)
         self.assertNotIn('Current biology academic-2', result)
         self.assertIn('data-story-id="academic-0"', result)
-        card = re.search(r'<article class="story-card".*?</article>', result, re.S)[0]
+        card = re.search(r'<article class="story-card\b[^"]*".*?</article>', result, re.S)[0]
         self.assertLess(card.index('<h3>'), card.index('story-meta'))
         self.assertLess(card.index('card-copy'), card.index('card-visual'))
         self.assertLess(card.index('story-heading'), card.index('card-visual'))
@@ -152,6 +152,66 @@ class DomainPagesTests(unittest.TestCase):
         lead = re.search(r'<div id="lead-story"[^>]*>(.*?)<div id="story-grid"', result, re.S)[1]
         self.assertLess(lead.index('story-heading'), lead.index('story-visual'))
         self.assertLess(lead.index('story-visual'), lead.index('story-body'))
+
+    def test_edition_has_one_lead_three_features_and_text_only_remaining_briefs(self):
+        items = [self.item(str(n), importance=90-n, image_url=None if n == 2 else "https://research.example/image.png") for n in range(8)]
+        with tempfile.TemporaryDirectory() as folder:
+            for locale in ("en", "zh"):
+                result = self.render(items, Path(folder), locale=locale)
+                self.assertEqual(result.count('class="feature-section"'), 1)
+                self.assertEqual(result.count('class="brief-section"'), 1)
+                self.assertEqual(len(re.findall(r'<article class="story-card is-feature', result)), 3)
+                self.assertEqual(len(re.findall(r'<article class="story-card is-brief', result)), 4)
+                self.assertIn('class="story-card is-feature is-text-led" data-story-id="2"', result)
+                self.assertIn("文字报道 · 暂无原文配图" if locale == "zh" else "Text report · No source image", result)
+                brief_section = re.search(r'<section class="brief-section">(.*?)</section>', result, re.S)[1]
+                self.assertNotIn('<figure', brief_section)
+                self.assertNotIn('<img', brief_section)
+                self.assertNotIn('text-edition-note', brief_section)
+                self.assertIn("更多简讯" if locale == "zh" else "More briefs", brief_section)
+                self.assertIn("2026-11-12 20:00 SGT", result)
+                self.assertIn("原文发布 48 小时窗口" if locale == "zh" else "48-hour source publication window", result)
+                self.assertEqual(len(re.findall(r'<h1\b', result)), 1)
+        for count in (0, 1, 3):
+            with self.subTest(count=count), tempfile.TemporaryDirectory() as folder:
+                result = self.render(items[:count], Path(folder))
+                self.assertNotIn('class="brief-section"', result)
+                self.assertEqual(result.count('class="feature-section"'), 1 if count > 1 else 0)
+
+    def test_source_figures_have_conservative_caption_and_small_failure_note(self):
+        item = self.item(image_url="https://research.example/image.png", source='Lab <script>alert(1)</script>')
+        with tempfile.TemporaryDirectory() as folder:
+            for lead in (False, True):
+                rendered = pages.story_markup(item, "en", {}, Path(folder), lead=lead)
+                visual_class = "story-visual" if lead else "card-visual"
+                self.assertIn(f'<figure class="{visual_class}" data-media-source=', rendered)
+                self.assertIn('<div class="visual-media"><img', rendered)
+                self.assertIn('data-fallback-image', rendered)
+                self.assertIn('data-image-unavailable-note hidden', rendered)
+                self.assertIn('<figcaption class="media-caption"><a href="https://research.example/current"', rendered)
+                self.assertIn('Source image · Lab &lt;script&gt;', rendered)
+                self.assertNotIn('<script>alert(1)</script>', rendered)
+                self.assertNotIn('Photo by', rendered)
+                self.assertNotIn('<svg', rendered)
+                self.assertLess(rendered.index('story-heading'), rendered.index('<figure'))
+                self.assertLess(rendered.index('<figure'), rendered.index('story-body'))
+            video = self.item(url="https://www.youtube.com/watch?v=9J1iZuOUbx8")
+            rendered = pages.story_markup(video, "zh", {}, Path(folder))
+            self.assertIn('https://i.ytimg.com/vi/9J1iZuOUbx8/hqdefault.jpg', rendered)
+            self.assertIn('视频缩略图 · Research Lab', rendered)
+            invalid_video = self.item(url="https://www.youtube.com/watch?v=not-an-id", image_url="https://research.example/image.png")
+            rendered = pages.story_markup(invalid_video, "en", {}, Path(folder))
+            self.assertIn('Source image · Research Lab', rendered)
+            self.assertNotIn('Video thumbnail', rendered)
+            self.assertNotIn('i.ytimg.com', rendered)
+            text_only = pages.story_markup(self.item(), "en", {}, Path(folder), lead=True)
+            self.assertIn('Text report · No source image available', text_only)
+            self.assertNotIn('<figure', text_only)
+            self.assertNotIn('<svg', text_only)
+
+    def test_clean_text_preserves_technical_double_underscore_identifiers(self):
+        text = "`__init__` keeps __checkpoint_key__ unchanged"
+        self.assertEqual(pages.clean_text(text), "__init__ keeps __checkpoint_key__ unchanged")
 
     def test_details_keep_context_tags_and_unknown_stage_out_of_heading(self):
         item = self.item(en={"title": "A complete title", "summary": "Short readable preview.", "full_summary": "A longer summary with full detail."},
@@ -166,7 +226,7 @@ class DomainPagesTests(unittest.TestCase):
                 self.assertIn('<span class="story-source">Research Lab</span>', heading)
                 self.assertIn('class="story-published"><time', heading)
                 self.assertIn('<details class="summary-details" data-summary-details>', body)
-                self.assertIn('<div class="summary-full" data-summary-full>A longer summary with full detail.</div>', body)
+                self.assertIn('<div class="summary-full" data-summary-full><p>A longer summary with full detail.</p></div>', body)
                 screening = re.search(r'<details class="screening-details">(.*?)</details>', body, re.S)[1]
                 self.assertIn("Stage not specified", screening)
                 self.assertIn("story-context", screening)
@@ -182,10 +242,30 @@ class DomainPagesTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as folder:
             rendered = pages.story_markup(item, "en", {}, Path(folder))
         full = re.search(r'<div class="summary-full" data-summary-full>(.*?)</div>', rendered, re.S)[1]
-        self.assertEqual(full, pages.esc(pages.clean_text(summary)))
+        self.assertEqual(full, "<p>" + pages.esc(summary.strip()) + "</p>")
         self.assertIn('<p class="summary-preview" data-summary-short>', rendered)
         self.assertIn('<summary>Expand summary</summary>', rendered)
         self.assertNotIn('class="summary-details" open', rendered)
+
+    def test_expanded_summary_has_only_explicit_headings_safe_paragraphs_and_inline_markup(self):
+        summary = ('## 背景\n\n正文 **重点** 与 `__init__`。\n保留本段第二行。\n\n'
+                   '自然语言标题不会被猜成 heading\n\n'
+                   '### Evidence\n\n<script>alert(1)</script> 与 `<img src=x onerror="bad()">`\n\n'
+                   'Inline ## marker stays text, and __checkpoint_key__ stays intact.')
+        rendered = pages.summary_blocks(summary)
+        self.assertTrue(rendered.startswith('<h4>背景</h4><p>'))
+        self.assertIn('<strong>重点</strong>', rendered)
+        self.assertIn('<code>__init__</code>', rendered)
+        self.assertIn('保留本段第二行。', rendered)
+        self.assertIn('<p>自然语言标题不会被猜成 heading</p>', rendered)
+        self.assertIn('<h4>Evidence</h4>', rendered)
+        self.assertIn('Inline ## marker stays text, and __checkpoint_key__ stays intact.', rendered)
+        self.assertNotIn('<script>', rendered)
+        self.assertNotIn('<img', rendered)
+        self.assertIn('&lt;script&gt;alert(1)&lt;/script&gt;', rendered)
+        self.assertIn('<code>&lt;img src=x onerror=&quot;bad()&quot;&gt;</code>', rendered)
+        self.assertEqual(pages.summary_blocks('`**literal**`'), '<p><code>**literal**</code></p>')
+        self.assertEqual(pages.summary_blocks('##背景与定位\n\n#include <stdio.h>'), '<h4>背景与定位</h4><p>#include &lt;stdio.h&gt;</p>')
 
     def test_github_rankings_cannot_become_daily_news_but_releases_can(self):
         ranked = self.item("ranked", source="GitHub Trending", source_published_at=self.now.isoformat())

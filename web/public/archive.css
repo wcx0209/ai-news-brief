@@ -66,13 +66,29 @@
 .archive-summary-link { display: inline-flex; margin-top: 15px; color: var(--carbon); font-size: 13px; font-weight: 750; text-decoration-color: var(--orange); text-underline-offset: 4px; }
 .archive-article-page { max-width: 1100px; margin-inline: auto; border: 0; background: transparent; }
 .archive-article-page .archive-story { padding: 48px clamp(24px, 4vw, 58px); border-left: 0; }
-.archive-article-page .archive-story > h1 { max-width: 900px; margin: 0 auto 24px; font-size: clamp(32px, 3.5vw, 48px); line-height: 1.18; letter-spacing: -.035em; }
+.archive-article-page .archive-story > h1 { max-width: 900px; margin: 0 auto 20px; color: var(--carbon); font-family: inherit; font-size: clamp(32px, 3.5vw, 48px); font-weight: 800; font-style: normal; line-height: 1.16; letter-spacing: -.035em; }
+.archive-article-page .archive-story > .archive-dek { max-width: 760px; margin: 0 auto 26px; color: #515151; font-size: 20px; font-weight: 450; line-height: 1.65; letter-spacing: -.008em; white-space: normal; }
 .archive-article-page .archive-story > .archive-story-meta,
 .archive-article-page .archive-story > .story-evidence,
 .archive-article-page .archive-story > .story-related,
 .archive-article-page .archive-story > .screening-details,
 .archive-article-page .archive-story > .source-note,
 .archive-article-page .archive-story > .archive-story-footer { max-width: 760px; margin-inline: auto; }
+.archive-provenance { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 17px; padding: 0 0 18px; color: #666; font-family: inherit; font-size: 12px; font-weight: 450; line-height: 1.6; text-transform: none; }
+.archive-provenance a { color: inherit; text-decoration: none; }
+.archive-provenance .archive-source { color: var(--carbon); font-weight: 750; text-decoration-color: var(--orange); text-underline-offset: 4px; }
+.archive-provenance .archive-source:hover { text-decoration-line: underline; }
+.archive-provenance .archive-date > span { margin-right: 4px; color: #777; }
+.archive-provenance .archive-document-type { color: #555; }
+.archive-provenance .archive-field { color: #777; }
+.archive-article-page .archive-provenance { margin-bottom: 0; border-bottom: 1px solid #dedede; }
+.archive-article-page .archive-figure { max-width: 900px; margin: 30px auto 0; }
+.archive-figure img { display: block; width: 100%; height: auto; max-height: 520px; object-fit: contain; background: #f1f1f1; }
+.archive-figure figcaption { margin-top: 9px; color: #777; font-size: 12px; font-weight: 450; line-height: 1.6; overflow-wrap: anywhere; }
+.archive-figure figcaption a { color: inherit; text-decoration-color: #c6c6c6; text-underline-offset: 3px; }
+.archive-figure [hidden] { display: none !important; }
+.archive-article-page .archive-figure.is-unavailable { margin-top: 20px; }
+.archive-media-unavailable { margin: 0; padding: 10px 0; border-block: 1px solid #e5e5e5; color: #777; font-size: 12px; line-height: 1.6; }
 .archive-article-page .story-evidence { margin-top: 18px; }
 .archive-article-page > .archive-story > .story-evidence,
 .archive-article-page > .archive-story > .story-related { display: flex; width: 100%; }
@@ -115,8 +131,11 @@
   .archive-day-card { min-height: 300px; }
   .archive-detail .archive-main { padding: 0 18px 72px; }
   .archive-article-page .archive-story { padding: 26px 0 32px; background: transparent; }
-  .archive-article-page .archive-story > h1 { margin-bottom: 20px; font-size: clamp(28px, 7.8vw, 34px); line-height: 1.25; letter-spacing: -.025em; }
+  .archive-article-page .archive-story > h1 { margin-bottom: 17px; font-size: clamp(28px, 7.8vw, 34px); line-height: 1.23; letter-spacing: -.025em; }
+  .archive-article-page .archive-story > .archive-dek { margin-bottom: 23px; font-size: 18px; line-height: 1.68; }
   .archive-article-page .archive-story-meta { gap: 7px 12px; font-size: 12px; }
+  .archive-article-page .archive-figure { margin-top: 25px; }
+  .archive-figure img { max-height: 420px; }
   .archive-prose { margin-top: 26px; font-size: 16px; line-height: 1.78; }
   .archive-prose h2 { margin-top: 1.75em; font-size: 23px; }
   .archive-prose h3 { font-size: 20px; }

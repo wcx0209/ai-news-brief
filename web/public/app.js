@@ -7,7 +7,7 @@ const COPY = {
     eyebrow: "EMERGING TECHNOLOGY · DAILY BRIEF", tagline: "Tech moves fast.<br>Know what matters.",
     promise: "Essential developments across AI, biotech, energy and more—selected, sourced and explained.",
     loading: "Loading today’s brief…", updated: "Updated", story: "story", stories: "stories", dailyBrief: "Emerging Intelligence",
-    refreshFeed: "Refresh", refreshingFeed: "Refreshing…", pendingFeed: "New content available — update", selectedCount: "Selected", todaySelection: "Today’s selection", screening: "Selection rationale", screeningNote: "Editorial scores guide selection; they are not independent verification. Source claims remain attributed to their authors.", readingContext: "What to watch · editorial perspective", evidenceUnknown: "Source type not yet identified", stageUnknown: "Stage not specified",
+    refreshFeed: "Refresh", refreshingFeed: "Refreshing…", pendingFeed: "New content available — update", selectedCount: "Selected", todaySelection: "Today’s selection", highlights: "Highlights", moreBriefs: "More briefs", sourceImage: "Source image", videoImage: "Video thumbnail", textEdition: "Text report · No source image available", imageUnavailable: "Original image temporarily unavailable", screening: "Selection rationale", screeningNote: "Editorial scores guide selection; they are not independent verification. Source claims remain attributed to their authors.", readingContext: "What to watch · editorial perspective", evidenceUnknown: "Source type not yet identified", stageUnknown: "Stage not specified",
     domainGroup: "Fields", angleGroup: "Story angle", allAngles: "All angles",
     chooseField: "Choose your field", fieldsTitle: "Start with a field.", fieldsIntro: "Choose a field to read its latest news. Each briefing covers the past 48 hours.",
     fieldStep: "CHOOSE A FIELD", newsStep: "READ YOUR BRIEF", changeField: "Change field", past48: "PAST 48 HOURS", noCurrentStories: "No current stories", fieldNews: "news",
@@ -49,7 +49,7 @@ const COPY = {
     eyebrow: "前沿科技 · 每日精选", tagline: "科技在变。<br>看清重点。",
     promise: "每天精选 AI、生命科技、能源等前沿领域的重要进展，附上原始来源与影响摘要。",
     loading: "正在载入今日简报…", updated: "更新于", stories: "条内容", dailyBrief: "涌现情报",
-    refreshFeed: "刷新", refreshingFeed: "正在刷新…", pendingFeed: "有新内容，点击更新", selectedCount: "已精选", todaySelection: "今日精选", screening: "筛选依据", screeningNote: "编辑评分用于筛选，不代表独立验证。来源中的主张仍归属于原作者。", readingContext: "观察重点 · 编辑视角", evidenceUnknown: "来源类型待识别", stageUnknown: "阶段未说明",
+    refreshFeed: "刷新", refreshingFeed: "正在刷新…", pendingFeed: "有新内容，点击更新", selectedCount: "已精选", todaySelection: "今日精选", highlights: "重点报道", moreBriefs: "更多简讯", sourceImage: "原文配图", videoImage: "视频缩略图", textEdition: "文字报道 · 暂无原文配图", imageUnavailable: "原文配图暂不可用", screening: "筛选依据", screeningNote: "编辑评分用于筛选，不代表独立验证。来源中的主张仍归属于原作者。", readingContext: "观察重点 · 编辑视角", evidenceUnknown: "来源类型待识别", stageUnknown: "阶段未说明",
     domainGroup: "领域", angleGroup: "报道分类", allAngles: "全部分类",
     chooseField: "选择关注领域", fieldsTitle: "先选领域，再读新闻。", fieldsIntro: "选择你关注的领域，阅读最近 48 小时的重要进展。",
     fieldStep: "选择领域", newsStep: "阅读领域简报", changeField: "更换领域", past48: "最近 48 小时", noCurrentStories: "暂无最新内容", fieldNews: "新闻",
@@ -214,20 +214,36 @@ function escapeHtml(value = "") {
 
 function plainText(value = "") {
   return String(value)
-    .replace(/\*\*([^*]+)\*\*/g, "$1")
-    .replace(/__([^_]+)__/g, "$1")
-    .replace(/`([^`]+)`/g, "$1")
-    .replace(/\*+/g, "")
-    .replace(/_{2,}/g, "");
+    .replace(/\*\*/g, "")
+    .replace(/`/g, "");
 }
 
 function inlineMarkup(value = "") {
-  return escapeHtml(value)
-    .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
-    .replace(/__([^_]+)__/g, "<strong>$1</strong>")
-    .replace(/`([^`]+)`/g, "<code>$1</code>")
-    .replace(/\*+/g, "")
-    .replace(/_{2,}/g, "");
+  return String(value).split(/(`[^`\n]+`)/g).map(part => {
+    if (part.startsWith("`") && part.endsWith("`")) return `<code>${escapeHtml(part.slice(1, -1))}</code>`;
+    return escapeHtml(part).replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>").replace(/\*{2,}/g, "");
+  }).join("");
+}
+
+function fullSummaryMarkup(value = "") {
+  const blocks = [];
+  let paragraph = [];
+  const flush = () => {
+    if (paragraph.length) blocks.push(`<p>${inlineMarkup(paragraph.join("\n"))}</p>`);
+    paragraph = [];
+  };
+  String(value).replace(/\r\n?/g, "\n").split("\n").forEach(line => {
+    // A Markdown heading must have whitespace or a CJK heading after its hashes;
+    // this intentionally leaves technical lines such as #include unchanged.
+    const heading = line.match(/^ {0,3}#{1,6}(?:[\t ]+|(?=[\u3400-\u9fff]))(.+?)\s*$/u);
+    if (heading) {
+      flush();
+      blocks.push(`<h4>${inlineMarkup(heading[1])}</h4>`);
+    } else if (!line.trim()) flush();
+    else paragraph.push(line);
+  });
+  flush();
+  return blocks.join("");
 }
 
 function safeUrl(value) {
@@ -352,7 +368,7 @@ function summaryMarkup(text, item = {}) {
   const expanded = Boolean(expandable && state.reading[item.id]?.summaryOpen);
   return `<div class="story-summary">
     <p data-summary-short ${expanded ? "hidden" : ""}>${inlineMarkup(shortText)}</p>
-    ${expandable ? `<div class="summary-full" data-summary-full ${expanded ? "" : "hidden"}>${inlineMarkup(fullText)}</div><button class="summary-toggle" type="button" data-summary-toggle aria-expanded="${expanded}">${escapeHtml(COPY[state.locale][expanded ? "collapseSummary" : "expandSummary"])} ${expanded ? "↑" : "↓"}</button>` : ""}
+    ${expandable ? `<div class="summary-full" data-summary-full ${expanded ? "" : "hidden"}>${fullSummaryMarkup(fullText)}</div><button class="summary-toggle" type="button" data-summary-toggle aria-expanded="${expanded}">${escapeHtml(COPY[state.locale][expanded ? "collapseSummary" : "expandSummary"])} ${expanded ? "↑" : "↓"}</button>` : ""}
   </div>`;
 }
 
@@ -578,17 +594,36 @@ function imageMarkup(item, priority = false) {
   const image = safeUrl(videoThumbnail || item.image_url);
   const alt = textFor(item).title;
   const loading = priority ? 'fetchpriority="high"' : 'loading="lazy"';
-  if (image === "#") return fallbackCover(item);
-  return `<img class="media-${imageFit(item)}" data-fallback-image src="${escapeHtml(image)}" alt="${escapeHtml(alt)}" ${loading} decoding="async" referrerpolicy="no-referrer">${fallbackCover(item, true)}`;
+  if (image === "#") return "";
+  return `<img class="media-${imageFit(item)}" data-fallback-image src="${escapeHtml(image)}" alt="${escapeHtml(alt)}" ${loading} decoding="async" referrerpolicy="no-referrer">`;
+}
+
+function hasSourceImage(item) {
+  return safeUrl(youtubeThumbnail(item) || item.image_url) !== "#";
+}
+
+function visualMarkup(item, slot = "card", priority = false) {
+  if (!hasSourceImage(item)) return `<div class="text-edition-note">${escapeHtml(COPY[state.locale].textEdition)}</div>`;
+  const caption = `${COPY[state.locale][youtubeThumbnail(item) ? "videoImage" : "sourceImage"]} · ${item.source || ""}`;
+  return `<figure class="${slot}-visual" data-media-source="${escapeHtml(item.source || "")}"><div class="visual-media">${imageMarkup(item, priority)}<div class="text-edition-note" data-image-unavailable-note hidden>${escapeHtml(COPY[state.locale].imageUnavailable)}</div></div><figcaption class="media-caption"><a href="${escapeHtml(safeUrl(item.url))}" target="_blank" rel="noopener noreferrer">${escapeHtml(caption)}</a></figcaption></figure>`;
 }
 
 function activateImageFallback(image) {
   const visual = image.closest(".story-visual, .card-visual");
-  const fallback = visual?.querySelector("[data-fallback-cover]");
+  const fallback = visual?.querySelector("[data-image-unavailable-note]");
   if (!visual || !fallback) return;
   image.hidden = true;
   fallback.hidden = false;
-  visual.classList.add("has-brand-cover");
+  visual.classList.add("is-text-visual");
+  visual.closest("[data-story-id]")?.classList.add("is-text-led");
+  const caption = visual.querySelector(".media-caption a");
+  if (caption) caption.textContent = `${COPY[state.locale].imageUnavailable}${visual.dataset.mediaSource ? ` · ${visual.dataset.mediaSource}` : ""}`;
+}
+
+function inspectLoadedImages(root = document) {
+  [...(root.querySelectorAll?.("img[data-fallback-image]") || [])].forEach(image => {
+    if (image.complete && (image.naturalWidth < 480 || image.naturalHeight < 270)) activateImageFallback(image);
+  });
 }
 
 document.addEventListener("error", event => {
@@ -601,6 +636,10 @@ document.addEventListener("load", event => {
   const tooSmall = image.naturalWidth < 480 || image.naturalHeight < 270;
   if (tooSmall) activateImageFallback(image);
 }, true);
+
+// Deferred scripts can miss an SSR image's earlier error/load event.
+inspectLoadedImages();
+window.addEventListener("pageshow", () => inspectLoadedImages());
 
 document.addEventListener("click", event => {
   const toggle = event.target.closest?.("[data-summary-toggle]");
@@ -639,26 +678,49 @@ function scoreBreakdown(item, compact = false) {
 
 function renderLead(item) {
   $("#lead-story").hidden = !item;
+  $("#lead-story").classList.toggle("is-text-led", Boolean(item && !hasSourceImage(item)));
   if (!item) { $("#lead-story").innerHTML = ""; delete $("#lead-story").dataset.storyId; return; }
   const text = textFor(item);
   $("#lead-story").dataset.storyId = item.id;
   $("#lead-story").innerHTML = `
     <div class="lead-copy">
       ${storyHeadingMarkup(item, text)}
-      <div class="story-visual">${imageMarkup(item, true)}</div>
+      ${visualMarkup(item, "story", true)}
       ${storyBodyMarkup(item, text)}
     </div>`;
+  inspectLoadedImages($("#lead-story"));
 }
 
-function renderCard(item) {
+function renderCard(item, tier = "feature") {
   const text = textFor(item);
-  return `<article class="story-card" data-story-id="${escapeHtml(item.id)}">
+  const brief = tier === "brief";
+  return `<article class="story-card is-${brief ? "brief" : "feature"}${brief || !hasSourceImage(item) ? " is-text-led" : ""}" data-story-id="${escapeHtml(item.id)}">
     <div class="card-copy">
       ${storyHeadingMarkup(item, text)}
-      <div class="card-visual">${imageMarkup(item)}</div>
+      ${brief ? "" : visualMarkup(item)}
       ${storyBodyMarkup(item, text)}
     </div>
   </article>`;
+}
+
+function renderEditionSections(items) {
+  const features = items.slice(0, 3);
+  const briefs = items.slice(3);
+  return `${features.length ? `<section class="feature-section"><h3 class="edition-subheading">${escapeHtml(COPY[state.locale].highlights)}</h3><div class="feature-grid">${features.map(item => renderCard(item, "feature")).join("")}</div></section>` : ""}${briefs.length ? `<section class="brief-section"><h3 class="edition-subheading">${escapeHtml(COPY[state.locale].moreBriefs)}</h3><div class="brief-grid">${briefs.map(item => renderCard(item, "brief")).join("")}</div></section>` : ""}`;
+}
+
+function editionNote(feed = state.feed) {
+  const generated = new Date(feed?.generated_at || "");
+  if (Number.isNaN(generated.getTime())) return "";
+  const formatted = new Intl.DateTimeFormat(state.locale === "zh" ? "zh-CN" : "en-SG", {
+    timeZone: "Asia/Singapore", year: "numeric", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit", hour12: false
+  }).format(generated);
+  return state.locale === "zh" ? `更新于 ${formatted} SGT · 最近 48 小时` : `Updated ${formatted} SGT · Past 48 hours`;
+}
+
+function updateEditionNote() {
+  const note = $("#edition-note");
+  if (note && state.feed) note.textContent = editionNote();
 }
 
 function storyHeadingMarkup(item, text) {
@@ -751,6 +813,7 @@ function renderFeed() {
   const seoContent = $("#field-seo-content");
   if (seoContent) seoContent.hidden = !hasField || Boolean(seoContent.dataset.field && seoContent.dataset.field !== state.domain);
   updateFieldLinks();
+  updateEditionNote();
   if (state.feed) {
     const updated = formatDate(state.feed.generated_at);
     const count = hasField ? items.filter(item => matchesDomain(item, state.domain)).length : items.length;
@@ -780,7 +843,8 @@ function renderFeed() {
   $("#field-description").textContent = field.description?.[state.locale] || "";
   const filtered = items.filter(item => matchesDomain(item, state.domain) && matchesFilter(item, state.category));
   renderLead(filtered[0]);
-  $("#story-grid").innerHTML = filtered.slice(1).map(renderCard).join("");
+  $("#story-grid").innerHTML = renderEditionSections(filtered.slice(1));
+  inspectLoadedImages($("#story-grid"));
   $("#story-grid").hidden = filtered.length < 2;
   $("#empty-state").hidden = filtered.length > 0;
   $("#empty-state").textContent = fieldItems.length ? COPY[state.locale].noStories : COPY[state.locale].fieldEmpty;
@@ -1057,6 +1121,7 @@ function updateFeedStatus() {
   const count = state.domain ? state.feed.items.filter(item => matchesDomain(item, state.domain)).length : state.feed.items.length;
   const noun = state.locale === "zh" ? "条" : count === 1 ? COPY.en.story : COPY.en.stories;
   $("#update-status").textContent = `${COPY[state.locale].updated} ${formatDate(state.feed.generated_at)} · ${COPY[state.locale].selectedCount} ${count} ${noun}`;
+  updateEditionNote();
   updateObservationFreshness();
 }
 

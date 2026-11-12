@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>多重涌现</title><link>https://polyemergence.com/zh/archive/</link><description>按新加坡发布日期整理的多重涌现人工智能与新兴科技情报永久记录。</description><language>zh-Hans</language><lastBuildDate>Thu, 12 Nov 2026 15:03:57 +0000</lastBuildDate><atom:link href="https://polyemergence.com/feed-zh.xml" rel="self" type="application/rss+xml" /><item><title>美国国家标准与技术研究院将举办第二届半导体可追溯性与来源研讨会</title><link>https://polyemergence.com/zh/archive/2026/12/08/c4ba7bc3-4a3f-4409-acbc-fe905881cb77/</link><guid isPermaLink="true">https://polyemergence.com/zh/archive/2026/12/08/c4ba7bc3-4a3f-4409-acbc-fe905881cb77/</guid><pubDate>Tue, 08 Dec 2026 13:30:00 +0000</pubDate><category>政策</category><category>新制造与产业基础设施</category><description>据NIST Manufacturing发布的信息：
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>多重涌现</title><link>https://polyemergence.com/zh/archive/</link><description>按新加坡发布日期整理的多重涌现人工智能与新兴科技情报永久记录。</description><language>zh-Hans</language><lastBuildDate>Thu, 12 Nov 2026 15:23:39 +0000</lastBuildDate><atom:link href="https://polyemergence.com/feed-zh.xml" rel="self" type="application/rss+xml" /><item><title>美国国家标准与技术研究院将举办第二届半导体可追溯性与来源研讨会</title><link>https://polyemergence.com/zh/archive/2026/12/08/c4ba7bc3-4a3f-4409-acbc-fe905881cb77/</link><guid isPermaLink="true">https://polyemergence.com/zh/archive/2026/12/08/c4ba7bc3-4a3f-4409-acbc-fe905881cb77/</guid><pubDate>Tue, 08 Dec 2026 13:30:00 +0000</pubDate><category>政策</category><category>新制造与产业基础设施</category><description>据NIST Manufacturing发布的信息：
 
 半导体供应链极其复杂，横跨全球的设计、制造、封装与部署等多个环节。为了确保芯片产品的真实性与安全性，美国国家标准与技术研究院正与行业领袖、政府机构及学术界紧密合作，建立用于追踪芯片的标准化框架。
 
@@ -29,6 +29,7 @@ AI 企业 Cohere 宣布任命行业资深专家 Jaya Baloo 为公司首位首席
 在播客节目《Denatured》的这期内容中，BioSpace洞察总监詹妮弗与Antheia首席执行官克里斯蒂娜以及Cencora数据与AI产品负责人凯尔共同探讨了日益严重的药物短缺威胁。
 探讨的方向与方案
 访谈深入分析了药品短缺情况不断恶化的背后原因。嘉宾们探讨了潜在的应对方案，重点关注如何利用预测性分析来预判供应链中断，以及如何通过灵活的分布式制造来增强基本药物的供应韧性，从而改善患者的用药可及性。</description><source url="https://www.biospace.com/drug-development/can-we-finally-get-ahead-of-drug-shortages">BioSpace Drug Development</source></item><item><title>Meta 签署清洁制造协议以推进数据中心供应链低碳化</title><link>https://polyemergence.com/zh/archive/2026/11/12/2f53cf8a-2f7d-4d40-a894-92e83a04fd2a/</link><guid isPermaLink="true">https://polyemergence.com/zh/archive/2026/11/12/2f53cf8a-2f7d-4d40-a894-92e83a04fd2a/</guid><pubDate>Thu, 12 Nov 2026 12:00:07 +0000</pubDate><category>商业</category><category>人工智能</category><description>据Meta Newsroom AI发布的信息：
+
 背景
 Meta 表示正在采取行动，通过把目标对准上游制造环节，来推进其数据中心供应链的绿色转型。
 细节
@@ -77,6 +78,7 @@ H3-Image支持高达16张参考图输入，保障了角色一致性与分镜连�
 作者使用了包含 188 件鞋类物体的 Google 斯堪尼斯对象数据集子集。为了在避免遗忘原有能力的同时高效适配模型，他们将 LoRA 适配器专门应用到了稀疏结构流 DiT 和形状流 DiT 组件中，同时冻结了纹理生成阶段。整个训练过程通过 Hugging Face Jobs 在 A100 GPU 上运行，或通过 Docker 在本地执行。
 实验结果
 在测试集上的量化评估显示出显著改进。微调后的模型平均 F 分数从基础模型的 0.276 提升到了 0.803，倒角距离（Chamfer distance）从 0.174 降至 0.033，法线一致性也有所提高，证明了有针对性的微调能够成功让通用 3D 模型适应特定的物体类别。</description><source url="https://huggingface.co/blog/3d-lora-finetuning">Hugging Face</source></item><item><title>ParseBench-2：引入错误严重程度评估的文档解析基准</title><link>https://polyemergence.com/zh/archive/2026/11/12/c4a2bdc8-8d18-4658-8e05-53aad1e46f50/</link><guid isPermaLink="true">https://polyemergence.com/zh/archive/2026/11/12/c4a2bdc8-8d18-4658-8e05-53aad1e46f50/</guid><pubDate>Thu, 12 Nov 2026 00:00:00 +0000</pubDate><category>模型</category><category>人工智能</category><description>据LlamaIndex Blog发布的信息：
+
 背景与改进
 传统的文档解析基准往往采用脆弱的评估指标，会对无害的格式变化过度惩罚，却对关键数据错误（如数字颠倒）惩罚不足。ParseBench-2 引入了基于专家定义的 330 种错误类型的严重程度评分机制，涵盖文本、格式、表格、图表、布局和表单六个维度。该基准的文档语料库从 2.1k 扩大到 4.3k 个真实企业文档，包含 1,025 个图表以及来自 30 个国家的 500 页表单。
 性能洞察与 OCRia-1.5
@@ -97,6 +99,7 @@ AWS Neuron SDK 是亚马逊云科技专门为开发者准备的核心开发工�
 这次发布的 2.33.1 版本主要是在上一个大版本的基础上进行了错误修复。虽然它没加什么天翻地覆的新功能，但能让依赖亚马逊芯片的大型 AI 系统跑得更稳当、更少出故障。
 怎么开始用
 开发者可以直接通过查阅亚马逊云科技的官方文档，把这些最新的补丁应用到自己现有的机器学习工作流里去。</description><source url="https://github.com/aws-neuron/aws-neuron-sdk/releases/tag/v2.33.1">AWS Neuron Releases</source></item><item><title>谷歌研究利用穿戴设备和人工智能预测个性化健康习惯</title><link>https://polyemergence.com/zh/archive/2026/11/12/c0797d67-c4a3-4388-b670-872c4b65275f/</link><guid isPermaLink="true">https://polyemergence.com/zh/archive/2026/11/12/c0797d67-c4a3-4388-b670-872c4b65275f/</guid><pubDate>Wed, 11 Nov 2026 19:54:00 +0000</pubDate><category>研究</category><category>人工智能</category><description>据Google Research发布的信息：
+
 背景介绍
 心脏病、肾脏疾病以及2型糖尿病等代谢紊乱形成了一个紧密相连的网络，被称为心血管-肾脏-代谢综合征。这些健康隐患往往在症状出现前的数年就已悄然萌芽。虽然智能手表能轻松记录过去的活动，但要把这些数据变成有指导意义的实际行动却非常困难。
 框架细节
@@ -118,6 +121,7 @@ AWS Neuron SDK 是亚马逊云科技专门为开发者准备的核心开发工�
 尽管好处显而易见，将AI融入食品科学也伴随着明显的风险。企业非常担心将敏感的测试结果和独家配方暴露给外部AI模型。为了降低这些风险，各大机构正在部署企业级的安全环境、构建内部解决方案，或执行严格的合同保障。此外，企业必须弥合碎片化的内部知识，在研发、IT和商业团队之间建立跨部门权责划分，而不是仅仅依靠孤立的试点项目。
 人的核心优势
 虽然自动化系统和更便宜的AI工具正在重塑整个行业，但人类的专业知识依然不可替代。由于现成的AI工具对所有人开放，企业独特的人类洞察力才构成了真正的竞争优势。最成功的食品公司正在从小处着手以找出瓶颈、证明清晰的价值，并周密地重新设计工作流程，以便在AI驱动的市场中脱颖而出。</description><source url="https://www.foodnavigator.com/Article/2026/11/11/ai-use-in-food-rd-pros-and-cons/?utm_source=RSS_Feed&amp;utm_medium=RSS&amp;utm_campaign=RSS">FoodNavigator</source></item><item><title>谷歌推出 Gemini Decisions API，实现极速低成本的多模态决策</title><link>https://polyemergence.com/zh/archive/2026/11/12/4f932ab6-f9cd-410c-b66d-fa480014c610/</link><guid isPermaLink="true">https://polyemergence.com/zh/archive/2026/11/12/4f932ab6-f9cd-410c-b66d-fa480014c610/</guid><pubDate>Wed, 11 Nov 2026 18:00:00 +0000</pubDate><category>模型</category><category>人工智能</category><description>据Google AI发布的信息：
+
 工作原理
 跟传统大模型逐个字蹦答案不同，Gemini Decision 1 采用单次前向计算直接给候选选项打分。它支持文本、图片、音频、视频和最多 25.6 万个 Token 的 PDF，开发者可以在单次请求中同时问多达 1,000 个独立问题。每个答案都会附带一个置信度分数，方便代码自动把拿不准的情况转给人工或者备用方案。
 性能与价格
@@ -132,6 +136,7 @@ langchain-typesafe 库旨在通过强制执行严格的类型检查，让使用 
 核心功能与改进
 
 除了常规的技术升级，这次更新还引入了一个全新的 TypeSafeClassifier，用作你 AI 工作流中的可靠决策模型。同时，为了精简代码库，官方已经正式弃用了旧的实验性中间件。</description><source url="https://github.com/langchain-ai/langchain/releases/tag/langchain-typesafe%3D%3D0.1.0">LangChain Releases</source></item><item><title>麻省理工和东北大学借鉴自然界网络，设计出更强韧的超材料</title><link>https://polyemergence.com/zh/archive/2026/11/12/0f60883b-b09f-40ee-953e-fe88cc1cfddb/</link><guid isPermaLink="true">https://polyemergence.com/zh/archive/2026/11/12/0f60883b-b09f-40ee-953e-fe88cc1cfddb/</guid><pubDate>Wed, 11 Nov 2026 16:00:00 +0000</pubDate><category>研究</category><category>新制造与产业基础设施</category><description>据MIT Advanced Manufacturing发布的信息：
+
 背景
 几十年来，合成超材料的设计通常采用单一建筑模块即所谓的单胞，通过复制和粘贴来形成精确的周期性微观结构。虽然这种有序的方法提升了整体性能，但它有一个重大缺陷：一旦某个区域出现裂纹，周围相同的单胞就会迅速屈曲，导致整个结构崩溃。
 细节
@@ -147,6 +152,7 @@ langchain-typesafe 库旨在通过强制执行严格的类型检查，让使用 
 Ronen Schneider博士在节目中探讨了Natera的RenasightIQ如何将基因检测结果与来自30万多名患者的病史、实验室数据及理赔数据相结合。通过将基因型作为试验变量，药物研发团队可以更好地理解疾病的自然发展史、选择更准确的疗效终点，并优化患者招募。这种方法不仅能帮助团队重新审视以往研究中的盲区，还能利用真实世界数据对未来的研发策略进行压力测试。</description><source url="https://www.fiercebiotech.com/sponsored/use-kidney-genetics-strengthen-clinical-trial-design">Fierce Biotech</source></item><item><title>PepGen股价暴涨近一倍，其治疗肌强直性营养不良的新药临床数据惊艳</title><link>https://polyemergence.com/zh/archive/2026/11/11/39c7fd93-4992-4cdd-8440-118cea6fea4e/</link><guid isPermaLink="true">https://polyemergence.com/zh/archive/2026/11/11/39c7fd93-4992-4cdd-8440-118cea6fea4e/</guid><pubDate>Wed, 11 Nov 2026 15:23:20 +0000</pubDate><category>商业</category><category>生物技术与可编程生命</category><description>生物医药公司 PepGen 近日宣布，其用于治疗 1 型肌强直性营养不良的药物 PGN-EDODM1 在二期临床试验中表现亮眼。在第 13 周时，患者平均基因剪接纠正率达到了 46.5%，远超竞争对手通常不到 30% 的水平。受此消息鼓舞，该公司股价单日暴涨 92%。
 
 除了亮眼的实验室数据，研究人员还观察到患者在肌肉控制、行动能力和握力等方面出现了 实际功能改善。更令人期待的是，这只是最低剂量组的表现，更高剂量的试验结果预计在 2027 年上半年揭晓。尽管此前曾遭遇美国 FDA 的部分临床暂停，PepGen 依然凭借海外临床站点的亮眼数据，顺势启动了 1.25 亿美元的公开股票发售以推进后续研发。</description><source url="https://www.biospace.com/drug-development/pepgen-shares-almost-double-as-dm1-oligonucleotide-achieves-best-in-class-splicing">BioSpace Drug Development</source></item><item><title>亚马逊 SageMaker AI 为实时流式传输推出按量计费功能</title><link>https://polyemergence.com/zh/archive/2026/11/11/c66e141c-4c9e-496d-86d0-aa1f3d22b241/</link><guid isPermaLink="true">https://polyemergence.com/zh/archive/2026/11/11/c66e141c-4c9e-496d-86d0-aa1f3d22b241/</guid><pubDate>Wed, 11 Nov 2026 15:10:23 +0000</pubDate><category>商业</category><category>人工智能</category><description>据AWS Machine Learning发布的信息：
+
 背景
 语音助手和实时转写等实时语音 AI 应用严重依赖双向流式传输。然而，为这些长时间运行的会话计费非常困难，因为传统的 AWS Marketplace 软件计费仅适用于标准的请求-响应 API，即可计费数量在请求结束时即可立即可知。对于持续长达 30 分钟的直播流，按小时计费往往在静默期也会向客户收费，无法真正反映实际消耗。
 技术细节
@@ -194,6 +200,7 @@ AI100是一个每五年评估一次人工智能发展及其社会影响的长期
 根据彭博新能源财经（BloombergNEF）的研究显示，美、英及欧洲大陆计划中的数据中心正提议建设总计 181吉瓦 的燃气发电能力。其中，约 90% 的项目计划在美国落地，每年可能产生约 3.45 亿吨的二氧化碳当量，相当于 7280万辆 燃气汽车的年碳排放量。预测显示，到 2035 年，AI 数据中心的用电量将激增至原来的近四倍。
 行业影响
 虽然开发商声称这些燃气发电厂只是等待电网连接期间的临时措施，但专家和环保人士普遍担忧，一旦这些发电机组建成并投入运行，巨大的经济效益可能会诱使企业长期使用，从而带来持久的碳排放风险。例如，英国政府近期已允许部分重点数据中心在等待期间建设并运行临时化石燃料电厂，引发了外界对气候承诺能否兑现的强烈质疑。</description><source url="https://www.theguardian.com/world/2026/nov/11/ai-datacentres-on-site-gas-fired-power-stations">The Guardian AI</source></item><item><title>IBM 宣布 2026 年为量子优势元年并公布未来发展路线图</title><link>https://polyemergence.com/zh/archive/2026/11/11/abc308bd-0594-49f6-a23f-a029b07bcf38/</link><guid isPermaLink="true">https://polyemergence.com/zh/archive/2026/11/11/abc308bd-0594-49f6-a23f-a029b07bcf38/</guid><pubDate>Wed, 11 Nov 2026 12:00:00 +0000</pubDate><category>公司</category><category>量子技术</category><description>据IBM Quantum发布的信息：
+
 硬件与速度突破
 IBM 推出了全新的 Nighthawk r2 处理器，拥有 120 个可编程量子比特及方格晶格连接。它的重置架构实现了每秒高达 10万 个样本的吞吐量，比 Heron 提升了 25 倍。这种高速特性使研究人员能够高效运行前沿电路，并为未来的纠错技术提供绝佳的测试平台。
 容错路线与集成层
@@ -201,6 +208,7 @@ IBM 推出了全新的 Nighthawk r2 处理器，拥有 120 个可编程量子比
 为了实现在 2029 年推出容错量子计算机 IBM Quantum Starling 的目标，IBM 正在并行共设计各项组件，将每个模块的约瑟夫森结数量减半，并成功利用 l-coupler 实现了可靠的芯片间连接。在软件方面，全新的托管工作流与定向执行模型让团队能够跨数十亿个样本扩展混合量子经典工作负载。
 实际应用落地
 凭借 2026 年多达 39 个进行中或已完成的客户项目，IBM 正在将验证过的量子性能转化为化学、材料、能源和金融等领域的实际解决方案。Qiskit Fermions 和优化映射器等新工具正帮助各行各业解决复杂问题，包括蛋白质配体模拟和电网优化。</description><source url="https://www.ibm.com/quantum/blog/qdc-2026">IBM Quantum</source></item><item><title>诺华基因疗法面临肿瘤调查，FDA对GLP-1眼部风险发出警告</title><link>https://polyemergence.com/zh/archive/2026/11/11/6e6809ff-f7e1-4388-ac56-f6cb5d4d3ec4/</link><guid isPermaLink="true">https://polyemergence.com/zh/archive/2026/11/11/6e6809ff-f7e1-4388-ac56-f6cb5d4d3ec4/</guid><pubDate>Wed, 11 Nov 2026 10:44:50 +0000</pubDate><category>可编程生命</category><category>生物技术与可编程生命</category><description>本周生物医药行业迎来了多项重磅监管和临床进展。诺华证实，使用其脊髓性肌萎缩症基因疗法Zolgensma的患者中有9人长出了肿瘤，这引发了FDA的调查。此外，诺华与合作伙伴Ionis公布了其心血管药物pelacarsen失败试验的详细数据，这让外界对靶向脂蛋白(a)的疗效产生了更多质疑。在监管方面，FDA要求市场上所有12款获批的GLP-1受体激动剂（包括诺和诺德和礼来的热门药物）更新标签，警告可能增加罕见眼病的风险。同时，FDA在这个11月面临着繁重的审批任务，将对Summit Therapeutics、Vertex和Capricor Therapeutics等公司的多款疗法做出最终决定。</description><source url="https://www.biospace.com/business/novartis-zolgensma-woes-bios-china-plan-glp-1s-new-safety-warning-fdas-stacked-november">BioSpace Drug Development</source></item><item><title>谷歌利用AI还原了传奇艺术家埃丝特·马兰古早年的珍贵记忆</title><link>https://polyemergence.com/zh/archive/2026/11/11/9d25fad1-a8f9-44f8-a862-20b91a1c532e/</link><guid isPermaLink="true">https://polyemergence.com/zh/archive/2026/11/11/9d25fad1-a8f9-44f8-a862-20b91a1c532e/</guid><pubDate>Wed, 11 Nov 2026 09:00:00 +0000</pubDate><category>社会</category><category>人工智能</category><description>据Google AI发布的信息：
+
 背景介绍
 谷歌艺术与文化平台联合多方策展人和研究人员，为南非传奇艺术家埃丝特·马兰古庆祝91岁生日，并推出了她的首个大型在线回顾展，向这位用艺术惊艳世界的女性致敬。
 技术细节
@@ -240,18 +248,21 @@ IBM 推出了全新的 Nighthawk r2 处理器，拥有 120 个可编程量子比
 尽管只有 0.8B 参数，BotPsy 的智能代理能力大致为其基础模型的两倍。它在多个工具调用和多轮对话基准测试中，表现超越了包括体量大 2.5 倍的 Qwen3.5-2B-Think 在内的多个更大模型，同时使用的推理 token 更少。</description><source url="https://huggingface.co/blog/qvac/botpsy">Hugging Face</source></item><item><title>为什么世界上第一个聊天机器人的发明者后来反对人工智能</title><link>https://polyemergence.com/zh/archive/2026/11/11/752ef1f0-c7fc-41f6-91a9-8fd2f817aec9/</link><guid isPermaLink="true">https://polyemergence.com/zh/archive/2026/11/11/752ef1f0-c7fc-41f6-91a9-8fd2f817aec9/</guid><pubDate>Wed, 11 Nov 2026 05:00:31 +0000</pubDate><category>社会</category><category>人工智能</category><description>《卫报》深度长文播客重新回顾了本·塔诺夫于2023年撰写的一篇关于约瑟夫·魏森鲍姆的文章。作为人工智能萌芽阶段的见证者，魏森鲍姆曾开发出模拟人类对话的早期程序ELIZA。然而，看到人们轻易将人类情感投射到冰冷的机器上，他开始感到深深的担忧。他指出，人类思维和情感中有些核心部分是计算机永远无法复制的，并警告社会切勿盲目迷信技术而放弃人类的同理心与判断力。</description><source url="https://www.theguardian.com/news/audio/2026/nov/11/from-the-archive-weizenbaums-nightmares-how-the-inventor-of-the-first-chatbot-turned-against-ai-podcast">The Guardian AI</source></item><item><title>从相关帖子到可归因文本片段：用于抑郁症问卷推断的显式症状证据</title><link>https://polyemergence.com/zh/archive/2026/11/11/e30dd267-0bb2-42e6-9111-3dcd30516aa9/</link><guid isPermaLink="true">https://polyemergence.com/zh/archive/2026/11/11/e30dd267-0bb2-42e6-9111-3dcd30516aa9/</guid><pubDate>Wed, 11 Nov 2026 05:00:00 +0000</pubDate><category>学术</category><category>人工智能</category><description>据这篇预印本作者报告：从长期的社交媒体历史记录中推断标准化的抑郁症问卷回答，往往会受到检索错误的影响，例如捕捉到关于他人的讨论或缺乏精确归因的多症状帖子。为了解决这一问题，作者提出了SREE（症状检索与证据扎根推理）。SREE提取第一人称和特定于症状的文本片段，使用受设施区位启发的优化目标选择代表性子集，并进行证据门控推理。在BDI-Sen和eRisk 2019-2021数据集上的评估表明，与标准密集检索相比，SREE在帖子级别的精确度和F1值上取得了显著提升，同时在各个eRisk集合中获得了最高的确切条目级一致性。这是一篇预印本论文，虽然它改进了证据定位和归因，但来源并未详细说明独立复制或代码发布状态。</description><source url="https://arxiv.org/abs/2611.12900">arXiv Computation and Language</source></item><item><title>面向自主X射线实验的可审计人机智能体团队</title><link>https://polyemergence.com/zh/archive/2026/11/11/ab951e36-6269-4eae-9b63-6f954b1608b9/</link><guid isPermaLink="true">https://polyemergence.com/zh/archive/2026/11/11/ab951e36-6269-4eae-9b63-6f954b1608b9/</guid><pubDate>Wed, 11 Nov 2026 05:00:00 +0000</pubDate><category>学术</category><category>人工智能</category><description>据这篇预印本作者报告：该预印本描述了利用基于经验证科学方法的编码智能体基础设施，在不断演变的、人类定义的目标下对纳米粒子超晶格进行自主同步辐射X射线实验。通过捕获完整的人机智能体及智能体间对话记录，作者对决策溯源进行了审计并表征了认知分工。在三项实验中，61%至67%的信息涉及解释或判断，方法学和科学贡献的比例从第一项实验的46%上升到后续实验的56%至61%。此外，59%至68%的纠错涉及多名参与者，大约一半的决策吸收了其他参与者的输入。尽管该研究展示了智能体系统与物理仪器的重要集成，但它仍是一篇预印本，需要进一步的独立复制以及代码或硬件可用性验证。</description><source url="https://arxiv.org/abs/2611.12933">arXiv Artificial Intelligence</source></item><item><title>用 Gemini Notebook 轻松搞定社内问答，告别繁琐翻规章</title><link>https://polyemergence.com/zh/archive/2026/11/11/b7ca5df3-a34e-4f83-9120-e152c5305bee/</link><guid isPermaLink="true">https://polyemergence.com/zh/archive/2026/11/11/b7ca5df3-a34e-4f83-9120-e152c5305bee/</guid><pubDate>Wed, 11 Nov 2026 03:50:55 +0000</pubDate><category>模型</category><category>人工智能</category><description>处理关于报销、规章和系统操作的重复性内部咨询，常常让行政和人事部门苦不堪言。Gemini Notebook 通过读取现有的 PDF、文档和网页等资料，让企业无需重新编写内容就能快速搭建问答工具。当员工提问时，它不仅能给出准确回答，还会附带原始资料的出处，并在资料缺失时如实告知，避免 AI 瞎编。
 
 除了日常答疑，它还能一键生成常见问题解答和工作交接资料，甚至能自动整理出演示幻灯片。为了确保数据安全，专家建议企业通过付费账号管理权限、严格核对上传资料的时效性，并采取从小范围单项业务开始试水的方式，逐步向全员推广。</description><source url="https://kn.itmedia.co.jp/kn/article/2611/11/2000003077/">ITmedia AI+</source></item><item><title>AI和机器人如何帮回收厂把混杂垃圾变成宝</title><link>https://polyemergence.com/zh/archive/2026/11/11/26ddc629-c253-40d1-87d8-7978672ba43f/</link><guid isPermaLink="true">https://polyemergence.com/zh/archive/2026/11/11/26ddc629-c253-40d1-87d8-7978672ba43f/</guid><pubDate>Wed, 11 Nov 2026 03:00:20 +0000</pubDate><category>创业</category><category>机器人与自主系统</category><description>据NVIDIA Generative AI发布的信息：
+
 垃圾回收的困境
 全球只有不到7%的材料来自回收资源，而城市生活垃圾预计到2050年将翻一番。传统的回收严重依赖人工，不仅费时费力，还很难把混杂的废弃物准确分类，导致许多材料只能被降级处理。
 AI带来的改变
 全球多地的初创企业正在将AI与机器人技术引入垃圾分拣线。中国台湾的AIRECO利用视觉AI实现塑料的高精度分类，计划将处理能力提升近三倍。美国的EverestLabs AI在高速传送带上部署分拣机器人，目前已处理了数十亿个物件。英国的Greyparrot则通过实时监控废物流，彻底改变了过去靠人工抽样检查的落后做法。此外，德国的reverse.fashion利用高分辨率AI快速识别旧衣服的材质和瑕疵，把原本需要一周的人工分拣缩短到一个小时。
 实际应用效果
 通过边缘计算和深度学习，这些AI系统正在大幅提升回收效率，让更多塑料和纺织品能够真正循环使用。这不仅降低了企业的运营成本，也为全球的可持续发展注入了强劲动力。</description><source url="https://blogs.nvidia.com/blog/ai-recycling-startups/">NVIDIA Generative AI</source></item><item><title>月之暗面 Kimi K3.1 Pro 高速版正式登陆 Amazon Bedrock</title><link>https://polyemergence.com/zh/archive/2026/11/11/113cf52b-5439-4525-9af7-443650ea97d8/</link><guid isPermaLink="true">https://polyemergence.com/zh/archive/2026/11/11/113cf52b-5439-4525-9af7-443650ea97d8/</guid><pubDate>Wed, 11 Nov 2026 01:07:19 +0000</pubDate><category>模型</category><category>人工智能</category><description>据AWS Machine Learning发布的信息：
+
 背景介绍
 月之暗面与亚马逊云科技进一步合作，将其最新的 Kimi K3.1 Pro 高速版 引入了 Amazon Bedrock 平台。该版本基于 K3 架构，通过大量的后训练专门优化了长周期的智能体任务，并大幅减少了事实性错误。
 核心细节
 这款高速模型实现了比标准版快 2 到 3 倍的输出速度。开发者只需修改模型 ID 即可无缝接入。它支持灵活的推理深度调节、工具调用、结构化输出以及显式提示词缓存等功能。在安全性方面，AWS 确保用户数据严格保留在云端边界内，绝不与月之暗面共享，也不会用于模型训练。
 行业影响
 凭借半价的 Flex 经济档位以及针对编程助手 OpenCode 优化的高速吞吐，此次上线大幅降低了企业部署高级 AI 智能体的成本和门槛。更快的生成速度直接缩短了多步骤调试和代码编写的等待时间，让 AI 辅助编程变得更加高效实用。</description><source url="https://aws.amazon.com/blogs/machine-learning/introducing-kimi-k3-1-pro-on-amazon-bedrock/">AWS Machine Learning</source></item><item><title>LangChain 如何用 AI 代理自动生成高质量销售文档</title><link>https://polyemergence.com/zh/archive/2026/11/11/e3e2c405-1407-4e3b-b1ef-2f5891cbba69/</link><guid isPermaLink="true">https://polyemergence.com/zh/archive/2026/11/11/e3e2c405-1407-4e3b-b1ef-2f5891cbba69/</guid><pubDate>Wed, 11 Nov 2026 00:16:00 +0000</pubDate><category>公司</category><category>人工智能</category><description>据LangChain Blog发布的信息：
+
 工作原理
 LangChain 的内部销售代理通过自动化生成建议书、账户计划等耗时文档，大幅解放了销售人员。在 12 周的时间里，它生成了 1500 多份文档，不仅节省了大量时间，还显著推动了销售漏斗的进展。
 业务上下文的关键作用
@@ -265,6 +276,7 @@ LangChain 的内部销售代理通过自动化生成建议书、账户计划等�
 这一突破标志着辅助技术向前迈出了重要一步，证明了内部默念的语音能够被稳定且准确地转化为实际的操作指令。这项进展不仅大大提升了严重运动障碍患者的隐私保护，也让真正自主、便捷的无障碍智能家居控制离现实更近了一步。</description><source url="https://www.nature.com/articles/s42003-026-10477-5">Nature Brain-Machine Interfaces</source></item><item><title>新技术让自旋信号在室温下传得更远</title><link>https://polyemergence.com/zh/archive/2026/11/11/4fa30647-9802-46df-b941-cde38c050966/</link><guid isPermaLink="true">https://polyemergence.com/zh/archive/2026/11/11/4fa30647-9802-46df-b941-cde38c050966/</guid><pubDate>Wed, 11 Nov 2026 00:00:00 +0000</pubDate><category>研究</category><category>新材料与纳米技术</category><description>在自旋电子学里，利用粒子的自旋来传递信息是个好主意，但这些信号往往只能传很短的一段距离就消失了。另一方面，光子虽然能跑得很远，却缺乏做逻辑门计算所必需的非线性相互作用。
 
 为了解决这个难题，研究人员把目光投向了光与物质结合的混合产物——极化激元。通过用过渡金属硫化物搭建特殊的波导结构，他们在室温环境下实现了长达100微米的自旋信号传输。更厉害的是，这个系统还保留了很强的非线性特性，为未来不需要极端低温的光学计算和高速信息处理设备铺平了道路。</description><source url="https://www.nature.com/articles/s41563-026-02802-4">Nature Materials</source></item><item><title>LlamaParse 是如何针对大模型安全漏洞进行渗透测试的？</title><link>https://polyemergence.com/zh/archive/2026/11/11/c895fdcf-276f-4604-8bed-791938155ac8/</link><guid isPermaLink="true">https://polyemergence.com/zh/archive/2026/11/11/c895fdcf-276f-4604-8bed-791938155ac8/</guid><pubDate>Wed, 11 Nov 2026 00:00:00 +0000</pubDate><category>公司</category><category>人工智能</category><description>据LlamaIndex Blog发布的信息：
+
 背景与测试方法
 传统的安全测试适合常规网页应用，但在面对需要阅读客户文档的 AI 模型时往往束手无策。为了确保安全性，LlamaParse 采用基于 AI 代理的动态应用安全测试。这些代理花四天时间自主阅读文档、编写代码、生成测试文件，并针对 OWASP 大模型十大风险对生产环境发起了全方位的自动化攻击。
 核心发现与反思
@@ -276,12 +288,14 @@ LangChain 的内部销售代理通过自动化生成建议书、账户计划等�
 研究人员指出，最初的条约虽然分配了水量，但在长期的环境、政治和社会可持续性方面存在严重漏洞。作者主张通过纳入现代框架（如联合国可持续发展目标指标6.5.2以及关于生态可行条约的国际法律准则）来对条约进行全面重组。建立更好的数据交换和区域协商机制，可以改变两国共享这一关键流域的方式。
 实际影响
 除了应对水资源短缺和气候变化适应问题外，现代化改造《印度河水条约》还可以作为一项至关重要的建立信任措施。在一个重兵把守、两个核邻国共享巨额边界的地区，在水治理上找到共同点，或许能为更广泛的地缘政治稳定打开通道。</description><source url="https://www.nature.com/articles/s44221-026-00733-7">Nature Water</source></item><item><title>AMD 推出全新 EPYC 9006 处理器，专为智能体 AI 打造</title><link>https://polyemergence.com/zh/archive/2026/11/11/6c1e0700-127f-4274-805f-cfe227f6c946/</link><guid isPermaLink="true">https://polyemergence.com/zh/archive/2026/11/11/6c1e0700-127f-4274-805f-cfe227f6c946/</guid><pubDate>Tue, 10 Nov 2026 22:48:00 +0000</pubDate><category>商业</category><category>人工智能</category><description>据AMD Blogs发布的信息：
+
 背景介绍
 随着 AI 从简单的聊天机器人转向自主运行的智能体工作流，数据中心面临着巨大的并发需求。大量的智能体、工具调用和子任务需要极高密度且高效的计算能力。
 核心细节
 全新的 AMD EPYC 9006 SP7 是其四款规划中处理器系列的第一款。单插槽最高可提供 256 个核心和 512 个线程，频率最高可达 5.3 GHz，并支持最新的内存标准以提供每插槽高达 1.6 TB/s 的内存带宽。它还引入了 PCIe Gen 6 接口，使每条通道的带宽翻倍。
 行业影响
 这些处理器旨在通过快速传输大规模上下文数据，让 AI 加速器保持高效运转。甲骨文和微软等主流云服务商已经准备在其云实例中集成这些芯片，以支持企业应用和智能体调度。</description><source url="https://www.amd.com/en/blogs/2026/amd-epyc-9006-sp7-based-platforms-are-now-shipping.html">AMD Blogs</source></item><item><title>亚马逊 Bedrock 在 AgentCore 中引入 DeepEval 和 AutoEval，帮开发者更好测试 AI 智能体</title><link>https://polyemergence.com/zh/archive/2026/11/11/df40e747-37bc-4b32-8343-76056e13ce50/</link><guid isPermaLink="true">https://polyemergence.com/zh/archive/2026/11/11/df40e747-37bc-4b32-8343-76056e13ce50/</guid><pubDate>Tue, 10 Nov 2026 22:35:03 +0000</pubDate><category>公司</category><category>人工智能</category><description>据AWS Machine Learning发布的信息：
+
 评估难题与核心思路
 当 AI 智能体上线后，只看运行速度或简单的输出结果远远不够。一个客服智能体虽然解决了问题，却可能在聊天中泄露用户的个人隐私。为了解决这类隐蔽的失败，亚马逊 Bedrock 的 AgentCore 评估功能教大家从实际业务结果出发，把抽象的成功目标拆解为具体的行为，并用对口的评估器来进行打分。
 丰富的评估工具库
@@ -323,6 +337,7 @@ OpenAI 透露，旅游规划是用户经常向 ChatGPT 寻求帮助的高频场�
 他们开发了内部Python SDK，将LangChain原语与Workday的LLM网关、RAG检索等内部服务打通，从而原生支持了A2A和MCP等前沿协议。这一平台将原本需要4到5个月的原型开发周期缩短至不到一天，不仅促使团队规模扩大了数倍，还将Workday过去孤立的内部服务串联成统一的代理接口。</description><source url="https://www.langchain.com/blog/how-workday-built-an-enterprise-scale-ai-agent-platform-with-langgraph-and-langsmith">LangChain Blog</source></item><item><title>Beam Therapeutics宣布其CRISPR镰状细胞贫血治疗试验取得积极结果</title><link>https://polyemergence.com/zh/archive/2026/11/10/3daf749c-eff8-47d7-8ee1-2016f48fedf9/</link><guid isPermaLink="true">https://polyemergence.com/zh/archive/2026/11/10/3daf749c-eff8-47d7-8ee1-2016f48fedf9/</guid><pubDate>Tue, 10 Nov 2026 14:38:29 +0000</pubDate><category>可编程生命</category><category>生物技术与可编程生命</category><description>Beam Therapeutics透露，其针对镰状细胞贫血的实验性CRISPR疗法risto-cel在一项关键临床试验中达成了主要目标，使患者在至少一年时间内免受严重疼痛危象的折磨。尽管尚未披露详细数据，但该公司正迅速推进监管流程。Beam表示，计划最早在今年年底前向FDA提交该疗法的上市申请，这为其基因编辑产品线树立了一个重要的里程碑。</description><source url="https://www.statnews.com/2026/11/10/biotech-news-glp-1-given-an-fda-warning-for-rare-eye-condition-risk/?utm_campaign=rss">STAT Biotech</source></item><item><title>Adobe为Photoshop和Premiere等王牌软件大举引入AI助手与新功能</title><link>https://polyemergence.com/zh/archive/2026/11/10/15b2199f-b90b-4728-b3fd-ac59fc64bbb7/</link><guid isPermaLink="true">https://polyemergence.com/zh/archive/2026/11/10/15b2199f-b90b-4728-b3fd-ac59fc64bbb7/</guid><pubDate>Tue, 10 Nov 2026 14:05:10 +0000</pubDate><category>公司</category><category>人工智能</category><description>Adobe在迈阿密举行的MAX大会上，为其核心软件家族（包括Photoshop、Premiere、Illustrator和InDesign）推出了大批AI功能更新。此次升级引入了一款随时待命的AI助手，能够深入理解用户的创作工作流，并在抠图等日常任务中主动提供帮助。
 
 除了常规软件升级，Adobe旗下的Firefly应用也推出了名为Builder的原型设计工具，直接切入竞争对手Figma的领地，同时还带来了智能视频剪辑功能。此外，Adobe还发布了本地MCP协议，允许ChatGPT和Claude等第三方AI工具直接调用其创意软件的功能，不过业内对其开放标准的实际利弊仍存争议。</description><source url="https://techcrunch.com/2026/11/10/adobe-adds-more-ai-to-its-products-and-launches-an-mcp/">TechCrunch AI</source></item><item><title>谷歌和Adobe强强联手：把修图和改PDF搬进你的常用软件</title><link>https://polyemergence.com/zh/archive/2026/11/10/2b937237-fb10-4d7e-a947-ac313a936e62/</link><guid isPermaLink="true">https://polyemergence.com/zh/archive/2026/11/10/2b937237-fb10-4d7e-a947-ac313a936e62/</guid><pubDate>Tue, 10 Nov 2026 14:00:00 +0000</pubDate><category>公司</category><category>人工智能</category><description>据Google AI发布的信息：
+
 告别频繁切屏
 谷歌和Adobe这次合作的目标很直接，就是为了解决大家在不同软件之间跳来跳去处理文件的烦恼。很快，用户在Gmail和谷歌网盘里就能直接看到Adobe Acrobat的快捷入口，预览文件时点一下就能开始编辑。
 深度融合AI
@@ -337,6 +352,7 @@ Ring为此研发多年，最终选择将核心技术放在云端以控制成本�
 尽管AI步步紧逼，艺术家和学者们依然坚信电影的核心在于人类的情感。有学者指出，传统艺术创作中那些磕磕绊绊的沟通，恰恰是艺术本身的价值所在。业内人士预测，随着AI越来越普及，大家反而会更加珍惜带有人类真实温度的手工电影质感。</description><source url="https://www.theguardian.com/film/2026/nov/10/storyboard-artists-ai">The Guardian AI</source></item><item><title>生物医药公司 PepGen 公布肌肉萎缩症药物的早期积极临床数据</title><link>https://polyemergence.com/zh/archive/2026/11/10/8bda72ce-1a2d-4934-afc1-307d03a3e065/</link><guid isPermaLink="true">https://polyemergence.com/zh/archive/2026/11/10/8bda72ce-1a2d-4934-afc1-307d03a3e065/</guid><pubDate>Tue, 10 Nov 2026 12:05:00 +0000</pubDate><category>可编程生命</category><category>生物技术与可编程生命</category><description>生物医药公司 PepGen 在周二宣布，其针对 1 型强直性肌营养不良症（DM1）的实验性药物，在某项关键指标上取得了迄今为止最令人鼓舞的早期数据。DM1 是一种会严重摧毁患者肌肉控制力和力量的顽疾，通常从青春期开始发作，在美欧两地影响着超过 10 万名患者。
 
 尽管 PepGen 在该领域的研发上属于后来者，但这些最新数据来自于接受了 12 周治疗的 6 名患者。当前整个行业正处于微妙的竞争格局中，竞争对手 Dyne Therapeutics 正在接近完成一项关键性临床试验。与此同时，不久前诺华斥资 12 亿美元收购 Avidity Biosciences 获得的 DM1 药物在三期临床中宣告失败，这曾给整个研发领域蒙上了一层阴影，而 PepGen 的新数据则带来了一丝转机。</description><source url="https://www.statnews.com/2026/11/10/muscular-dystrophy-dm1-pepgen-pgn-edodm1-early-results/?utm_campaign=rss">STAT Biotech</source></item><item><title>谷歌DeepMind用AI在数学上证明了Signal协议的安全性</title><link>https://polyemergence.com/zh/archive/2026/11/10/baea2f65-0e21-4eab-8945-94c1793ff52a/</link><guid isPermaLink="true">https://polyemergence.com/zh/archive/2026/11/10/baea2f65-0e21-4eab-8945-94c1793ff52a/</guid><pubDate>Tue, 10 Nov 2026 12:02:28 +0000</pubDate><category>研究</category><category>人工智能</category><description>据Google DeepMind发布的信息：
+
 工作原理
 谷歌DeepMind的研究人员开发了AlphaProof Code，这是一个结合了人类专业知识与AI智能体的多模型框架。人类专家与模型合作，将Signal的安全目标转化为形式化的数学规范，随后由Gemini Carbon驱动的智能体生成了超过六百万行Lean代码，这是一种用于数学定理证明的计算机语言。
 为什么重要
@@ -365,6 +381,7 @@ D-Wave Quantum Inc. 发布了 2026 年第三季度财务与业务报告，展示
 这次更新一口气加入了27种新语言，算上原有的之后总共支持31种语言。其中13种语言（如普通话、韩语、德语等）现在就能用，剩下的14种也快上线了。这些语音模型是用公开数据集训练出来的，还找了母语志愿者来帮忙纠错。最实用的是，它现在支持中途无缝切换语言，开会时大家随时换语种，它都能接着记。
 影响
 除了基础的速记，Otter还在不断推出各种办公辅助功能，比如帮人准备会议的工作模式和提供实时建议的助手，进一步巩固了其在AI助手市场的地位。</description><source url="https://techcrunch.com/2026/11/09/otter-ai-can-now-follow-conversations-across-30-languages/">TechCrunch AI</source></item><item><title>麻省理工学院领衔5300万美元项目，利用AI开发新型除草剂</title><link>https://polyemergence.com/zh/archive/2026/11/10/21fc4b03-c532-446b-a03d-8f5571446258/</link><guid isPermaLink="true">https://polyemergence.com/zh/archive/2026/11/10/21fc4b03-c532-446b-a03d-8f5571446258/</guid><pubDate>Tue, 10 Nov 2026 05:00:00 +0000</pubDate><category>可编程生命</category><category>生物技术与可编程生命</category><description>据MIT Biological Engineering发布的信息：
+
 项目背景
 现代农业严重依赖草甘膦等除草剂，但多年的使用导致杂草产生了抗药性突变。与此同时，人们对这些化学品可能带来的健康和环境风险的担忧也在不断增加。为了解决这一问题，美国高级研究计划局健康署（ARPA-H）向一个由麻省理工学院领衔的团队资助了高达5300万美元，用于开展PLOW项目。
 人工智能与研究策略

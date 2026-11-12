@@ -6,7 +6,7 @@ import vm from "node:vm";
 const source = await readFile(new URL("../web/public/app.js", import.meta.url), "utf8");
 const executable = source.slice(0, source.lastIndexOf("\nsetLocale(state.locale);"));
 
-function fixture(savedState = null) {
+function fixture(savedState = null, completedImages = []) {
   const nodes = new Map();
   const handlers = new Map();
   let roots = [];
@@ -19,8 +19,14 @@ function fixture(savedState = null) {
     localStorage: { setItem() {} },
     sessionStorage: { getItem: key => storage.get(key) || null, setItem: (key, value) => storage.set(key, value) },
     document: {
-      querySelector(selector) { if (!nodes.has(selector)) nodes.set(selector, { hidden: true, textContent: "", dataset: {}, addEventListener() {} }); return nodes.get(selector); },
-      querySelectorAll(selector) { return selector === "[data-story-id]" ? roots : selector === "[data-summary-details][open]" ? nativeSummaries : []; },
+      querySelector(selector) {
+        if (!nodes.has(selector)) {
+          const classes = new Set();
+          nodes.set(selector, { hidden: true, textContent: "", dataset: {}, addEventListener() {}, classList: { add: name => classes.add(name), contains: name => classes.has(name), toggle(name, enabled) { if (enabled) classes.add(name); else classes.delete(name); } } });
+        }
+        return nodes.get(selector);
+      },
+      querySelectorAll(selector) { return selector === "[data-story-id]" ? roots : selector === "[data-summary-details][open]" ? nativeSummaries : selector === "img[data-fallback-image]" ? completedImages : []; },
       addEventListener(name, callback) { handlers.set(name, [...(handlers.get(name) || []), callback]); }, visibilityState: "visible", activeElement: null,
       documentElement: { style: {} }, body: { classList: { toggle() {} } }
     },
@@ -28,7 +34,7 @@ function fixture(savedState = null) {
     fetch: async () => { throw Error("unconfigured request"); }
   });
   context.window = { navigator: context.navigator, addEventListener() {}, setInterval() {}, matchMedia: () => ({ matches: false }), scrollTo() {}, scrollBy() {} };
-  vm.runInContext(`${executable}\nglobalThis.ui = { state, applyBriefWindow, feedFingerprint, renderCard, renderLead, evidenceMarkup, coverArtwork, captureReadingState, saveReadingState, summaryMarkup, interactionMarkup, loadFeed, applyFeed, publishedTimeMarkup, observationFreshness, updateObservationFreshness }; globalThis.renderCount = 0; setLocale = () => { renderCount += 1; };`, context);
+  vm.runInContext(`${executable}\nglobalThis.ui = { state, applyBriefWindow, feedFingerprint, renderCard, renderLead, renderEditionSections, visualMarkup, activateImageFallback, inspectLoadedImages, editionNote, evidenceMarkup, plainText, inlineMarkup, fullSummaryMarkup, captureReadingState, saveReadingState, summaryMarkup, interactionMarkup, loadFeed, applyFeed, publishedTimeMarkup, observationFreshness, updateObservationFreshness }; globalThis.renderCount = 0; setLocale = () => { renderCount += 1; };`, context);
   return { context, ui: context.ui, nodes, storage, handlers, setRoots(value) { roots = value; }, setNativeSummaries(value) { nativeSummaries = value; } };
 }
 
@@ -97,7 +103,7 @@ test("the observation refresh link reloads a same-page hash after saving the rea
 
 test("cards put linked title and metadata before the image, then summary; context and tags stay folded", () => {
   const { ui } = fixture();
-  const markup = ui.renderCard(article("safe", { evidence: { type: "official_release", stage: "unspecified" }, reading_context: { en: "Check independent deployment evidence." }, tags: ["proof <not promise>"], related_domains: ["energy_storage", "energy_storage", "space_economy", "neurotechnology"] }));
+  const markup = ui.renderCard(article("safe", { image_url: "https://example.com/image.jpg", evidence: { type: "official_release", stage: "unspecified" }, reading_context: { en: "Check independent deployment evidence." }, tags: ["proof <not promise>"], related_domains: ["energy_storage", "energy_storage", "space_economy", "neurotechnology"] }));
   assert.ok(markup.indexOf("<h3><a") < markup.indexOf('class="story-meta"'));
   assert.ok(markup.indexOf('class="story-meta"') < markup.indexOf('class="card-visual"'));
   assert.ok(markup.indexOf('class="card-visual"') < markup.indexOf('class="story-body"'));
@@ -121,7 +127,7 @@ test("cards put linked title and metadata before the image, then summary; contex
 
 test("lead uses the same heading, image, body order inside lead-copy", () => {
   const { ui, nodes } = fixture();
-  ui.renderLead(article());
+  ui.renderLead(article("one", { image_url: "https://example.com/image.jpg" }));
   const markup = nodes.get("#lead-story").innerHTML;
   assert.match(markup, /^\s*<div class="lead-copy">/);
   assert.ok(markup.indexOf('class="story-heading"') < markup.indexOf('class="story-visual"'));
@@ -160,6 +166,28 @@ test("a four-line preview can expand every character even with missing or identi
   assert.match(toggle.textContent, /Collapse summary/);
 });
 
+test("technical double-underscore identifiers survive titles and summaries after hydration", () => {
+  const { ui } = fixture();
+  const text = "**Checkpoint** uses `__init__` and __checkpoint_key__, not C* truncation";
+  assert.equal(ui.plainText(text), "Checkpoint uses __init__ and __checkpoint_key__, not C* truncation");
+  assert.match(ui.inlineMarkup(text), /<strong>Checkpoint<\/strong> uses <code>__init__<\/code> and __checkpoint_key__/);
+  const markup = ui.renderCard(article("technical", { en: { title: text, summary: "Preserve __init__", full_summary: "Inspect `__checkpoint_key__`" } }));
+  assert.match(markup, /Checkpoint uses __init__ and __checkpoint_key__/);
+  assert.match(markup, /Preserve __init__/);
+  assert.match(markup, /<code>__checkpoint_key__<\/code>/);
+});
+
+test("expanded summaries safely render explicit Markdown headings and paragraphs without rewriting content", () => {
+  const { ui } = fixture();
+  const raw = "##背景与定位\nFirst **bold** paragraph with `__init__`.\n\n### Technical detail\n#include <header>\nLiteral <img src=x onerror=alert(1)> and `**not bold**`.";
+  const markup = ui.fullSummaryMarkup(raw);
+  assert.match(markup, /^<h4>背景与定位<\/h4><p>First <strong>bold<\/strong> paragraph with <code>__init__<\/code>\.<\/p>/);
+  assert.match(markup, /<h4>Technical detail<\/h4><p>#include &lt;header&gt;/);
+  assert.match(markup, /Literal &lt;img src=x onerror=alert\(1\)&gt;/);
+  assert.match(markup, /<code>\*\*not bold\*\*<\/code>/);
+  assert.doesNotMatch(markup, /<img|<script|<h4>#?include|##背景/);
+});
+
 test("an SSR native summary opened before hydration stays expanded in the live card", () => {
   const { ui, setNativeSummaries } = fixture();
   setNativeSummaries([{ closest: () => ({ dataset: { storyId: "one" } }) }]);
@@ -168,13 +196,101 @@ test("an SSR native summary opened before hydration stays expanded in the live c
   assert.match(ui.summaryMarkup({ summary: "Preview", fullSummary: "Complete content" }, article()), /data-summary-toggle aria-expanded="true"/);
 });
 
-test("missing evidence stays unknown and artwork never uses a slicing transform", () => {
-  const { ui } = fixture();
+test("missing evidence stays unknown and absent images are text-led without SVG placeholders", () => {
+  const { ui, nodes } = fixture();
   assert.match(ui.evidenceMarkup(article()), /Source type not yet identified/);
   assert.doesNotMatch(ui.evidenceMarkup(article()), /Stage not specified/);
   assert.match(ui.evidenceMarkup(article(), true), /Stage not specified/);
-  assert.match(ui.coverArtwork("company", "Company", "Source"), /preserveAspectRatio="xMidYMid meet"/);
-  assert.doesNotMatch(ui.coverArtwork("company", "Company", "Source"), /slice/);
+  assert.match(ui.renderCard(article()), /story-card is-feature is-text-led/);
+  assert.match(ui.visualMarkup(article()), /Text report · No source image available/);
+  assert.doesNotMatch(ui.visualMarkup(article()), /<svg|<figure|<img|brand-cover/);
+  ui.renderLead(article());
+  assert.equal(nodes.get("#lead-story").classList.contains("is-text-led"), true);
+  assert.doesNotMatch(nodes.get("#lead-story").innerHTML, /<figure|brand-cover/);
+});
+
+test("lead and feature images have conservative linked captions; video thumbnails are identified separately", () => {
+  const { ui } = fixture();
+  const source = "Example <source>";
+  const markup = ui.visualMarkup(article("image", { source, image_url: "https://example.com/image.jpg?a=1&b=2" }));
+  assert.match(markup, /^<figure class="card-visual"/);
+  assert.match(markup, /<div class="visual-media"><img/);
+  assert.match(markup, /<figcaption class="media-caption"><a href="https:\/\/example\.com\/story"/);
+  assert.match(markup, /Source image · Example &lt;source&gt;/);
+  assert.match(markup, /data-media-source="Example &lt;source&gt;"/);
+  assert.match(markup, /a=1&amp;b=2/);
+  assert.doesNotMatch(markup, /photograph|copyright|official image|<svg/i);
+  const video = ui.visualMarkup(article("video", { url: "https://www.youtube.com/watch?v=abcdefghijk" }));
+  assert.match(video, /Video thumbnail · Example/);
+  assert.match(video, /https:\/\/i\.ytimg\.com\/vi\/abcdefghijk\/hqdefault.jpg/);
+});
+
+test("only the first three remaining stories become features; extra stories are image-free briefs with unchanged order", () => {
+  const { ui } = fixture();
+  const items = Array.from({ length: 6 }, (_, index) => article(`id${index}`, { image_url: "https://example.com/pic.jpg", importance: 90 - index }));
+  const original = JSON.stringify(items);
+  const markup = ui.renderEditionSections(items);
+  assert.equal((markup.match(/class="story-card is-feature/g) || []).length, 3);
+  assert.equal((markup.match(/class="story-card is-brief/g) || []).length, 3);
+  assert.match(markup, /feature-section.*edition-subheading">Highlights/s);
+  assert.match(markup, /brief-section.*edition-subheading">More briefs/s);
+  const brief = markup.slice(markup.indexOf('<section class="brief-section">'));
+  assert.doesNotMatch(brief, /<figure|<img|card-visual|No source image available/);
+  const ids = [...markup.matchAll(/data-story-id="([^"]+)"/g)].map(match => match[1]);
+  assert.deepEqual(ids, items.map(item => item.id));
+  assert.equal(JSON.stringify(items), original);
+  assert.equal(ui.renderEditionSections([]), "");
+  assert.doesNotMatch(ui.renderEditionSections(items.slice(0, 2)), /brief-section/);
+});
+
+test("image errors and low-resolution images become text notes and never retain a caption claiming the image is visible", () => {
+  const { ui, handlers } = fixture();
+  const classNames = new Set();
+  const articleClasses = new Set();
+  const note = { hidden: true };
+  const caption = { textContent: "Source image · Example" };
+  const visual = { dataset: { mediaSource: "Example" }, classList: { add: name => classNames.add(name) }, querySelector: selector => selector === "[data-image-unavailable-note]" ? note : caption, closest: () => ({ classList: { add: name => articleClasses.add(name) } }) };
+  const image = { hidden: false, naturalWidth: 120, naturalHeight: 90, closest: () => visual, matches: selector => selector === "img[data-fallback-image]" };
+  handlers.get("load").forEach(handler => handler({ target: image }));
+  assert.equal(image.hidden, true);
+  assert.equal(note.hidden, false);
+  assert.ok(classNames.has("is-text-visual"));
+  assert.ok(articleClasses.has("is-text-led"));
+  assert.equal(caption.textContent, "Original image temporarily unavailable · Example");
+  caption.textContent = "Source image · Example";
+  image.hidden = false;
+  handlers.get("error").forEach(handler => handler({ target: image }));
+  assert.equal(image.hidden, true);
+  assert.match(caption.textContent, /temporarily unavailable/);
+});
+
+test("SSR images completed before the deferred app loads are checked once, while healthy and pending images are preserved", () => {
+  function image(width, height, complete) {
+    const note = { hidden: true };
+    const caption = { textContent: "Source image · Example" };
+    const visual = { dataset: { mediaSource: "Example" }, classList: { add() {} }, querySelector: selector => selector === "[data-image-unavailable-note]" ? note : caption, closest: () => ({ classList: { add() {} } }) };
+    return { hidden: false, naturalWidth: width, naturalHeight: height, complete, closest: () => visual, note, caption };
+  }
+  const failed = image(0, 0, true);
+  const small = image(240, 135, true);
+  const healthy = image(1_200, 675, true);
+  const pending = image(0, 0, false);
+  fixture(null, [failed, small, healthy, pending]);
+  assert.equal(failed.hidden, true);
+  assert.equal(small.hidden, true);
+  assert.equal(failed.note.hidden, false);
+  assert.match(failed.caption.textContent, /temporarily unavailable/);
+  assert.equal(healthy.hidden, false);
+  assert.equal(pending.hidden, false);
+});
+
+test("edition note uses the actual feed timestamp in SGT and the 48-hour window, not an invented issue number", () => {
+  const { ui } = fixture();
+  const note = ui.editionNote({ generated_at: "2026-11-12T00:30:00Z" });
+  assert.match(note, /12 Nov 2026/);
+  assert.match(note, /08:30 SGT · Past 48 hours/);
+  assert.doesNotMatch(note, /issue|edition [0-9]/i);
+  assert.equal(ui.editionNote({ generated_at: "invalid" }), "");
 });
 
 test("same news updates timestamps without rebuilding, and background news waits for consent", async () => {

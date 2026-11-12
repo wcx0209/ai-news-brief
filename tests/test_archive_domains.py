@@ -282,6 +282,16 @@ Final paragraph preserves the uncertainty."""
         self.assertNotIn('<h2>这是一句', prose)
         self.assertIn('下一句保留原有内容。', prose)
 
+    def test_legacy_minimax_plain_headings_keep_original_section_order(self):
+        prose = archive.archive_prose("背景与定位\n原文说明产品定位。\n核心能力与表现\n原文报告能力与限制。\n效率与行业影响\n原文保留效率数据与不确定性。")
+        expected = ["<h2>背景与定位</h2>", "<p>原文说明产品定位。</p>",
+                    "<h2>核心能力与表现</h2>", "<p>原文报告能力与限制。</p>",
+                    "<h2>效率与行业影响</h2>", "<p>原文保留效率数据与不确定性。</p>"]
+        positions = [prose.index(part) for part in expected]
+        self.assertEqual(positions, sorted(positions))
+        self.assertEqual(prose.count("<h2>"), 3)
+        self.assertNotIn("<h2>这是一句短话</h2>", archive.archive_prose("这是一句短话\n具体结果仍是普通段落。"))
+
     def test_prose_xss_and_markdown_links_are_inert_and_code_survives(self):
         text = '''## <img src=x onerror="alert(1)">
 [Safe label](https://example.org/read) and [Unsafe label](javascript:alert(2))
@@ -333,10 +343,82 @@ The last sentence is still here.'''
     def test_article_shell_uses_scoped_reading_layout_and_versioned_archive_styles(self):
         page = archive.page_shell("en", "Title", "Description", "https://polyemergence.com/en/archive/2026/11/12/id/", "https://polyemergence.com/zh/archive/2026/11/12/id/", "Body", og_type="article")
         self.assertIn('<body class="archive-detail">', page)
-        self.assertIn('/archive.css?v=6', page)
+        self.assertIn('/archive.css?v=7', page)
+        self.assertIn('<script defer src="/archive-media.js?v=1"></script>', page)
+        listing = archive.page_shell("en", "Title", "Description", archive.SITE + "/en/archive/", archive.SITE + "/zh/archive/", "Body")
+        self.assertNotIn('/archive-media.js', listing)
         styles = (ROOT / "web/public/archive.css").read_text()
         self.assertRegex(styles, r'\.archive-prose\s*\{[^}]*max-width:\s*760px')
         self.assertRegex(styles, r'\.archive-prose\s*\{[^}]*font-size:\s*16px;\s*line-height:\s*1\.78')
+
+    def test_detail_dek_uses_existing_summary_and_combines_source_time_and_type(self):
+        record = fixture("dek", "ai", "Reported model result")
+        record["en"].update(summary="The authors report a limited result, not a general capability.", full="## Results\n\nA detailed account of the measured task and limitations.")
+        record["evidence"] = {"type": "preprint", "stage": "unspecified"}
+        page = archive.story_html(record, "en", detail=True)
+        self.assertIn('<p class="archive-dek">The authors report a limited result, not a general capability.</p>', page)
+        self.assertLess(page.index('</h1>'), page.index('archive-dek'))
+        self.assertLess(page.index('archive-dek'), page.index('archive-provenance'))
+        provenance = re.search(r'<div class="archive-story-meta archive-provenance">(.*?)</div>', page, re.S)[1]
+        self.assertIn('Example Research', provenance)
+        self.assertIn('Source published', provenance)
+        self.assertIn('Preprint', provenance)
+        self.assertNotIn('Stage not established', provenance)
+        self.assertLess(page.index('<details class="screening-details">'), page.index('Stage not established'))
+
+    def test_identical_summary_is_displayed_once_not_repeated_as_prose(self):
+        record = fixture("one-paragraph", "ai", "A short reported result")
+        record["en"].update(summary="A measured result with stated limitations.", full="A measured result with stated limitations.")
+        page = archive.story_html(record, "en", detail=True)
+        self.assertIn('<p class="archive-dek">A measured result with stated limitations.</p>', page)
+        self.assertIn('<div class="archive-prose"></div>', page)
+        long_summary = "A complete sentence with a limited reported result. " * 20
+        dek, body = archive.detail_dek({"summary": long_summary, "full": long_summary}, "en")
+        self.assertEqual(dek, "")
+        self.assertEqual(body, long_summary)
+
+    def test_dek_stops_at_sentence_boundary_and_preserves_technical_names(self):
+        summary = "Call __init__ only after configuring the client. " + "The reported setup retains its limitations. " * 20
+        dek, body = archive.detail_dek({"summary": summary, "full": "Full original detail remains here."}, "en")
+        self.assertIn("__init__", dek)
+        self.assertTrue(dek.endswith("."))
+        self.assertLessEqual(len(dek), 390)
+        self.assertEqual(body, "Full original detail remains here.")
+        self.assertIn('__init__', archive.clean_text('Use `__init__` to initialise.'))
+        self.assertIn('__init__', archive.archive_prose('Use `__init__` to initialise.'))
+        first = "A short exact summary."
+        dek, body = archive.detail_dek({"summary": first, "full": first + "\n\n## Results\nThe rest is preserved."}, "en")
+        self.assertEqual(dek, first)
+        self.assertTrue(body.startswith('## Results'))
+
+    def test_source_figure_caption_is_conservative_and_unsafe_images_are_rejected(self):
+        record = fixture("image", "ai", "A reported image")
+        record["image_url"] = 'https://example.org/picture.png?width=1200&fit=contain'
+        for locale, caption in (("en", "Source image ·"), ("zh", "原文配图 ·")):
+            figure = archive.archive_figure(record, locale)
+            self.assertIn(caption, figure)
+            self.assertIn('href="https://example.org/research"', figure)
+            self.assertIn('>Example Research</a>', figure)
+            self.assertIn('width=1200&amp;fit=contain', figure)
+            self.assertIn('data-archive-media-fallback role="status" hidden', figure)
+            self.assertNotIn('onerror=', figure)
+            self.assertNotIn('copyright', figure.casefold())
+            self.assertNotIn('photograph', figure.casefold())
+        record["url"] = 'https://www.youtube.com/watch?v=abcdefghijk'
+        self.assertIn('视频缩略图', archive.archive_figure(record, "zh"))
+        record["image_url"] = 'javascript:alert(1)'
+        self.assertEqual(archive.archive_figure(record, "en"), "")
+        record["image_url"] = archive.SITE + '/assets/social-preview.png'
+        self.assertEqual(archive.archive_figure(record, "en"), "")
+
+    def test_failed_media_state_can_collapse_without_a_caption_or_empty_image_slot(self):
+        styles = (ROOT / "web/public/archive.css").read_text()
+        self.assertRegex(styles, r'\.archive-figure \[hidden\]\s*\{\s*display:\s*none\s*!important;')
+        self.assertIn('.archive-figure.is-unavailable', styles)
+        record = fixture("media", "ai", "A reported image")
+        record["image_url"] = "https://example.org/image.png"
+        self.assertIn("Original image temporarily unavailable", archive.archive_figure(record, "en"))
+        self.assertIn("原文配图暂不可用", archive.archive_figure(record, "zh"))
 
 
 if __name__ == "__main__":

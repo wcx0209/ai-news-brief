@@ -214,7 +214,9 @@ def archive_url(item, locale, corpus, public):
 def clean_text(value):
     text = re.sub(r"\[([^\]]+)\]\([^)]*\)", r"\1", str(value or ""))
     text = re.sub(r"(?m)^\s*#{1,6}\s*", "", text)
-    return re.sub(r"\s+", " ", re.sub(r"\*\*|__|`", "", text)).strip()
+    # Double underscores can be actual technical identifiers (__init__,
+    # checkpoint keys), so never erase them as generic Markdown decoration.
+    return re.sub(r"\s+", " ", re.sub(r"\*\*|`", "", text)).strip()
 
 
 def news_text(item, locale):
@@ -239,7 +241,60 @@ def evidence_labels(item, locale):
     return [labels.get((item.get("evidence") or {}).get(key), ("", ""))[0 if locale == "en" else 1] for key in ("type", "stage")]
 
 
-def story_markup(item, locale, corpus, public, lead=False, domains=None):
+def summary_inline(value):
+    """Escape first; support only explicit bold and inline-code delimiters."""
+    chunks = []
+    for part in re.split(r"(`[^`\n]+`)", str(value or "")):
+        if len(part) > 1 and part.startswith("`") and part.endswith("`"):
+            chunks.append("<code>" + esc(part[1:-1]) + "</code>")
+        else:
+            chunks.append(re.sub(r"\*\*([^*\n]+)\*\*", r"<strong>\1</strong>", esc(part)))
+    return "".join(chunks)
+
+
+def summary_blocks(value):
+    """Preserve full text with explicit line-start headings and paragraphs.
+
+    Bare prose is never promoted to a heading. Arbitrary HTML and underscore
+    identifiers remain escaped text; this is deliberately not a Markdown engine.
+    """
+    blocks, paragraph = [], []
+    def flush():
+        if paragraph:
+            blocks.append("<p>" + summary_inline("\n".join(paragraph)) + "</p>")
+            paragraph.clear()
+    for line in str(value or "").replace("\r\n", "\n").replace("\r", "\n").split("\n"):
+        heading = re.match(r"^ {0,3}#{1,6}(?:[ \t]+|(?=[\u3400-\u9fff]))(.+?)\s*$", line)
+        if not line.strip():
+            flush()
+        elif heading and heading[1].strip():
+            flush()
+            blocks.append("<h4>" + summary_inline(heading[1].strip()) + "</h4>")
+        else:
+            paragraph.append(line)
+    flush()
+    return "".join(blocks)
+
+
+def story_image(item):
+    """Use a supplied image, or the standard thumbnail of a linked video."""
+    original = safe_url(item.get("url"))
+    parsed = urlparse(original or "")
+    video = (parsed.hostname or "").lower() in {"youtube.com", "www.youtube.com", "m.youtube.com", "youtu.be"}
+    video_id = None
+    if video:
+        if parsed.hostname == "youtu.be":
+            match = re.fullmatch(r"/([\w-]{11})/?", parsed.path)
+        elif parsed.path == "/watch":
+            match = re.search(r"(?:^|&)v=([\w-]{11})(?:&|$)", parsed.query)
+        else:
+            match = re.fullmatch(r"/shorts/([\w-]{11})/?", parsed.path)
+        if match:
+            video_id = match[1]
+    return (f"https://i.ytimg.com/vi/{video_id}/hqdefault.jpg" if video_id else safe_url(item.get("image_url"))), bool(video_id)
+
+
+def story_markup(item, locale, corpus, public, lead=False, domains=None, tier="feature"):
     title, summary = news_text(item, locale)
     original = safe_url(item.get("url"))
     summary_url = archive_url(item, locale, corpus, public)
@@ -277,26 +332,30 @@ def story_markup(item, locale, corpus, public, lead=False, domains=None):
     text = item.get(locale) or item.get("en") or item.get("zh") or {}
     # A CSS preview clamp must never be the only copy of the summary. Native
     # disclosure remains usable before hydration and when JavaScript is absent.
-    full_summary = clean_text(text.get("full_summary") or text.get("long_summary") or summary)
+    full_summary = str(text.get("full_summary") or text.get("long_summary") or summary).strip()
     full_markup = (f'<details class="summary-details" data-summary-details><summary>{"Expand summary" if locale == "en" else "展开摘要"}</summary>'
-                   f'<div class="summary-full" data-summary-full>{esc(full_summary)}</div></details>') if full_summary else ""
+                   f'<div class="summary-full" data-summary-full>{summary_blocks(full_summary)}</div></details>') if full_summary else ""
     body = (f'<div class="story-body"><div class="story-summary"><p class="summary-preview" data-summary-short>{esc(summary)}</p>{full_markup}</div>'
             f'{screening}<div class="story-actions">{actions}</div></div>')
-    image_url = safe_url(item.get("image_url"))
-    if image_url:
+    image_url, video = story_image(item)
+    is_brief = not lead and tier == "brief"
+    if image_url and not is_brief:
         loading = 'fetchpriority="high"' if lead else 'loading="lazy"'
-        visual = f'<img class="media-contain" src="{esc(image_url)}" alt="{esc(title)}" {loading} decoding="async" referrerpolicy="no-referrer">'
+        image = f'<img class="media-contain" data-fallback-image src="{esc(image_url)}" alt="{esc(title)}" {loading} decoding="async" referrerpolicy="no-referrer">'
+        caption_label = ("Video thumbnail" if video else "Source image") if locale == "en" else ("视频缩略图" if video else "原文配图")
+        caption = f'{caption_label} · {item.get("source") or ""}'
+        unavailable = "Original image temporarily unavailable" if locale == "en" else "原文配图暂不可用"
+        visual = (f'<figure class="{"story-visual" if lead else "card-visual"}" data-media-source="{esc(item.get("source"))}">'
+                  f'<div class="visual-media">{image}<div class="text-edition-note" data-image-unavailable-note hidden>{unavailable}</div></div>'
+                  f'<figcaption class="media-caption"><a href="{esc(original)}" target="_blank" rel="noopener noreferrer">{esc(caption)}</a></figcaption></figure>')
     else:
-        visual = ('<div class="brand-cover" role="img" aria-label="Polyemergence">'
-                  '<svg class="cover-art cover-art-landscape" viewBox="0 0 1200 675" aria-hidden="true">'
-                  '<rect class="cover-bg" width="1200" height="675"/>'
-                  '<path class="cover-grid" d="M0 225h1200M0 450h1200M400 0v675M800 0v675"/>'
-                  '<path class="cover-orange" d="M250 450l350-175 350 175-350 175z"/>'
-                  '<path class="cover-stroke" d="M250 340l350-175 350 175-350 175zM250 230L600 55l350 175-350 175z"/>'
-                  '</svg></div>')
+        visual = "" if is_brief else '<div class="text-edition-note">' + ("Text report · No source image available" if locale == "en" else "文字报道 · 暂无原文配图") + '</div>'
     if lead:
-        return f'<div class="lead-copy">{heading}<div class="story-visual">{visual}</div>{body}</div>'
-    return f'<article class="story-card" data-story-id="{esc(item.get("id"))}"><div class="card-copy">{heading}<div class="card-visual">{visual}</div>{body}</div></article>'
+        return f'<div class="lead-copy">{heading}{visual}{body}</div>'
+    classes = "story-card is-brief" if is_brief else "story-card is-feature"
+    if not image_url or is_brief:
+        classes += " is-text-led"
+    return f'<article class="{classes}" data-story-id="{esc(item.get("id"))}"><div class="card-copy">{heading}{visual}{body}</div></article>'
 
 
 def replace_content(page, tag, element_id, content):
@@ -312,6 +371,21 @@ def set_hidden(page, tag, element_id, hidden):
     def update(match):
         opening = re.sub(r'\s+hidden(?:="[^"]*")?', "", match[0])
         return opening[:-1] + (" hidden>" if hidden else ">")
+    return re.sub(pattern, update, page, count=1)
+
+
+def set_class_flag(page, tag, element_id, class_name, enabled):
+    pattern = rf'<{tag}\b[^>]*\bid="{re.escape(element_id)}"[^>]*>'
+    def update(match):
+        opening = match[0]
+        current = re.search(r'\bclass="([^"]*)"', opening)
+        classes = current[1].split() if current else []
+        classes = [value for value in classes if value != class_name]
+        if enabled:
+            classes.append(class_name)
+        if current:
+            return opening[:current.start()] + f'class="{" ".join(classes)}"' + opening[current.end():]
+        return opening[:-1] + (f' class="{" ".join(classes)}">' if classes else ">")
     return re.sub(pattern, update, page, count=1)
 
 
@@ -418,9 +492,22 @@ def render_field_page(shell, domain, locale, domains, feed, sources, corpus, pub
     page = replace_content(page, "h2", "brief-title", "Today’s selection" if locale == "en" else "今日精选")
     page = replace_content(page, "p", "field-description", esc(localized(domain.get("description"), locale)))
     page = replace_content(page, "div", "lead-story", story_markup(items[0], locale, corpus, public, True, domains) if items else "")
+    page = set_class_flag(page, "div", "lead-story", "is-text-led", bool(items and not story_image(items[0])[0]))
     if items:
         page = re.sub(r'(<div\b[^>]*\bid="lead-story"[^>]*)(>)', lambda m: m[1] + f' data-story-id="{esc(items[0].get("id"))}"' + m[2], page, count=1)
-    page = replace_content(page, "div", "story-grid", "".join(story_markup(item, locale, corpus, public, domains=domains) for item in items[1:]))
+    features, briefs = items[1:4], items[4:]
+    sections = []
+    if features:
+        sections.append('<section class="feature-section"><h3 class="edition-subheading">'
+                        + ("Highlights" if locale == "en" else "重点报道") + '</h3><div class="feature-grid">'
+                        + "".join(story_markup(item, locale, corpus, public, domains=domains, tier="feature") for item in features)
+                        + '</div></section>')
+    if briefs:
+        sections.append('<section class="brief-section"><h3 class="edition-subheading">'
+                        + ("More briefs" if locale == "en" else "更多简讯") + '</h3><div class="brief-grid">'
+                        + "".join(story_markup(item, locale, corpus, public, domains=domains, tier="brief") for item in briefs)
+                        + '</div></section>')
+    page = replace_content(page, "div", "story-grid", "".join(sections))
     page = set_hidden(page, "div", "lead-story", not items)
     page = set_hidden(page, "div", "story-grid", len(items) <= 1)
     empty = ("No qualifying stories from the past 48 hours. Explore the field coverage and sources below, or browse the archive." if locale == "en" else "最近 48 小时内暂无符合筛选标准的新闻。可以阅读下方领域介绍与信息源，或浏览历史归档。")
@@ -428,8 +515,15 @@ def render_field_page(shell, domain, locale, domains, feed, sources, corpus, pub
     page = set_hidden(page, "div", "empty-state", bool(items))
     generated = parse_datetime(feed.get("generated_at"))
     if generated and generated <= now:
-        status = ("Updated " if locale == "en" else "更新于 ") + generated.astimezone(SGT).strftime("%Y-%m-%d %H:%M SGT")
+        edition_time = generated.astimezone(SGT).strftime("%Y-%m-%d %H:%M SGT")
+        status = ("Updated " if locale == "en" else "更新于 ") + edition_time
         page = replace_content(page, "span", "update-status", esc(status))
+        edition = edition_time + (" · 48-hour source publication window" if locale == "en" else " · 原文发布 48 小时窗口")
+    else:
+        edition = "48-hour source publication window · Edition time unavailable" if locale == "en" else "原文发布 48 小时窗口 · 版本时间未知"
+    edition_note = re.search(r'<([a-z][a-z0-9]*)\b[^>]*\bid="edition-note"', page)
+    if edition_note:
+        page = replace_content(page, edition_note[1], "edition-note", esc(edition))
     source_list = field_sources(domain["id"], sources, domains)
     heading = "Field coverage" if locale == "en" else "领域覆盖"
     source_heading = "Sources we follow" if locale == "en" else "关注的信息源"
