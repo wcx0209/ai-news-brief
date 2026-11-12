@@ -46,6 +46,17 @@ Run **Polyemergence daily brief** manually once. A successful run will:
 4. export `web/public/data/latest.json`;
 5. commit the refreshed feed.
 
+The source catalog includes six core feeds for each of the nine additional
+emerging fields (54 feeds in those fields, 175 configured feeds overall).
+`SOURCE_COVERAGE.md` records their scope and verification notes. Seeding uses a
+single bulk upsert and retains existing source IDs and historical articles.
+
+After exporting the permanent archive, the workflow also runs
+`scripts/export_domain_pages.py`. This refreshes all bilingual field landing
+pages, their static news summaries and `field-sitemap.xml` from the cloud feed.
+The homepage links to these pages after readers choose a field. Adding a field
+to the shared registry automatically adds its landing pages on the next run.
+
 The scheduled runs are 06:00 and 18:00 UTC every day (14:00 and 02:00 Singapore time).
 
 ## 3. Cloudflare Pages

@@ -51,3 +51,6 @@
 
 /news-sitemap.xml
   Cache-Control: no-cache, must-revalidate
+
+/field-sitemap.xml
+  Cache-Control: no-cache, must-revalidate

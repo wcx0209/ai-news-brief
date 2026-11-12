@@ -19,7 +19,7 @@ from zoneinfo import ZoneInfo
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "src"))
 from relevance_filter import passes_source_ai_filter
-from editorial_domains import category_ids, category_labels, category_titles, infer_domain, match_category
+from editorial_domains import categories, category_ids, category_labels, domains, infer_domain, match_category
 
 
 SITE = "https://polyemergence.com"
@@ -27,26 +27,55 @@ LOCAL_TZ = ZoneInfo("Asia/Singapore")
 CATEGORY_ORDER = category_ids()
 CATEGORIES = set(CATEGORY_ORDER)
 CATEGORY_LABELS = {locale: category_labels(locale) for locale in ("en", "zh")}
-TOPIC_TITLES = {locale: category_titles(locale) for locale in ("en", "zh")}
+STORY_ANGLE_ORDER = [item["id"] for item in categories() if item.get("is_angle") is not False]
+DOMAIN_REGISTRY = {item["id"]: item for item in domains()}
+TOPIC_TITLES = {
+    "en": {
+        "models": "Model News: Releases, Benchmarks & Updates",
+        "company": "Technology Company News: Products, Strategy & Partnerships",
+        "startups": "Technology Startup News: Funding, Products & Venture Capital",
+        "research": "Technology Research News: Papers, Experiments & Results",
+        "academia": "Academic News: University Research & Papers",
+        "biotech": "Biotech & Programmable Life: Synthetic Biology, Gene Editing & More",
+        "open_source": "Open Source Technology: Models, Tools & Projects",
+        "interviews": "Technology Interviews: Founders, Researchers & Industry Leaders",
+        "policy": "Technology Policy News: Regulation, Safety & Government",
+        "business": "Technology Business News: Markets, Investment & Strategy",
+        "society": "Technology and Society: Work, Culture & Public Impact",
+    },
+    "zh": {
+        "models": "模型资讯：发布、评测与更新",
+        "company": "科技公司资讯：产品、战略与合作",
+        "startups": "科技创业资讯：融资、产品与风险投资",
+        "research": "科技研究资讯：论文、实验与成果",
+        "academia": "学术资讯：高校研究与前沿论文",
+        "biotech": "生物技术与可编程生命：合成生物、基因编辑与前沿进展",
+        "open_source": "开源科技资讯：模型、工具与项目",
+        "interviews": "科技深度访谈：创始人、研究者与行业领袖",
+        "policy": "科技政策与监管：安全、法规与政府动态",
+        "business": "科技商业资讯：市场、投资与企业战略",
+        "society": "科技与社会：工作、文化与公共影响",
+    },
+}
 COPY = {
-    "en": {"lang": "en", "brand": "Polyemergence", "brief": "Brief", "archive": "Archive", "method": "Method", "edition": "GLOBAL EDITION", "title": "Emerging Intelligence Archive", "intro": "A permanent record of Polyemergence intelligence across AI and programmable life, organized by Singapore publication date.", "stories": "stories", "months": "Months", "days": "Daily editions", "day_count": "days", "original": "Read original", "share": "Share", "importance": "Importance", "signal": "Signal", "structure": "Structure", "consequence": "Consequence", "confidence": "Confidence", "momentum": "Momentum", "older": "Older edition", "newer": "Newer edition", "month": "Month overview", "all": "All archives", "feed": "RSS feed", "footer": "Independent intelligence on AI and programmable life.", "company": "Published by PolyEmergence Pte Ltd., Singapore. No current financial or commercial conflict declared.", "standards": "Editorial standards", "corrections": "Corrections", "about_brief": "About this brief", "content_type": "Content type", "source_type": "Source type", "source": "Original source", "published": "Source published", "process": "Process", "verification": "Verification", "byline": "Published by", "conflict": "Conflict disclosure"},
-    "zh": {"lang": "zh-Hans", "brand": "多重涌现", "brief": "简报", "archive": "历史归档", "method": "方法", "edition": "全球版", "title": "前沿科技情报归档", "intro": "按新加坡发布日期整理的多重涌现 AI 与可编程生命情报永久记录。", "stories": "条内容", "months": "月份", "days": "每日归档", "day_count": "天", "original": "阅读原文", "share": "分享", "importance": "重要性", "signal": "信号", "structure": "结构", "consequence": "影响", "confidence": "可信度", "momentum": "热度", "older": "较早一期", "newer": "较新一期", "month": "本月总览", "all": "全部归档", "feed": "RSS 订阅", "footer": "面向变化世界的 AI 与可编程生命独立情报。", "company": "由新加坡 PolyEmergence Pte Ltd. 发布。目前无已声明的财务或商业利益冲突。", "standards": "编辑标准", "corrections": "纠错记录", "about_brief": "关于这篇简报", "content_type": "内容类型", "source_type": "信源类型", "source": "原始来源", "published": "原文发布时间", "process": "处理方式", "verification": "核验边界", "byline": "发布方", "conflict": "利益冲突"},
+    "en": {"lang": "en", "brand": "Polyemergence", "brief": "Brief", "fields": "Fields", "angles": "Story angles", "archive": "Archive", "method": "Method", "edition": "GLOBAL EDITION", "title": "Emerging Intelligence Archive", "intro": "A permanent record of Polyemergence coverage across AI and emerging technology, organized by Singapore publication date.", "stories": "stories", "months": "Months", "days": "Daily editions", "day_count": "days", "original": "Read original", "share": "Share", "importance": "Importance", "signal": "Signal", "structure": "Structure", "consequence": "Consequence", "confidence": "Confidence", "momentum": "Momentum", "older": "Older edition", "newer": "Newer edition", "month": "Month overview", "all": "All archives", "feed": "RSS feed", "footer": "Independent intelligence across AI and emerging technology.", "company": "Published by PolyEmergence Pte Ltd., Singapore. No current financial or commercial conflict declared.", "standards": "Editorial standards", "corrections": "Corrections", "about_brief": "About this brief", "content_type": "Content type", "source_type": "Source type", "source": "Original source", "published": "Source published", "process": "Process", "verification": "Verification", "byline": "Published by", "conflict": "Conflict disclosure"},
+    "zh": {"lang": "zh-Hans", "brand": "多重涌现", "brief": "简报", "fields": "领域", "angles": "报道分类", "archive": "历史归档", "method": "方法", "edition": "全球版", "title": "前沿科技情报归档", "intro": "按新加坡发布日期整理的多重涌现人工智能与新兴科技情报永久记录。", "stories": "条内容", "months": "月份", "days": "每日归档", "day_count": "天", "original": "阅读原文", "share": "分享", "importance": "重要性", "signal": "信号", "structure": "结构", "consequence": "影响", "confidence": "可信度", "momentum": "热度", "older": "较早一期", "newer": "较新一期", "month": "本月总览", "all": "全部归档", "feed": "RSS 订阅", "footer": "面向变化世界的人工智能与新兴科技独立情报。", "company": "由新加坡 PolyEmergence Pte Ltd. 发布。目前无已声明的财务或商业利益冲突。", "standards": "编辑标准", "corrections": "纠错记录", "about_brief": "关于这篇简报", "content_type": "内容类型", "source_type": "信源类型", "source": "原始来源", "published": "原文发布时间", "process": "处理方式", "verification": "核验边界", "byline": "发布方", "conflict": "利益冲突"},
 }
 
 SEO_COPY = {
     "en": {
         "site_published": "Polyemergence published",
-        "why": "Why it matters",
-        "signal": "Polyemergence signal",
-        "watch": "What to watch next",
+        "why": "Reading context",
+        "signal": "Importance assessment",
+        "watch": "Evidence to check",
         "daily": "Daily AI News",
         "full_archive": "View the complete daily archive",
     },
     "zh": {
         "site_published": "本站发布时间",
-        "why": "为什么重要",
-        "signal": "多重涌现判断",
-        "watch": "下一步观察",
+        "why": "阅读提示",
+        "signal": "重要性评估",
+        "watch": "可核查的证据",
         "daily": "每日 AI 新闻",
         "full_archive": "查看完整当日归档",
     },
@@ -142,6 +171,22 @@ def topic_path(locale, category):
     return f"/{locale}/topics/{category.replace('_', '-')}/"
 
 
+def field_path(locale, domain):
+    return f"/{locale}/fields/{domain}/"
+
+
+def record_domain(record):
+    domain = record.get("domain")
+    if domain in DOMAIN_REGISTRY:
+        return domain
+    text = " ".join([
+        record.get("en", {}).get("title", ""),
+        record.get("zh", {}).get("title", ""),
+        " ".join(record.get("tags", [])),
+    ])
+    return infer_domain(record.get("category"), None, text)
+
+
 def daily_brief_path(locale, day):
     slug = "daily-ai-news" if locale == "en" else "ai-news-daily"
     return f"/{locale}/{slug}/{day.isoformat()}/"
@@ -156,17 +201,23 @@ def content_type(record, locale):
 
 
 def source_type(record, locale):
-    host = urlparse(record["url"]).netloc.lower()
+    host = (urlparse(record["url"]).hostname or "").lower()
+    def within(domain):
+        return host == domain or host.endswith("." + domain)
+
     first_party = (
         "github.com", "github.blog", "arxiv.org", "huggingface.co", "openai.com",
         "anthropic.com", "deepmind.google", "blogs.nvidia.com", "tencent.com",
         "graphcore.ai", "sambanova.ai", "skhynix.com", "cloudflare.com",
         "databricks.com", "pinecone.io", "wandb.ai", "vercel.com",
-        "broadinstitute.org", "news.mit.edu",
+        "broadinstitute.org", "news.mit.edu", "gov.uk", "aws.amazon.com",
+        "ibm.com", "dwavequantum.com", "clearpathrobotics.com", "jaxa.jp",
+        "nims.go.jp", "braingate.org", "iwmi.org", "gfi-apac.org",
+        "siemens.com", "fraunhofer.de",
     )
-    if host.endswith(".gov") or host.endswith(".gov.sg") or "europa.eu" in host or any(domain in host for domain in first_party):
+    if host.endswith((".gov", ".gov.sg")) or within("europa.eu") or any(within(domain) for domain in first_party):
         return "First-party / official source" if locale == "en" else "第一方／官方来源"
-    if "youtube.com" in host or "youtu.be" in host:
+    if within("youtube.com") or within("youtu.be"):
         return "Interview / video source" if locale == "en" else "访谈／视频来源"
     return "Publisher report" if locale == "en" else "媒体报道"
 
@@ -332,8 +383,15 @@ def page_shell(locale, title, description, canonical, alternate, body, structure
     structured_html = f'<script type="application/ld+json">{json_ld(structured)}</script>' if structured else ""
     topic_links = "".join(
         f'<a href="{topic_path(locale, category)}">{esc(CATEGORY_LABELS[locale][category])}</a>'
-        for category in CATEGORY_ORDER
+        for category in STORY_ANGLE_ORDER
     )
+    field_links = "".join(
+        f'<a href="{field_path(locale, domain)}">{esc(item["label"][locale])}</a>'
+        for domain, item in DOMAIN_REGISTRY.items()
+    )
+    current_path = urlparse(canonical).path
+    fields_current = ' aria-current="page"' if f"/{locale}/fields/" in current_path else ""
+    archive_current = ' aria-current="page"' if f"/{locale}/archive/" in current_path else ""
     return f'''<!doctype html>
 <html lang="{c['lang']}" data-locale="{locale}"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
@@ -344,28 +402,22 @@ def page_shell(locale, title, description, canonical, alternate, body, structure
 <link rel="alternate" type="application/rss+xml" title="{esc(c['brand'])} RSS" href="/feed-{locale}.xml">
 <meta property="og:type" content="{esc(og_type)}"><meta property="og:site_name" content="{esc(c['brand'])}"><meta property="og:title" content="{esc(title)}"><meta property="og:description" content="{esc(description)}"><meta property="og:url" content="{esc(canonical)}"><meta property="og:image" content="{SITE}/assets/social-preview.png">
 <meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="{esc(title)}"><meta name="twitter:description" content="{esc(description)}"><meta name="twitter:image" content="{SITE}/assets/social-preview.png">
-<link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="/styles.css?v=20261109-21"><link rel="stylesheet" href="/archive.css?v=5">{structured_html}</head>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="/styles.css?v=20261112-26"><link rel="stylesheet" href="/archive.css?v=5">{structured_html}</head>
 <body><header class="site-header"><a class="brand" href="/{locale}/" aria-label="{esc(c['brand'])}"><img src="/assets/{logo}" alt="{esc(c['brand'])}" width="420" height="70"></a>
-<nav class="desktop-nav" aria-label="Primary"><a href="/{locale}/#brief">{esc(c['brief'])}</a><a href="/{locale}/archive/" aria-current="page">{esc(c['archive'])}</a><a href="/{locale}/#about">{esc(c['method'])}</a></nav>
+<nav class="desktop-nav" aria-label="{'Primary' if locale == 'en' else '主导航'}"><a href="/{locale}/#fields"{fields_current}>{esc(c['fields'])}</a><a href="/{locale}/archive/"{archive_current}>{esc(c['archive'])}</a><a href="/{locale}/#about">{esc(c['method'])}</a></nav>
 <div class="header-tools"><span class="edition">{esc(c['edition'])}</span><div class="language-switch"><a href="{esc(alternate)}" hreflang="{COPY[other]['lang']}">{'中' if other == 'zh' else 'EN'}</a><span>|</span><a href="{esc(canonical)}" aria-current="page">{'中' if locale == 'zh' else 'EN'}</a></div></div></header>
-<main class="archive-main">{body}</main><footer><div class="footer-brand"><img src="/assets/{logo}" alt="{esc(c['brand'])}" width="360"></div><div class="footer-copy"><p>{esc(c['footer'])}</p><p class="company-note">{esc(c['company'])}</p><nav class="footer-topics" aria-label="AI topics">{topic_links}</nav><p class="footer-meta"><a href="/{locale}/standards/">{esc(c['standards'])}</a> · <a href="/{locale}/corrections/">{esc(c['corrections'])}</a> · <a href="/feed-{locale}.xml">{esc(c['feed'])}</a> · <a href="/developers/">API / MCP</a></p></div></footer></body></html>'''
+<main class="archive-main">{body}</main><footer><div class="footer-brand"><img src="/assets/{logo}" alt="{esc(c['brand'])}" width="360"></div><div class="footer-copy"><p>{esc(c['footer'])}</p><p class="company-note">{esc(c['company'])}</p><p class="footer-meta">{esc(c['fields'])}</p><nav class="footer-topics" aria-label="{esc(c['fields'])}">{field_links}</nav><p class="footer-meta">{esc(c['angles'])}</p><nav class="footer-topics" aria-label="{esc(c['angles'])}">{topic_links}</nav><p class="footer-meta"><a href="/{locale}/standards/">{esc(c['standards'])}</a> · <a href="/{locale}/corrections/">{esc(c['corrections'])}</a> · <a href="/feed-{locale}.xml">{esc(c['feed'])}</a> · <a href="/developers/">API / MCP</a></p></div></footer></body></html>'''
 
 
 def editorial_analysis(record, locale):
-    """Explain the ranking in reader language without inventing new facts."""
-    why = {
-        "models": ("Model capability, cost and access can quickly change product economics and competitive positioning.", "模型能力、成本与开放方式会迅速改变产品经济性和竞争格局。"),
-        "company": ("Moves by a major AI company can reshape platform access, distribution and the pace of industry investment.", "主要 AI 公司的动作可能改变平台入口、产品分发与行业投资节奏。"),
-        "startups": ("This is an early signal of where founders and capital expect durable AI demand to emerge.", "这是创业者与资本判断 AI 长期需求将在哪里形成的早期信号。"),
-        "research": ("The work may change what AI systems can do or how reliably those capabilities can be measured.", "这项工作可能改变 AI 系统的能力边界，或改变这些能力的可靠评估方式。"),
-        "academia": ("The result offers an early, research-stage signal that should be followed before broad real-world conclusions are drawn.", "这项成果提供了研究阶段的早期信号，在得出广泛现实结论前仍需继续验证。"),
-        "biotech": ("The development may change how biological systems are read, designed, manufactured or treated.", "这项进展可能改变生命系统的读取、设计、制造或治疗方式。"),
-        "open_source": ("Open availability can accelerate adoption, independent testing and downstream product experimentation.", "开放获取能够加速采用、独立验证与下游产品实验。"),
-        "interviews": ("The conversation reveals how decision-makers are framing the next competitive and technical constraints.", "这场对话揭示了决策者如何判断下一阶段的竞争与技术约束。"),
-        "policy": ("Policy decisions can determine who may build, deploy and profit from AI across markets.", "政策决定可能直接影响谁能在不同市场开发、部署并从 AI 中获益。"),
-        "business": ("The development connects AI capability with capital allocation, pricing power and commercial adoption.", "这一变化把 AI 能力与资本配置、定价权和商业采用联系起来。"),
-        "society": ("The story shows how AI is changing institutions, work and public expectations beyond the technology sector.", "这条新闻反映 AI 正如何改变科技行业之外的制度、工作与公众预期。"),
-    }[record["category"]][0 if locale == "en" else 1]
+    """Offer field-specific reading guidance, not fabricated article analysis."""
+    domain = record_domain(record)
+    label = DOMAIN_REGISTRY[domain]["label"][locale]
+    why = (
+        f"Read this {label} brief alongside the original source. Distinguish what was demonstrated from what is proposed or planned."
+        if locale == "en" else
+        f"阅读这篇{label}简报时，可结合原文区分已展示的成果、提出的设想与未来计划。"
+    )
     scores = record["scores"]
     dimensions = [("signal", scores["signal"]), ("structure", scores["structure"]), ("consequence", scores["consequence"])]
     strongest, score = max(dimensions, key=lambda item: item[1])
@@ -374,22 +426,22 @@ def editorial_analysis(record, locale):
         "zh": {"signal": "信号", "structure": "结构", "consequence": "影响"},
     }
     if locale == "en":
-        signal = f"Its strongest dimension is {dimension_names[locale][strongest]} ({score}/100). The {record['importance']}/100 importance score treats this as a material industry development, not simply a high-volume headline."
+        signal = f"The recorded importance score is {record['importance']}/100; the highest of its signal, structure and consequence scores is {dimension_names[locale][strongest]} ({score}/100). These are editorial assessments, not independent verification."
     else:
-        signal = f"本条新闻得分最高的维度是{dimension_names[locale][strongest]}（{score}/100）。{record['importance']}/100 的重要性评分意味着它被视为具有实质行业意义的变化，而不只是高热度标题。"
+        signal = f"本条新闻记录的重要性评分为 {record['importance']}/100；信号、结构、影响三个维度中，{dimension_names[locale][strongest]}得分最高（{score}/100）。这些评分属于编辑评估，不代表独立核验。"
     watch = {
-        "models": ("Watch independent evaluations, pricing, access terms and evidence of production use.", "继续观察独立评测、定价、使用门槛与实际生产采用证据。"),
-        "company": ("Watch for product availability, customer adoption and responses from direct competitors.", "继续观察产品可用性、客户采用情况及直接竞争者的回应。"),
-        "startups": ("Watch whether funding converts into repeatable customer demand and a defensible distribution advantage.", "继续观察融资能否转化为可重复的客户需求和可防御的分发优势。"),
-        "research": ("Watch for replication, released artifacts and performance outside the authors’ chosen benchmarks.", "继续观察复现结果、公开产物及其在作者所选基准之外的表现。"),
-        "academia": ("Watch for peer review, replication and evidence that the result generalizes beyond the reported setup.", "继续观察同行评议、复现情况以及结果能否超越论文设定实现泛化。"),
-        "biotech": ("Watch peer review, reproducibility, safety evidence, regulatory milestones and scalable manufacturing.", "继续观察同行评议、可重复性、安全证据、监管里程碑与规模化制造能力。"),
-        "open_source": ("Watch maintainer activity, real adoption, security review and whether the project develops a durable community.", "继续观察维护活跃度、真实采用、安全审查及能否形成长期社区。"),
-        "interviews": ("Watch for concrete product, hiring, funding or research decisions that confirm the stated direction.", "继续观察是否出现产品、招聘、融资或研究决策来验证受访者所述方向。"),
-        "policy": ("Watch the final text, implementation timetable, enforcement authority and cross-border effects.", "继续观察最终文本、实施时间表、执法权限与跨境影响。"),
-        "business": ("Watch disclosed revenue, margins, customer concentration and whether competitors follow the same move.", "继续观察披露的收入、利润率、客户集中度以及竞争者是否跟进。"),
-        "society": ("Watch for measured outcomes, institutional responses and whether the effect persists beyond the initial attention cycle.", "继续观察可量化结果、机构回应以及影响能否持续超过最初的关注周期。"),
-    }[record["category"]][0 if locale == "en" else 1]
+        "ai": ("Check the stated evaluation setup, independent tests, access terms and evidence of real use.", "核查所述评测条件、独立测试、使用条款与实际应用证据。"),
+        "programmable_life": ("Check the experimental stage, reproducibility, safety evidence, regulatory status and manufacturing scale.", "核查实验阶段、可重复性、安全证据、监管状态与制造规模。"),
+        "energy_storage": ("Check operating conditions, measured performance, lifetime, cost assumptions and deployment scale.", "核查运行条件、实测表现、使用寿命、成本假设与部署规模。"),
+        "robotics_autonomy": ("Check the test environment, human intervention, safety limits and repeated performance in real deployments.", "核查测试环境、人工干预、安全边界与实际部署中的重复表现。"),
+        "quantum_technology": ("Check the measured task, error rates, physical versus logical qubits where relevant, and comparisons with classical methods.", "核查测量任务、错误率、适用时的物理与逻辑量子比特区别，以及与经典方法的比较。"),
+        "space_economy": ("Check completed flight or orbital tests, mission status, reliability and disclosed cost assumptions.", "核查已完成的飞行或在轨测试、任务状态、可靠性与披露的成本假设。"),
+        "advanced_materials": ("Check test conditions, independent reproduction, durability, feedstock requirements and production scale.", "核查测试条件、独立复现、耐久性、原料要求与生产规模。"),
+        "neurotechnology": ("Check whether evidence comes from lab, animal or human studies, along with safety, consent and follow-up duration.", "核查证据来自实验室、动物还是人体研究，以及安全性、知情同意与随访时长。"),
+        "climate_water_environment": ("Check system boundaries, lifecycle measurements, energy and water inputs, and performance at the reported scale.", "核查系统边界、全生命周期测量、能源与水投入，以及所述规模下的表现。"),
+        "agrifood_technology": ("Check the trial or production setting, yields, input requirements, safety evidence and regulatory status.", "核查试验或生产条件、产量、投入要求、安全证据与监管状态。"),
+        "advanced_manufacturing": ("Check throughput, defect rates, integration requirements, unit costs and evidence beyond a demonstration line.", "核查产能、缺陷率、集成要求、单位成本与示范线之外的应用证据。"),
+    }[domain][0 if locale == "en" else 1]
     return why, signal, watch
 
 
@@ -414,13 +466,15 @@ def story_html(record, locale, detail=False):
     score_html = "".join(f'<span><small>{esc(c[key])}</small><strong>{scores[key]}</strong></span>' for key in ("signal", "structure", "consequence", "confidence", "momentum"))
     anchor = anchor_for(record)
     day = record["published"].astimezone(LOCAL_TZ).date()
+    domain = record_domain(record)
+    field_label = DOMAIN_REGISTRY[domain]["label"][locale]
     share_url = f"{SITE}{article_path(locale, day, record)}?utm_source=share&amp;utm_medium=organic&amp;utm_campaign=article"
     share_summary = re.sub(r"\s+", " ", clean_text(text["summary"] or text["full"])).strip()[:180]
     heading = "h1" if detail else "h2"
     title_html = esc(clean_text(text["title"])) if detail else f'<a href="{article_path(locale, day, record)}">{esc(clean_text(text["title"]))}</a>'
     share_button = f'''<button class="share-button" type="button" data-share-button data-share-id="{esc(record['id'])}" data-share-locale="{locale}" data-share-title="{esc(clean_text(text['title']))}" data-share-summary="{esc(share_summary)}" data-share-url="{share_url}" aria-label="{esc(c['share'])}: {esc(clean_text(text['title']))}"><svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="18" cy="5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="19" r="2.5"/><path d="m8.2 10.8 7.6-4.5M8.2 13.2l7.6 4.5"/></svg><span>{esc(c['share'])}</span></button>'''
     return f'''<article class="archive-story" id="{anchor_for(record)}">
-<div class="archive-story-meta"><span>{esc(record['source'])}</span><span>{esc(CATEGORY_LABELS[locale][record['category']])}</span><span>{esc(SEO_COPY[locale]['site_published'])}</span><time datetime="{record['site_published'].isoformat()}">{published_local:%Y-%m-%d %H:%M} SGT</time><strong>{esc(c['importance'])} {record['importance']}</strong></div>
+<div class="archive-story-meta"><span>{esc(record['source'])}</span><a href="{field_path(locale, domain)}">{esc(field_label)}</a><span>{esc(CATEGORY_LABELS[locale][record['category']])}</span><span>{esc(SEO_COPY[locale]['site_published'])}</span><time datetime="{record['site_published'].isoformat()}">{published_local:%Y-%m-%d %H:%M} SGT</time><strong>{esc(c['importance'])} {record['importance']}</strong></div>
 <{heading}>{title_html}</{heading}><p>{esc(clean_text(text['full'] or text['summary']))}</p>
 <div class="archive-scores" aria-label="Polyemergence Method scores">{score_html}</div>{editorial_analysis_html(record, locale)}{trust_box(record, locale)}<div class="archive-story-footer"><div class="archive-tags">{tags}</div><div class="archive-actions">{share_button}<a class="archive-original" href="{esc(record['url'])}" target="_blank" rel="noopener noreferrer">{esc(c['original'])} ↗</a></div></div></article>'''
 
@@ -448,20 +502,29 @@ def render_daily(output, locale, day, items, ordered_days):
 
 def render_daily_brief(output, locale, day, items):
     c = COPY[locale]
+    items = [item for item in items if record_domain(item) == "ai"]
     top = sorted(items, key=lambda item: (item["importance"], item["published"]), reverse=True)[:5]
     category_counts = Counter(item["category"] for item in items)
     leading_categories = [CATEGORY_LABELS[locale][key] for key, _ in category_counts.most_common(3)]
-    lead_title = clean_text(top[0][locale]["title"])
+    lead_title = clean_text(top[0][locale]["title"]) if top else ""
     if locale == "en":
-        title = f"AI News & Programmable Life — {day:%B %-d, %Y} | Polyemergence"
-        description = f"The most important AI and programmable-life developments for {day:%B %-d, %Y}, ranked and explained by Polyemergence."
-        lede = f"Today’s brief ranks {len(items)} emerging-technology developments. The leading signal is “{lead_title}”. The day’s strongest coverage clusters are {', '.join(leading_categories)}, selected for structural importance rather than headline volume."
-        heading = f"AI & PROGRAMMABLE LIFE · {day:%B %-d, %Y}"
+        title = f"Daily AI News — {day:%B %-d, %Y} | Polyemergence"
+        description = f"AI news for {day:%B %-d, %Y}, ranked by the Polyemergence importance method and linked to original sources."
+        lede = (
+            f"This edition contains {len(items)} AI stories. Its highest-ranked story is “{lead_title}”. The most represented story angles are {', '.join(leading_categories)}."
+            if items else "No AI stories are included in this date’s archive. Explore the AI field page for available coverage."
+        )
+        heading = f"DAILY AI NEWS · {day:%B %-d, %Y}"
     else:
-        title = f"今日 AI 与可编程生命 — {day:%Y年%m月%d日} | 多重涌现"
-        description = f"多重涌现筛选并解读 {day:%Y年%m月%d日} 最重要的 AI 与可编程生命动态。"
-        lede = f"本期共评估 {len(items)} 条前沿科技动态，首要信号是“{lead_title}”。当日最集中的领域为{'、'.join(leading_categories)}；排序依据是结构性重要程度，而不是标题热度。"
-        heading = f"今日 AI 与可编程生命 · {day:%Y年%m月%d日}"
+        title = f"每日 AI 新闻 — {day:%Y年%m月%d日} | 多重涌现"
+        description = f"{day:%Y年%m月%d日} AI 新闻，按多重涌现重要性方法排序，并保留原始来源链接。"
+        lede = (
+            f"本期收录 {len(items)} 条人工智能新闻，排名最高的是“{lead_title}”。报道数量最多的分类为{'、'.join(leading_categories)}。"
+            if items else "这一天的归档没有收录人工智能新闻。可前往人工智能领域页查看已有报道。"
+        )
+        heading = f"每日 AI 新闻 · {day:%Y年%m月%d日}"
+    if not items:
+        description = lede
     canonical = SITE + daily_brief_path(locale, day)
     other = "zh" if locale == "en" else "en"
     alternate = SITE + daily_brief_path(other, day)
@@ -474,11 +537,11 @@ def render_daily_brief(output, locale, day, items):
 <h2><a href="{article_path(locale, day, record)}">{esc(clean_text(text['title']))}</a></h2><p>{esc(summary)}</p>
 {editorial_analysis_html(record, locale)}</article>''')
     body = f'''<section class="archive-hero"><p class="section-index">{esc(SEO_COPY[locale]['daily']).upper()}</p><h1>{esc(heading)}</h1><p class="daily-brief-lede">{esc(lede)}</p></section>
-<nav class="archive-period-nav"><a href="/{locale}/">{esc(c['brief'])}</a><a href="{archive_path(locale, day)}">{esc(SEO_COPY[locale]['full_archive'])} →</a></nav>
+<nav class="archive-period-nav"><a href="{field_path(locale, 'ai')}">{esc(DOMAIN_REGISTRY['ai']['label'][locale])}</a><a href="{archive_path(locale, day)}">{esc(SEO_COPY[locale]['full_archive'])} →</a></nav>
 <section class="daily-brief-list">{"".join(cards)}</section>'''
     structured = {
         "@context": "https://schema.org", "@type": "CollectionPage", "name": title,
-        "url": canonical, "datePublished": max(item["site_published"] for item in items).astimezone(LOCAL_TZ).isoformat(),
+        "url": canonical, "datePublished": max(item["site_published"] for item in items).astimezone(LOCAL_TZ).isoformat() if items else day.isoformat(),
         "inLanguage": c["lang"], "isPartOf": {"@type": "WebSite", "@id": SITE + "/#website"},
         "mainEntity": {"@type": "ItemList", "numberOfItems": len(top), "itemListElement": [
             {"@type": "ListItem", "position": position, "url": SITE + article_path(locale, day, record), "name": clean_text(record[locale]["title"])}
@@ -500,7 +563,10 @@ def render_article(output, locale, record):
     description = re.sub(r"\s+", " ", clean_text(text["summary"] or text["full"])).strip()[:240]
     canonical = SITE + article_path(locale, day, record)
     alternate = SITE + article_path(other, day, record)
-    body = f'''<nav class="archive-period-nav"><a href="{archive_path(locale, day)}">← {day.isoformat()}</a><a href="{daily_brief_path(locale, day)}">{esc(SEO_COPY[locale]['daily'])}</a><a href="/{locale}/archive/">{esc(c['all'])}</a></nav><section class="archive-list archive-article-page">{story_html(record, locale, detail=True)}</section>'''
+    domain = record_domain(record)
+    field_label = DOMAIN_REGISTRY[domain]["label"][locale]
+    daily_link = f'<a href="{daily_brief_path(locale, day)}">{esc(SEO_COPY[locale]["daily"])}</a>' if domain == "ai" else ""
+    body = f'''<nav class="archive-period-nav" aria-label="{'Article navigation' if locale == 'en' else '文章导航'}"><a href="{archive_path(locale, day)}">← {day.isoformat()}</a><a href="{field_path(locale, domain)}">{esc(field_label)}</a>{daily_link}<a href="/{locale}/archive/">{esc(c['all'])}</a></nav><section class="archive-list archive-article-page">{story_html(record, locale, detail=True)}</section>'''
     schema_image = record.get("image_url")
     if not schema_image or schema_image == "#":
         schema_image = SITE + "/assets/social-preview.png"
@@ -511,6 +577,7 @@ def render_article(output, locale, record):
         "datePublished": record["site_published"].astimezone(LOCAL_TZ).isoformat(),
         "dateModified": record["site_published"].astimezone(LOCAL_TZ).isoformat(), "inLanguage": c["lang"],
         "articleSection": CATEGORY_LABELS[locale][record["category"]],
+        "about": {"@type": "Thing", "name": field_label, "url": SITE + field_path(locale, domain)},
         "keywords": record["tags"],
         "mainEntityOfPage": canonical, "url": canonical,
         "author": {"@type": "Organization", "name": "Polyemergence Editorial Desk", "url": SITE + f"/{locale}/standards/"},
@@ -528,9 +595,9 @@ def render_topic(output, locale, category, records):
     other = "zh" if locale == "en" else "en"
     title = TOPIC_TITLES[locale][category]
     description = (
-        f"{title}. Follow the latest stories ranked by the Polyemergence importance method."
+        f"{title}. Follow coverage across AI and emerging technology, ranked by the Polyemergence importance method."
         if locale == "en"
-        else f"{title}。多重涌现按重要性筛选并持续更新全球人工智能动态。"
+        else f"{title}。多重涌现按重要性筛选并持续更新全球人工智能与新兴科技动态。"
     )
     canonical = SITE + topic_path(locale, category)
     alternate = SITE + topic_path(other, category)
@@ -606,6 +673,7 @@ def render_rss(output, locale, grouped, limit=100):
         ET.SubElement(item, "guid", {"isPermaLink": "true"}).text = link
         ET.SubElement(item, "pubDate").text = format_datetime(record["published"])
         ET.SubElement(item, "category").text = CATEGORY_LABELS[locale][record["category"]]
+        ET.SubElement(item, "category").text = DOMAIN_REGISTRY[record_domain(record)]["label"][locale]
         ET.SubElement(item, "description").text = clean_text(record[locale]["full"] or record[locale]["summary"])
         ET.SubElement(item, "source", {"url": record["url"]}).text = record["source"]
     ET.ElementTree(root).write(output / f"feed-{locale}.xml", encoding="utf-8", xml_declaration=True)

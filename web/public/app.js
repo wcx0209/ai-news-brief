@@ -1,14 +1,17 @@
 const COPY = {
   en: {
-    brand: "POLYEMERGENCE", navNews: "Brief", navSignals: "Signals", navArchive: "Archive", navInsight: "Method", navFeedback: "Feedback",
+    brand: "POLYEMERGENCE", navNews: "Fields", navSignals: "Signals", navArchive: "Archive", navInsight: "Method", navFeedback: "Feedback",
     edition: "GLOBAL EDITION", latest: "LATEST INTELLIGENCE",
     seoTitle: "Emerging Technology News & Foresight | Polyemergence",
     seoDescription: "Daily intelligence on AI, programmable life, energy, robotics, quantum, space, materials, neurotechnology, climate, agrifood, and advanced manufacturing.",
-    eyebrow: "EMERGING TECHNOLOGY · DAILY INTELLIGENCE · FORESIGHT", tagline: "What’s next,<br>made visible.",
-    promise: "Essential signals across the technologies reshaping life, industry, energy, and the physical world—ranked by structural importance.",
-    loading: "Loading today’s brief…", updated: "Updated", stories: "stories", dailyBrief: "Emerging Intelligence",
+    eyebrow: "EMERGING TECHNOLOGY · DAILY BRIEF", tagline: "Tech moves fast.<br>Know what matters.",
+    promise: "Essential developments across AI, biotech, energy and more—selected, sourced and explained.",
+    loading: "Loading today’s brief…", updated: "Updated", story: "story", stories: "stories", dailyBrief: "Emerging Intelligence",
     refreshFeed: "Refresh", refreshingFeed: "Refreshing…",
-    domainGroup: "Fields", angleGroup: "Story angle", allDomains: "All fields", allAngles: "All angles",
+    domainGroup: "Fields", angleGroup: "Story angle", allAngles: "All angles",
+    chooseField: "Choose your field", fieldsTitle: "Start with a field.", fieldsIntro: "Choose a field to read its latest news. Each briefing covers the past 48 hours.",
+    fieldStep: "CHOOSE A FIELD", newsStep: "READ YOUR BRIEF", changeField: "Change field", past48: "PAST 48 HOURS", noCurrentStories: "No current stories", fieldNews: "news",
+    fieldEmpty: "No qualifying news in this field from the past 48 hours. Check back after the next update or choose another field.",
     domainFilters: { all: "All fields" },
     filters: { all: "All", models: "Models", company: "Company", startups: "Startups", research: "Research", academia: "Academia", biotech: "Programmable Life", open_source: "Open Source", interviews: "Interviews", policy: "Policy", business: "Business", society: "Society" }, importance: "Importance", published: "Published",
     expandSummary: "Expand full summary", collapseSummary: "Collapse summary", share: "Share", like: "Like", comments: "Comments",
@@ -39,15 +42,18 @@ const COPY = {
     footer: "Independent intelligence on emerging technologies and the systems they reshape."
   },
   zh: {
-    brand: "多重涌现", navNews: "简报", navSignals: "信号", navArchive: "归档", navInsight: "方法", navFeedback: "反馈",
+    brand: "多重涌现", navNews: "领域", navSignals: "信号", navArchive: "归档", navInsight: "方法", navFeedback: "反馈",
     edition: "全球版", latest: "最新情报",
     seoTitle: "前沿科技新闻与未来趋势｜多重涌现 Polyemergence",
     seoDescription: "每日追踪人工智能、可编程生命、能源、机器人、量子、太空、新材料、神经科技、气候、农业食品与新制造。",
-    eyebrow: "前沿科技 · 每日情报 · 趋势洞察", tagline: "看见<br>下一步。",
-    promise: "聚合正在重塑生命、产业、能源与物理世界的重要信号，并按结构性影响排序。",
+    eyebrow: "前沿科技 · 每日精选", tagline: "科技在变。<br>看清重点。",
+    promise: "每天精选 AI、生命科技、能源等前沿领域的重要进展，附上原始来源与影响摘要。",
     loading: "正在载入今日简报…", updated: "更新于", stories: "条内容", dailyBrief: "涌现情报",
     refreshFeed: "刷新", refreshingFeed: "正在刷新…",
-    domainGroup: "领域", angleGroup: "报道分类", allDomains: "全部领域", allAngles: "全部分类",
+    domainGroup: "领域", angleGroup: "报道分类", allAngles: "全部分类",
+    chooseField: "选择关注领域", fieldsTitle: "先选领域，再读新闻。", fieldsIntro: "选择你关注的领域，阅读最近 48 小时的重要进展。",
+    fieldStep: "选择领域", newsStep: "阅读领域简报", changeField: "更换领域", past48: "最近 48 小时", noCurrentStories: "暂无最新内容", fieldNews: "新闻",
+    fieldEmpty: "最近 48 小时内，这个领域暂时没有符合筛选标准的新闻。可在下次更新后回来，或选择其他领域。",
     domainFilters: { all: "全部领域" },
     filters: { all: "全部", models: "模型", company: "公司", startups: "创业", research: "研究", academia: "学术", biotech: "可编程生命", open_source: "开源", interviews: "访谈", policy: "政策", business: "商业", society: "社会" }, importance: "重要性", published: "发布",
     expandSummary: "展开全文", collapseSummary: "收起全文", share: "分享", like: "点赞", comments: "评论",
@@ -80,11 +86,27 @@ const COPY = {
 };
 
 const routeLocale = location.pathname.split("/").filter(Boolean)[0];
+const routeField = location.pathname.match(/^\/(?:en|zh)\/fields\/([^/]+)\/?$/)?.[1] || null;
 const state = {
   locale: routeLocale === "zh" ? "zh" : routeLocale === "en" ? "en" : (navigator.language.startsWith("zh") ? "zh" : "en"),
-  domain: "all", category: "all", feed: null, interactions: {}, viewer: null, openComments: new Set()
+  domain: null, category: "all", feed: null, interactions: {}, viewer: null, openComments: new Set()
 };
-let domains = ["all", "ai", "programmable_life"];
+// The complete field chooser stays available even if the taxonomy request fails.
+let domainRegistry = [
+  { id: "ai", label: { en: "Artificial Intelligence", zh: "人工智能" }, description: { en: "Models, companies, research, policy and social impact.", zh: "模型、公司、研究、政策及社会影响。" } },
+  { id: "programmable_life", label: { en: "Biotech & Programmable Life", zh: "生物技术与可编程生命" }, description: { en: "Technologies that read, design and engineer living systems.", zh: "读取、设计和工程化生命系统的技术。" } },
+  { id: "energy_storage", label: { en: "Energy & Storage", zh: "新能源与能源储存" }, description: { en: "Batteries, long-duration storage, geothermal, advanced nuclear and fusion.", zh: "电池、长时储能、地热、先进核能与核聚变。" } },
+  { id: "robotics_autonomy", label: { en: "Robotics & Autonomous Systems", zh: "机器人与自主系统" }, description: { en: "Robots, drones, autonomous vehicles and adaptive physical systems.", zh: "机器人、无人机、自动驾驶与可适应环境的实体系统。" } },
+  { id: "quantum_technology", label: { en: "Quantum Technology", zh: "量子技术" }, description: { en: "Quantum computing, sensing, communications and precision measurement.", zh: "量子计算、传感、通信与精密测量。" } },
+  { id: "space_economy", label: { en: "Space Economy", zh: "太空经济" }, description: { en: "Launch, satellites, Earth observation and in-orbit services.", zh: "发射、卫星、地球观测与在轨服务。" } },
+  { id: "advanced_materials", label: { en: "Advanced Materials & Nanotechnology", zh: "新材料与纳米技术" }, description: { en: "Programmable, structural, nanoscale and low-carbon materials.", zh: "可编程、结构、纳米与低碳材料。" } },
+  { id: "neurotechnology", label: { en: "Neurotechnology & Human Interfaces", zh: "神经科技与人机接口" }, description: { en: "Brain-computer interfaces, neurostimulation and sensory restoration.", zh: "脑机接口、神经刺激与感觉恢复。" } },
+  { id: "climate_water_environment", label: { en: "Climate, Water & Environment", zh: "气候、水与环境工程" }, description: { en: "Carbon removal, water systems and industrial decarbonisation.", zh: "碳移除、水系统、工业脱碳与环境基础设施。" } },
+  { id: "agrifood_technology", label: { en: "Agriculture & Food Technology", zh: "农业与食品科技" }, description: { en: "Precision fermentation, resilient crops and alternative proteins.", zh: "精准发酵、韧性作物、农业自动化与替代蛋白。" } },
+  { id: "advanced_manufacturing", label: { en: "Advanced Manufacturing & Infrastructure", zh: "新制造与产业基础设施" }, description: { en: "Additive manufacturing, digital twins and automated laboratories.", zh: "增材制造、数字孪生、先进封装与自动化实验室。" } }
+];
+let domains = domainRegistry.map(item => item.id);
+state.domain = fieldFromUrl();
 let categories = ["all", "models", "company", "startups", "research", "academia", "open_source", "interviews", "policy", "business", "society"];
 
 async function loadEditorialDomains() {
@@ -93,7 +115,8 @@ async function loadEditorialDomains() {
   const registry = await response.json();
   const orderedDomains = [...(registry.domains || [])].sort((a, b) => (a.order || 999) - (b.order || 999));
   const orderedCategories = [...(registry.categories || [])].filter(item => item.is_angle !== false).sort((a, b) => (a.order || 999) - (b.order || 999));
-  domains = ["all", ...orderedDomains.map(item => item.id)];
+  if (orderedDomains.length) domainRegistry = orderedDomains;
+  domains = domainRegistry.map(item => item.id);
   categories = ["all", ...orderedCategories.map(item => item.id)];
   orderedDomains.forEach(item => {
     if (item.short_label?.en || item.label?.en) COPY.en.domainFilters[item.id] = item.short_label?.en || item.label.en;
@@ -268,7 +291,7 @@ function domainFor(item) {
 }
 
 function matchesDomain(item, domain) {
-  return domain === "all" || domainFor(item) === domain;
+  return domainFor(item) === domain;
 }
 
 function matchesFilter(item, filter) {
@@ -478,6 +501,8 @@ document.addEventListener("click", event => {
 });
 
 function renderHero(items) {
+  $("#hero-ticker").hidden = !state.domain || items.length === 0;
+  $(".hero-stage").classList.toggle("has-ticker", Boolean(state.domain && items.length));
   $("#hero-ticker").innerHTML = items.slice(0, 3).map((item, index) => {
     const text = textFor(item);
     return `<a href="${escapeHtml(safeUrl(item.url))}" target="_blank" rel="noopener noreferrer"><span>${String(index + 1).padStart(2, "0")}</span><strong>${escapeHtml(text.title)}</strong><small>${escapeHtml(formatSourcePublished(item))}</small></a>`;
@@ -500,6 +525,7 @@ function scoreBreakdown(item, compact = false) {
 }
 
 function renderLead(item) {
+  $("#lead-story").hidden = !item;
   if (!item) { $("#lead-story").innerHTML = ""; return; }
   const text = textFor(item);
   const importance = Number(item.importance || 0);
@@ -546,19 +572,44 @@ function applyBriefWindow(feed) {
 }
 
 function renderFeed() {
-  if (!state.feed) return;
-  const items = state.feed.items || [];
-  renderHero(items);
+  const items = state.feed?.items || [];
+  const hasField = domains.includes(state.domain);
+  $("#fields").hidden = hasField;
+  $("#brief").hidden = !hasField;
+  const seoContent = $("#field-seo-content");
+  if (seoContent) seoContent.hidden = !hasField || Boolean(seoContent.dataset.field && seoContent.dataset.field !== state.domain);
+  updateFieldLinks();
+  if (state.feed) {
+    const updated = formatDate(state.feed.generated_at);
+    const count = hasField ? items.filter(item => matchesDomain(item, state.domain)).length : items.length;
+    const noun = state.locale === "en" && count === 1 ? COPY.en.story : COPY[state.locale].stories;
+    $("#update-status").textContent = `${COPY[state.locale].updated} ${updated} · ${count} ${noun}`;
+  }
+  if (!hasField) {
+    renderHero([]);
+    renderLead(null);
+    $("#story-grid").innerHTML = "";
+    $("#story-grid").hidden = true;
+    $("#empty-state").hidden = true;
+    $("#demo-notice").hidden = true;
+    return;
+  }
+  if (!state.feed) { renderHero([]); return; }
+  const fieldItems = items.filter(item => matchesDomain(item, state.domain));
+  renderHero(fieldItems);
+  const field = domainRegistry.find(item => item.id === state.domain);
+  const label = field.short_label?.[state.locale] || field.label[state.locale];
+  $("#brief-title").textContent = `${label}${state.locale === "zh" ? "" : " "}${COPY[state.locale].fieldNews}`;
+  $("#selected-field-label").textContent = field.label[state.locale];
+  $("#field-description").textContent = field.description?.[state.locale] || "";
   const filtered = items.filter(item => matchesDomain(item, state.domain) && matchesFilter(item, state.category));
   renderLead(filtered[0]);
   $("#story-grid").innerHTML = filtered.slice(1).map(renderCard).join("");
   $("#story-grid").hidden = filtered.length < 2;
   $("#empty-state").hidden = filtered.length > 0;
-  $("#empty-state").textContent = COPY[state.locale].noStories;
-  $("#demo-notice").hidden = !state.feed.demo;
+  $("#empty-state").textContent = fieldItems.length ? COPY[state.locale].noStories : COPY[state.locale].fieldEmpty;
+  $("#demo-notice").hidden = !state.feed?.demo;
   $("#demo-notice").textContent = COPY[state.locale].demo;
-  const updated = formatDate(state.feed.generated_at);
-  $("#update-status").textContent = `${COPY[state.locale].updated} ${updated} · ${items.length} ${COPY[state.locale].stories}`;
   loadInteractionSummary(filtered.map(item => item.id).filter(Boolean));
 }
 
@@ -734,15 +785,14 @@ document.addEventListener("submit", async event => {
 
 function renderFilters() {
   const items = state.feed?.items || [];
-  const availableDomains = domains.filter(domain => domain === "all" || items.some(item => matchesDomain(item, domain)));
-  if (!availableDomains.includes(state.domain)) state.domain = "all";
-  $("#domain-filters").innerHTML = availableDomains.map(domain => {
-    const count = items.filter(item => matchesDomain(item, domain)).length;
-    const label = domain === "all" ? COPY[state.locale].allDomains : COPY[state.locale].domainFilters[domain];
-    return `<button type="button" data-domain="${domain}" aria-pressed="${domain === state.domain}">${escapeHtml(label)} <span>${count}</span></button>`;
+  $("#field-grid").innerHTML = domainRegistry.map((field, index) => {
+    const count = items.filter(item => matchesDomain(item, field.id)).length;
+    const noun = state.locale === "en" && count === 1 ? COPY.en.story : COPY[state.locale].stories;
+    const status = !state.feed ? COPY[state.locale].loading : count ? `${count} ${noun}` : COPY[state.locale].noCurrentStories;
+    return `<a class="field-card" data-domain="${escapeHtml(field.id)}" href="/${state.locale}/fields/${escapeHtml(field.id)}/#brief"><span class="field-card-top"><span class="field-number">${String(index + 1).padStart(2, "0")}</span><span class="field-arrow" aria-hidden="true">↗</span></span><strong>${escapeHtml(field.label[state.locale])}</strong><span class="field-card-description">${escapeHtml(field.description?.[state.locale] || "")}</span><span class="field-card-meta${count ? " has-stories" : ""}"><span>${escapeHtml(status)}</span><small>${escapeHtml(COPY[state.locale].past48)}</small></span></a>`;
   }).join("");
-  $$('[data-domain]').forEach(button => button.addEventListener("click", () => { state.domain = button.dataset.domain; renderFilters(); renderFeed(); }));
 
+  if (!state.domain) { $("#filters").innerHTML = ""; return; }
   const scopedItems = items.filter(item => matchesDomain(item, state.domain));
   const availableCategories = categories.filter(category => category === "all" || scopedItems.some(item => matchesFilter(item, category)));
   if (!availableCategories.includes(state.category)) state.category = "all";
@@ -754,14 +804,35 @@ function renderFilters() {
   $$('[data-category]').forEach(button => button.addEventListener("click", () => { state.category = button.dataset.category; renderFilters(); renderFeed(); }));
 }
 
+function fieldFromUrl() {
+  const requested = routeField || new URL(location.href).searchParams.get("field");
+  return domains.includes(requested) ? requested : null;
+}
+
+function updateFieldLinks() {
+  $$('[data-locale-button]').forEach(link => {
+    const target = new URL(state.domain ? `/${link.dataset.localeButton}/fields/${state.domain}/` : `/${link.dataset.localeButton}/`, location.origin);
+    target.hash = location.hash === "#brief" && !state.domain ? "#fields" : location.hash;
+    link.href = `${target.pathname}${target.search}${target.hash}`;
+  });
+  $$('[data-fields-link]').forEach(link => { link.href = `/${state.locale}/#fields`; });
+}
+
+window.addEventListener("popstate", () => {
+  state.domain = fieldFromUrl();
+  state.category = "all";
+  renderFilters();
+  renderFeed();
+});
+
 function setLocale(locale) {
   state.locale = locale === "zh" ? "zh" : "en";
   localStorage.setItem("polyemergence-locale", state.locale);
   document.documentElement.lang = state.locale === "zh" ? "zh-Hans" : "en";
   document.documentElement.dataset.locale = state.locale;
-  document.title = COPY[state.locale].seoTitle;
+  if (!routeField) document.title = COPY[state.locale].seoTitle;
   const description = document.querySelector('meta[name="description"]');
-  if (description) description.content = COPY[state.locale].seoDescription;
+  if (description && !routeField) description.content = COPY[state.locale].seoDescription;
   const logoName = state.locale === "zh" ? "logo-zh-reverse.svg" : "logo-en-reverse.svg";
   $("#brand-logo").src = `/assets/${logoName}`;
   $("#brand-logo").alt = COPY[state.locale].brand;
@@ -771,7 +842,10 @@ function setLocale(locale) {
     if (link.dataset.localeButton === state.locale) link.setAttribute("aria-current", "page");
     else link.removeAttribute("aria-current");
   });
-  $$('[data-copy]').forEach(node => node.innerHTML = COPY[state.locale][node.dataset.copy]);
+  $$('[data-copy]').forEach(node => {
+    if (routeField && ["tagline", "promise", "eyebrow"].includes(node.dataset.copy)) return;
+    node.innerHTML = COPY[state.locale][node.dataset.copy];
+  });
   $$('[data-copy-placeholder]').forEach(node => { node.placeholder = COPY[state.locale][node.dataset.copyPlaceholder]; });
   renderFilters(); renderFeed();
 }
@@ -796,7 +870,8 @@ async function loadFeed({ background = false, force = false } = {}) {
   if (!background && location.hash) {
     let target = null;
     try { target = document.getElementById(decodeURIComponent(location.hash.slice(1))); } catch {}
-    if (target) requestAnimationFrame(() => requestAnimationFrame(() => {
+    if (target === $("#brief") && !state.domain) target = $("#fields");
+    if (target && !target.hidden) requestAnimationFrame(() => requestAnimationFrame(() => {
       const previousBehavior = document.documentElement.style.scrollBehavior;
       document.documentElement.style.scrollBehavior = "auto";
       target.scrollIntoView({ block: "start" });
@@ -936,4 +1011,10 @@ window.setInterval(refreshFeedIfStale, 5 * 60_000);
 
 setLocale(state.locale);
 renderInstallSteps();
-loadEditorialDomains().catch(() => {}).finally(() => loadFeed());
+renderFilters();
+loadEditorialDomains().catch(() => {}).finally(() => {
+  state.domain = fieldFromUrl();
+  renderFilters();
+  renderFeed();
+  loadFeed();
+});

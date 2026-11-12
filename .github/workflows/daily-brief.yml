@@ -63,11 +63,14 @@ jobs:
       - name: Export permanent archive and RSS
         run: python scripts/export_archive.py --output web/public
 
+      - name: Export emerging-field SEO pages
+        run: python scripts/export_domain_pages.py --output web/public
+
       - name: Commit refreshed feed
         run: |
           git config user.name "polyemergence-bot"
           git config user.email "polyemergence-bot@users.noreply.github.com"
-          git add web/public/data/latest.json web/public/data/articles.json web/public/sitemap.xml web/public/archive-sitemap.xml web/public/news-sitemap.xml web/public/feed-en.xml web/public/feed-zh.xml web/public/en/archive web/public/zh/archive web/public/en/daily-ai-news web/public/zh/ai-news-daily web/public/en/topics web/public/zh/topics
+          git add web/public/data/latest.json web/public/data/articles.json web/public/sitemap.xml web/public/archive-sitemap.xml web/public/news-sitemap.xml web/public/field-sitemap.xml web/public/feed-en.xml web/public/feed-zh.xml web/public/en/archive web/public/zh/archive web/public/en/daily-ai-news web/public/zh/ai-news-daily web/public/en/topics web/public/zh/topics web/public/en/fields web/public/zh/fields
           if git diff --cached --quiet; then
             echo "No feed changes"
           else
