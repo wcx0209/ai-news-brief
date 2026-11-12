@@ -177,6 +177,71 @@ class ArchiveDomainTests(unittest.TestCase):
             self.assertNotIn(ranked["en"]["title"], sitemap)
             self.assertIn(release["en"]["title"], sitemap)
 
+    def test_permanent_archive_has_no_trending_quota_and_rss_does_not_republish_rankings(self):
+        ranked = [fixture(f"repo-{n}", "ai", f"Ranked repository {n}", 85-n) for n in range(3)]
+        for record in ranked:
+            record.update(source="GitHub Trending", category="open_source", url="https://github.com/vendor/" + record["id"])
+        release = fixture("release", "ai", "Real release")
+        grouped = archive.select_daily([*ranked, release])
+        day = release["published"].astimezone(archive.LOCAL_TZ).date()
+        self.assertEqual({record["id"] for record in grouped[day]}, {"repo-0", "repo-1", "repo-2", "release"})
+        with tempfile.TemporaryDirectory() as directory:
+            output = Path(directory)
+            archive.render_rss(output, "en", grouped)
+            rss = (output / "feed-en.xml").read_text()
+            self.assertIn(release["en"]["title"], rss)
+            for record in ranked:
+                self.assertNotIn(record["en"]["title"], rss)
+
+    def test_prior_public_trending_is_preserved_without_restoring_other_removed_content(self):
+        def ranked(identifier, date):
+            record = fixture(identifier, "ai", "Ranked " + identifier)
+            record.update(source="GitHub Trending", category="open_source", url="https://github.com/vendor/" + identifier,
+                          published=archive.parse_datetime(date), site_published=archive.parse_datetime("2026-11-08T02:00:00Z"))
+            return archive.enrich_record(record)
+        prior_match = ranked("matching", "2026-11-09T01:00:00Z")
+        prior_missing = ranked("missing", "2026-11-10T01:00:00Z")
+        removed_other = fixture("removed-other", "ai", "Intentionally removed news")
+        current = ranked("matching", "2026-11-12T01:00:00Z")
+        current["importance"] = 91
+        with tempfile.TemporaryDirectory() as directory:
+            output = Path(directory)
+            archive.render_public_data(output, [prior_match, prior_missing, removed_other])
+            corpus_path = output / "data/articles.json"
+            old = {item["id"]: item for item in json.loads(corpus_path.read_text())["items"]}
+            records = archive.preserve_trending_history([current], corpus_path)
+            by_id = {record["id"]: record for record in records}
+            self.assertEqual(set(by_id), {"matching", "missing"})
+            self.assertEqual(by_id["matching"]["importance"], 91, "current editorial data is retained")
+            self.assertEqual(by_id["matching"]["published"], prior_match["published"])
+            self.assertEqual(by_id["matching"]["first_seen_at"], "2026-11-08T02:00:00Z")
+            for record in records:
+                for locale in ("en", "zh"):
+                    day = record["published"].astimezone(archive.LOCAL_TZ).date()
+                    self.assertEqual(archive.SITE + archive.article_path(locale, day, record), old[record["id"]]["canonical_urls"][locale])
+                    archive.render_article(output, locale, record)
+                    path = archive.article_path(locale, day, record)
+                    self.assertTrue((output / path.lstrip("/") / "index.html").is_file())
+            archive.render_public_data(output, records)
+            new = {item["id"]: item for item in json.loads(corpus_path.read_text())["items"]}
+        for identifier in ("matching", "missing"):
+            self.assertEqual(new[identifier]["canonical_urls"], old[identifier]["canonical_urls"])
+            self.assertEqual(new[identifier]["date_basis"], "first_seen")
+            self.assertIsNone(new[identifier]["source_published_at"])
+
+    def test_preserved_canonical_is_narrow_and_cannot_overwrite_another_article(self):
+        record = fixture("own-id", "ai", "Ranked own repository")
+        record["source"] = "GitHub Trending"
+        record["canonical_urls"] = {
+            "en": "https://polyemergence.com/en/archive/2026/11/08/own-id/",
+            "zh": "https://polyemergence.com/zh/archive/2026/11/08/another-id/",
+        }
+        day = record["published"].astimezone(archive.LOCAL_TZ).date()
+        self.assertEqual(archive.article_path("en", day, record), "/en/archive/2026/11/08/own-id/")
+        self.assertEqual(archive.article_path("zh", day, record), "/zh/archive/2026/11/12/own-id/")
+        record["source"] = "Official Releases"
+        self.assertEqual(archive.article_path("en", day, record), "/en/archive/2026/11/12/own-id/")
+
 
 if __name__ == "__main__":
     unittest.main()

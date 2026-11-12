@@ -168,7 +168,34 @@ def archive_path(locale, day, anchor=None):
 
 
 def article_path(locale, day, record):
+    preserved = prior_trending_paths(record).get(locale)
+    if preserved:
+        return preserved
     return f"/{locale}/archive/{day:%Y/%m/%d}/{anchor_for(record)[5:]}/"
+
+
+def prior_trending_paths(record):
+    """Only accept this ranked record's own already-published canonical paths."""
+    if not is_trending(record):
+        return {}
+    paths = {}
+    values = record.get("canonical_urls") or {}
+    if not isinstance(values, dict):
+        return paths
+    for locale in ("en", "zh"):
+        value = values.get(locale)
+        if safe_url(value) == "#":
+            continue
+        parsed = urlparse(value)
+        match = re.fullmatch(rf"/{locale}/archive/(\d{{4}}/\d{{2}}/\d{{2}})/{re.escape(anchor_for(record)[5:])}/", parsed.path)
+        if parsed.scheme != "https" or parsed.netloc != "polyemergence.com" or parsed.query or parsed.fragment or not match:
+            continue
+        try:
+            datetime.strptime(match[1], "%Y/%m/%d")
+        except ValueError:
+            continue
+        paths[locale] = parsed.path
+    return paths
 
 
 def topic_path(locale, category):
@@ -291,6 +318,7 @@ def record_from_feed(item):
         "reading_context": item.get("reading_context") or {},
         "date_basis": item.get("date_basis") or ("first_seen" if is_trending(item) else "source_published"),
         "first_seen_at": item.get("first_seen_at") if is_trending(item) else item.get("first_seen_at") or site_published.isoformat().replace("+00:00", "Z"),
+        "canonical_urls": {locale: SITE + path for locale, path in prior_trending_paths(item).items()},
         "en": {"title": (item.get("en") or {}).get("title") or title, "summary": (item.get("en") or {}).get("summary") or "", "full": (item.get("en") or {}).get("full_summary") or (item.get("en") or {}).get("summary") or ""},
         "zh": {"title": (item.get("zh") or {}).get("title") or title, "summary": (item.get("zh") or {}).get("summary") or "", "full": (item.get("zh") or {}).get("full_summary") or (item.get("zh") or {}).get("summary") or ""},
     }
@@ -375,14 +403,12 @@ def select_daily(records):
         grouped[record["published"].astimezone(LOCAL_TZ).date()].append(record)
     selected = {}
     for day, items in grouped.items():
-        github = academia = 0
+        academia = 0
         output = []
         for item in sorted(items, key=lambda row: (row["importance"], row["published"]), reverse=True):
-            if item["source"] == "GitHub Trending":
-                if github >= 2:
-                    continue
-                github += 1
-            if item["category"] == "academia":
+            # Ranking quotas belong to the live selection, not the permanent
+            # archive. Never drop an already-published repository from history.
+            if item["category"] == "academia" and not is_trending(item):
                 if item["importance"] < 70 or item["scores"]["confidence"] < 65 or academia >= 2:
                     continue
                 academia += 1
@@ -410,6 +436,39 @@ def merge_current_feed(records, feed_path):
                 existing["image_url"] = record["image_url"]
             continue
         records.append(record)
+    return records
+
+
+def preserve_trending_history(records, corpus_path):
+    """Retain only previously published rankings, and freeze their old links.
+
+    Current news can intentionally be removed or reclassified; do not restore
+    arbitrary prior corpus items. Trending is the narrow exception because its
+    old mutable ranking timestamps and daily quota could erase public history.
+    No database state is changed and rankings remain excluded from live news.
+    """
+    if not corpus_path.is_file():
+        return records
+    payload = json.loads(corpus_path.read_text(encoding="utf-8"))
+    known = {str(record["id"]): record for record in records}
+    for item in payload.get("items", []):
+        if not is_trending(item) or not item.get("published_at"):
+            continue
+        previous = record_from_feed(item)
+        if not previous:
+            continue
+        key = str(previous["id"])
+        current = known.get(key)
+        if current:
+            if not is_trending(current):
+                continue
+            # This is the prior public archive date, not a newly claimed source
+            # publication. first_seen/source_published semantics stay untouched.
+            current["published"] = previous["published"]
+            current["canonical_urls"] = previous["canonical_urls"]
+        else:
+            records.append(previous)
+            known[key] = previous
     return records
 
 
@@ -641,7 +700,7 @@ def render_article(output, locale, record):
         "isAccessibleForFree": True,
         "isBasedOn": record["url"],
     }
-    path = output / locale / "archive" / f"{day:%Y}" / f"{day:%m}" / f"{day:%d}" / anchor_for(record)[5:] / "index.html"
+    path = output / article_path(locale, day, record).lstrip("/") / "index.html"
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(page_shell(locale, f"{title} | {c['brand']}", description, canonical, alternate, body, structured, "article"), encoding="utf-8")
 
@@ -710,7 +769,7 @@ def render_indexes(output, locale, grouped):
 
 def render_rss(output, locale, grouped, limit=100):
     c = COPY[locale]
-    records = sorted((item for items in grouped.values() for item in items), key=lambda item: item["published"], reverse=True)[:limit]
+    records = sorted((item for items in grouped.values() for item in items if not is_trending(item)), key=lambda item: item["published"], reverse=True)[:limit]
     ET.register_namespace("atom", "http://www.w3.org/2005/Atom")
     root = ET.Element("rss", {"version": "2.0", "xmlns:atom": "http://www.w3.org/2005/Atom"})
     channel = ET.SubElement(root, "channel")
@@ -856,6 +915,7 @@ def main():
         load_json(args.input_json) if args.input_json else load_database(),
         output / "data" / "latest.json",
     )
+    records = preserve_trending_history(records, output / "data" / "articles.json")
     grouped = select_daily(records)
     if not grouped:
         raise SystemExit("No eligible archive records")
