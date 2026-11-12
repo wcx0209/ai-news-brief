@@ -1,8 +1,9 @@
 {
-  "version": 2,
+  "version": 3,
   "domains": [
     {
       "id": "ai",
+      "reading_guidance": {"en": "Check whether reported capability gains hold up in independent evaluations and real use, and what remains untested.", "zh": "关注所称能力提升能否在独立评测与真实使用中成立，以及还有哪些未验证之处。"},
       "order": 10,
       "label": {"en": "Artificial Intelligence", "zh": "人工智能"},
       "short_label": {"en": "AI", "zh": "人工智能"},
@@ -12,6 +13,7 @@
     },
     {
       "id": "programmable_life",
+      "reading_guidance": {"en": "Check the experimental setting, reproducibility and safety evidence before inferring effects in humans or production at scale.", "zh": "先核查实验条件、可重复性与安全证据，再判断能否推广到人体或规模化生产。"},
       "order": 20,
       "label": {"en": "Biotech & Programmable Life", "zh": "生物技术与可编程生命"},
       "short_label": {"en": "Programmable Life", "zh": "可编程生命"},
@@ -21,6 +23,7 @@
     },
     {
       "id": "energy_storage",
+      "reading_guidance": {"en": "Check measured performance, costs, operating duration and scale; a technical milestone alone does not establish commercial viability.", "zh": "关注实测性能、成本、运行时长与规模；单次技术进展不等于商业可行性已经成立。"},
       "order": 30,
       "label": {"en": "Energy & Storage", "zh": "新能源与能源储存"},
       "short_label": {"en": "Energy", "zh": "能源储存"},
@@ -30,6 +33,7 @@
     },
     {
       "id": "robotics_autonomy",
+      "reading_guidance": {"en": "Check whether results come from a controlled demonstration or sustained operation, including failure rates, human assistance and costs.", "zh": "关注成果来自受控演示还是持续运行，并核查失败率、人工介入与成本。"},
       "order": 40,
       "label": {"en": "Robotics & Autonomous Systems", "zh": "机器人与自主系统"},
       "short_label": {"en": "Robotics", "zh": "机器人"},
@@ -39,6 +43,7 @@
     },
     {
       "id": "quantum_technology",
+      "reading_guidance": {"en": "Check the task, verification method and classical baseline before treating a claimed quantum advantage as a general capability.", "zh": "关注任务范围、核验方法和经典计算基线，不把特定任务的量子优势直接等同于普遍能力。"},
       "order": 50,
       "label": {"en": "Quantum Technology", "zh": "量子技术"},
       "short_label": {"en": "Quantum", "zh": "量子"},
@@ -48,6 +53,7 @@
     },
     {
       "id": "space_economy",
+      "reading_guidance": {"en": "Distinguish announced plans from completed missions, and check reliability, costs and the evidence for repeatable operations.", "zh": "区分计划宣布与任务完成，关注可靠性、成本以及能否重复运行的证据。"},
       "order": 60,
       "label": {"en": "Space Economy", "zh": "太空经济"},
       "short_label": {"en": "Space", "zh": "太空"},
@@ -57,6 +63,7 @@
     },
     {
       "id": "advanced_materials",
+      "reading_guidance": {"en": "Check measurement conditions, reproducibility, durability and manufacturing scale before extrapolating a material's performance.", "zh": "关注测量条件、可重复性、耐久性与制造规模，不把特定条件下的性能直接外推。"},
       "order": 70,
       "label": {"en": "Advanced Materials & Nanotechnology", "zh": "新材料与纳米技术"},
       "short_label": {"en": "Materials", "zh": "新材料"},
@@ -66,6 +73,7 @@
     },
     {
       "id": "neurotechnology",
+      "reading_guidance": {"en": "Check participant numbers, study duration, safety and independent replication; a demonstration does not establish broad clinical benefit.", "zh": "关注参与人数、研究时长、安全性和独立复现；一次演示不代表已证实广泛临床获益。"},
       "order": 80,
       "label": {"en": "Neurotechnology & Human Interfaces", "zh": "神经科技与人机接口"},
       "short_label": {"en": "Neurotech", "zh": "神经科技"},
@@ -75,6 +83,7 @@
     },
     {
       "id": "climate_water_environment",
+      "reading_guidance": {"en": "Check system boundaries, lifecycle impacts, measured resource use and local conditions before extrapolating environmental benefits.", "zh": "关注系统边界、全生命周期影响、实测资源消耗与当地条件，再判断环境收益能否推广。"},
       "order": 90,
       "label": {"en": "Climate, Water & Environmental Engineering", "zh": "气候、水与环境工程"},
       "short_label": {"en": "Climate & Water", "zh": "气候与水"},
@@ -84,6 +93,7 @@
     },
     {
       "id": "agrifood_technology",
+      "reading_guidance": {"en": "Check field or production conditions, safety, resource use and unit costs; laboratory results need not translate to commercial scale.", "zh": "关注田间或生产条件、安全性、资源消耗与单位成本；实验室结果未必能直接扩大到商业规模。"},
       "order": 100,
       "label": {"en": "Agriculture & Food Technology", "zh": "农业与食品科技"},
       "short_label": {"en": "AgriFood", "zh": "农业食品"},
@@ -93,6 +103,7 @@
     },
     {
       "id": "advanced_manufacturing",
+      "reading_guidance": {"en": "Check production yield, throughput, integration costs and sustained operation, rather than treating a prototype as a factory-wide result.", "zh": "关注生产良率、吞吐量、集成成本与持续运行表现，不把原型效果当作整座工厂的成果。"},
       "order": 110,
       "label": {"en": "Advanced Manufacturing & Industrial Infrastructure", "zh": "新制造与产业基础设施"},
       "short_label": {"en": "Manufacturing", "zh": "新制造"},

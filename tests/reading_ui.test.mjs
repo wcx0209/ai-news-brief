@@ -6,15 +6,16 @@ import vm from "node:vm";
 const source = await readFile(new URL("../web/public/app.js", import.meta.url), "utf8");
 const executable = source.slice(0, source.lastIndexOf("\nsetLocale(state.locale);"));
 
-function fixture(savedState = null, completedImages = []) {
+function fixture(savedState = null, completedImages = [], { pathname = "/en/fields/ai/", page = "" } = {}) {
   const nodes = new Map();
+  const allNodes = new Map();
   const handlers = new Map();
   let roots = [];
   let nativeSummaries = [];
   const storage = new Map(savedState ? [["polyemergence-reading-v2", JSON.stringify(savedState)]] : []);
   const context = vm.createContext({
     URL, Date, Intl, Set, CSS: { escape: String }, innerHeight: 844, scrollX: 0, scrollY: 300,
-    location: { pathname: "/en/fields/ai/", href: "https://polyemergence.com/en/fields/ai/", origin: "https://polyemergence.com", hash: "", reload() { context.reloadCount = (context.reloadCount || 0) + 1; } },
+    location: { pathname, href: `https://polyemergence.com${pathname}`, origin: "https://polyemergence.com", hash: "", reload() { context.reloadCount = (context.reloadCount || 0) + 1; } },
     navigator: { language: "en", userAgent: "test", platform: "test" },
     localStorage: { setItem() {} },
     sessionStorage: { getItem: key => storage.get(key) || null, setItem: (key, value) => storage.set(key, value) },
@@ -22,24 +23,28 @@ function fixture(savedState = null, completedImages = []) {
       querySelector(selector) {
         if (!nodes.has(selector)) {
           const classes = new Set();
-          nodes.set(selector, { hidden: true, textContent: "", dataset: {}, addEventListener() {}, classList: { add: name => classes.add(name), contains: name => classes.has(name), toggle(name, enabled) { if (enabled) classes.add(name); else classes.delete(name); } } });
+          nodes.set(selector, { hidden: true, textContent: "", dataset: {}, addEventListener() {}, setAttribute() {}, removeAttribute() {}, classList: { add: name => classes.add(name), contains: name => classes.has(name), toggle(name, enabled) { if (enabled) classes.add(name); else classes.delete(name); } } });
         }
         return nodes.get(selector);
       },
-      querySelectorAll(selector) { return selector === "[data-story-id]" ? roots : selector === "[data-summary-details][open]" ? nativeSummaries : selector === "img[data-fallback-image]" ? completedImages : []; },
+      querySelectorAll(selector) { return allNodes.get(selector) || (selector === "[data-story-id]" ? roots : selector === "[data-summary-details][open]" ? nativeSummaries : selector === "img[data-fallback-image]" ? completedImages : []); },
       addEventListener(name, callback) { handlers.set(name, [...(handlers.get(name) || []), callback]); }, visibilityState: "visible", activeElement: null,
-      documentElement: { style: {} }, body: { classList: { toggle() {} } }
+      documentElement: { style: {}, dataset: { page } }, body: { classList: { toggle() {} } }
     },
     requestAnimationFrame: callback => callback(),
     fetch: async () => { throw Error("unconfigured request"); }
   });
   context.window = { navigator: context.navigator, addEventListener() {}, setInterval() {}, matchMedia: () => ({ matches: false }), scrollTo() {}, scrollBy() {} };
-  vm.runInContext(`${executable}\nglobalThis.ui = { state, applyBriefWindow, feedFingerprint, renderCard, renderLead, renderEditionSections, visualMarkup, activateImageFallback, inspectLoadedImages, editionNote, evidenceMarkup, plainText, inlineMarkup, fullSummaryMarkup, captureReadingState, saveReadingState, summaryMarkup, interactionMarkup, loadFeed, applyFeed, publishedTimeMarkup, observationFreshness, updateObservationFreshness }; globalThis.renderCount = 0; setLocale = () => { renderCount += 1; };`, context);
-  return { context, ui: context.ui, nodes, storage, handlers, setRoots(value) { roots = value; }, setNativeSummaries(value) { nativeSummaries = value; } };
+  vm.runInContext(`${executable}\nglobalThis.ui = { state, applyBriefWindow, feedFingerprint, renderCard, renderLead, renderEditionSections, visualMarkup, activateImageFallback, inspectLoadedImages, editionNote, evidenceMarkup, plainText, inlineMarkup, fullSummaryMarkup, readingContextMarkup, renderFieldReadingGuidance, legacyTemplates: LEGACY_READING_CONTEXT, setRegistry: value => { domainRegistry = value; }, setLocale, renderFeed, renderFilters, updateFieldLinks, fieldFromUrl, captureReadingState, saveReadingState, summaryMarkup, interactionMarkup, loadFeed, applyFeed, publishedTimeMarkup, observationFreshness, updateObservationFreshness }; globalThis.renderCount = 0; setLocale = () => { renderCount += 1; };`, context);
+  return { context, ui: context.ui, nodes, storage, handlers, setAll: (selector, values) => allNodes.set(selector, values), setRoots(value) { roots = value; }, setNativeSummaries(value) { nativeSummaries = value; } };
 }
 
 function article(id = "one", overrides = {}) {
   return { id, source: "Example", url: "https://example.com/story", domain: "ai", category: "company", importance: 80, source_published_at: new Date().toISOString(), scores: { confidence: 80 }, en: { title: "A complete readable headline", summary: "Short", full_summary: "Longer summary" }, ...overrides };
+}
+
+function contextMeta(id = "one") {
+  return { scope: "article_specific", validation: "source_grounded", version: 1, article_id: id, source_url: "https://example.com/story" };
 }
 
 test("brief rejects weak, future, expired and GitHub Trending while retaining actual releases and only two eligible papers", () => {
@@ -103,7 +108,7 @@ test("the observation refresh link reloads a same-page hash after saving the rea
 
 test("cards put linked title and metadata before the image, then summary; context and tags stay folded", () => {
   const { ui } = fixture();
-  const markup = ui.renderCard(article("safe", { image_url: "https://example.com/image.jpg", evidence: { type: "official_release", stage: "unspecified" }, reading_context: { en: "Check independent deployment evidence." }, tags: ["proof <not promise>"], related_domains: ["energy_storage", "energy_storage", "space_economy", "neurotechnology"] }));
+  const markup = ui.renderCard(article("safe", { image_url: "https://example.com/image.jpg", evidence: { type: "official_release", stage: "unspecified" }, reading_context: { en: "Check independent deployment evidence." }, reading_context_meta: contextMeta("safe"), tags: ["proof <not promise>"], related_domains: ["energy_storage", "energy_storage", "space_economy", "neurotechnology"] }));
   assert.ok(markup.indexOf("<h3><a") < markup.indexOf('class="story-meta"'));
   assert.ok(markup.indexOf('class="story-meta"') < markup.indexOf('class="card-visual"'));
   assert.ok(markup.indexOf('class="card-visual"') < markup.indexOf('class="story-body"'));
@@ -123,6 +128,93 @@ test("cards put linked title and metadata before the image, then summary; contex
   assert.match(screening, /proof &lt;not promise&gt;/);
   assert.match(screening, /Stage not specified/);
   assert.doesNotMatch(heading, /story-context|class="tags"|Stage not specified/);
+});
+
+test("article reading context requires exact article/source binding and rejects every old generic checklist", () => {
+  const { ui } = fixture();
+  const value = "The reported 24-hour run still lacks an independently measured failure rate.";
+  const valid = article("one", { reading_context: { en: value }, reading_context_meta: contextMeta() });
+  assert.match(ui.readingContextMarkup(valid), /reported 24-hour run/);
+  assert.equal(ui.readingContextMarkup({ ...valid, reading_context_meta: undefined }), "");
+  for (const change of [{ scope: "domain" }, { validation: "inferred" }, { version: "1" }, { article_id: "other" }, { source_url: "https://other.example/story" }]) {
+    assert.equal(ui.readingContextMarkup({ ...valid, reading_context_meta: { ...contextMeta(), ...change } }), "");
+  }
+  assert.equal(ui.legacyTemplates.size, 24);
+  for (const generic of ui.legacyTemplates) {
+    assert.equal(ui.readingContextMarkup({ ...valid, reading_context: { en: generic } }), "");
+    assert.doesNotMatch(ui.renderCard({ ...valid, reading_context: { en: generic } }), /class="story-context"/);
+  }
+  assert.equal(ui.readingContextMarkup({ ...valid, reading_context: { en: "  CHECK THE TASK, VERIFICATION METHOD AND CLASSICAL BASELINE BEFORE TREATING A CLAIMED QUANTUM ADVANTAGE AS A GENERAL CAPABILITY!!!\n" } }), "");
+  for (const invalid of ["short", "x".repeat(801), "A <script>alert(1)</script> claim", "An <em>unverified</em> claim"]) {
+    assert.equal(ui.readingContextMarkup({ ...valid, reading_context: { en: invalid } }), "");
+  }
+  assert.equal(ui.readingContextMarkup({ ...valid, reading_context: { zh: "这里只提供中文，英文页面不显示。" } }), "");
+});
+
+test("current and future registry reading guides cannot pass as article-specific context even with valid metadata", () => {
+  const { ui } = fixture();
+  const guidance = "Review test conditions and durability before generalising this future technology.";
+  ui.setRegistry([{ id: "future_field", label: { en: "Future field", zh: "未来领域" }, reading_guidance: { en: guidance, zh: "先关注测试条件与耐久性，再判断这项未来技术能否普遍适用。" } }]);
+  const item = article("one", { reading_context_meta: contextMeta(), reading_context: { en: guidance.toUpperCase().replace(/\.$/, "!!!") } });
+  assert.equal(ui.readingContextMarkup(item), "");
+  assert.equal(ui.readingContextMarkup({ ...item, reading_context: { en: "先关注测试条件与耐久性，再判断这项未来技术能否普遍适用！" } }), "");
+  assert.match(ui.readingContextMarkup({ ...item, reading_context: { en: "This reported 24-hour test has no published long-duration durability result." } }), /24-hour test/);
+});
+
+test("field guidance appears only once in a collapsed domain-level guide, never as repeated article context", () => {
+  const { ui, nodes } = fixture();
+  const value = "Check the trial setting, duration and replication before generalising.";
+  ui.setRegistry([{ id: "ai", label: { en: "AI", zh: "人工智能" }, reading_guidance: { en: value, zh: "关注试验条件、时长和复现，再判断能否推广。" } }]);
+  ui.state.domain = "ai";
+  ui.renderFieldReadingGuidance();
+  const section = nodes.get("#field-reading-guidance");
+  assert.equal(section.hidden, false);
+  assert.equal(section.dataset.field, "ai");
+  assert.match(section.innerHTML, /^<details><summary>Reading guide<\/summary>/);
+  assert.match(section.innerHTML, /General field guidance, not verification of this story\./);
+  assert.equal(section.innerHTML.split(value).length - 1, 1);
+  assert.doesNotMatch(ui.renderEditionSections([article("a"), article("b")]), /class="story-context"|Check the trial setting/);
+  ui.state.domain = null;
+  ui.renderFieldReadingGuidance();
+  assert.equal(section.hidden, true);
+  ui.state.domain = "ai";
+  ui.state.locale = "zh";
+  ui.renderFieldReadingGuidance();
+  assert.match(section.innerHTML, /<summary>阅读提示<\/summary>/);
+  assert.match(section.innerHTML, /领域通用指引，不是对单篇报道的核验结论/);
+});
+
+test("Tech News hub keeps its SEO and static field overview through hydration, without exposing a mixed feed", () => {
+  const { ui, nodes, context, setAll } = fixture(null, [], { pathname: "/en/tech-news/", page: "tech-news" });
+  context.document.title = "Tech News | Original SEO";
+  const description = context.document.querySelector('meta[name="description"]');
+  description.content = "Original tech news overview description";
+  const h1 = { dataset: { copy: "tagline" }, innerHTML: "Tech News" };
+  const promise = { dataset: { copy: "promise" }, innerHTML: "Original overview introduction" };
+  setAll('[data-copy]', [h1, promise]);
+  const languages = ["en", "zh"].map(locale => ({ dataset: { localeButton: locale }, setAttribute() {}, removeAttribute() {} }));
+  const fieldsLink = {};
+  setAll('[data-locale-button]', languages);
+  setAll('[data-fields-link]', [fieldsLink]);
+  const hub = context.document.querySelector("#tech-news-hub");
+  hub.innerHTML = "Independent static field overview";
+  const fields = context.document.querySelector("#field-grid");
+  fields.innerHTML = "Do not hydrate the hub into homepage cards";
+  ui.state.feed = { generated_at: new Date().toISOString(), items: [article()] };
+  ui.state.domain = "ai";
+  ui.setLocale("en");
+  assert.equal(context.document.title, "Tech News | Original SEO");
+  assert.equal(description.content, "Original tech news overview description");
+  assert.equal(h1.innerHTML, "Tech News");
+  assert.equal(promise.innerHTML, "Original overview introduction");
+  assert.equal(hub.innerHTML, "Independent static field overview");
+  assert.equal(fields.innerHTML, "Do not hydrate the hub into homepage cards");
+  assert.equal(ui.state.domain, null);
+  for (const selector of ["#fields", "#brief", "#field-observations", "#field-seo-content", "#field-reading-guidance"]) assert.equal(nodes.get(selector).hidden, true);
+  assert.equal(languages[1].href, "/zh/tech-news/");
+  assert.equal(fieldsLink.href, "/en/#fields");
+  context.location.href += "?field=ai";
+  assert.equal(ui.fieldFromUrl(), null);
 });
 
 test("lead uses the same heading, image, body order inside lead-copy", () => {

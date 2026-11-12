@@ -8,11 +8,15 @@ import sys
 import tempfile
 from types import SimpleNamespace
 import unittest
+from unittest.mock import patch
 
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
-from editorial_insights import enrich_item, evidence_type, related_domains, technology_stage
+from editorial_insights import (
+    article_reading_context, enrich_item, evidence_type, reading_guidance,
+    related_domains, technology_stage,
+)
 
 spec = importlib.util.spec_from_file_location("public_feed_under_test", ROOT / "scripts/export_public_feed.py")
 feed = importlib.util.module_from_spec(spec)
@@ -110,8 +114,9 @@ class EvidenceMetadataTests(unittest.TestCase):
         self.assertTrue(enriched["en"]["summary"].startswith("According to NVIDIA Robotics:"))
         self.assertTrue(enriched["en"]["full"].startswith("According to NVIDIA Robotics:\n\n##"))
         self.assertEqual(enriched["related_domains"], [])
-        self.assertIn("measured performance", enriched["reading_context"]["en"])
-        self.assertIn("实测", enriched["reading_context"]["zh"])
+        self.assertEqual(enriched["reading_context"], {})
+        self.assertIn("measured performance", reading_guidance("energy_storage")["en"])
+        self.assertIn("实测", reading_guidance("energy_storage")["zh"])
         renamed = copy.deepcopy(enriched)
         renamed["source"] = "NVIDIA News"
         renamed = enrich_item(renamed)
@@ -127,8 +132,104 @@ class EvidenceMetadataTests(unittest.TestCase):
 
     def test_future_registered_domain_has_non_fabricated_context(self):
         record = enrich_item(fixture(domain="a_future_domain", url="https://unknown.example/result"))
-        self.assertIn("original evidence", record["reading_context"]["en"])
+        self.assertEqual(record["reading_context"], {})
+        self.assertIn("original evidence", reading_guidance("a_future_domain")["en"])
         self.assertEqual(record["evidence"], {"type": "unknown", "stage": "unspecified"})
+
+
+class ArticleReadingContextTests(unittest.TestCase):
+    def specific(self, **changes):
+        record = fixture(reading_context={
+            "en": "Check whether the reported 25x throughput gain persists when circuit depth increases.",
+            "zh": "关注所称 25 倍吞吐量增益在电路深度增加后是否仍能保持。",
+        })
+        record["reading_context_meta"] = {
+            "scope": "article_specific", "validation": "source_grounded", "version": 1,
+            "article_id": record["id"], "source_url": record["url"],
+        }
+        record.update(changes)
+        return record
+
+    def test_genuine_article_bound_context_survives_repeated_enrichment(self):
+        original = self.specific()
+        before = copy.deepcopy(original)
+        enriched = enrich_item(original)
+        self.assertEqual(article_reading_context(original), before["reading_context"])
+        self.assertEqual(enriched["reading_context"], before["reading_context"])
+        self.assertEqual(enriched["reading_context_meta"], before["reading_context_meta"])
+        self.assertEqual(enriched, enrich_item(enriched))
+        self.assertEqual(original, before)
+        for key in ("url", "published_at", "source_published_at"):
+            self.assertEqual(enriched.get(key), original.get(key))
+
+    def test_each_field_guidance_is_separate_and_never_injected_into_article(self):
+        from editorial_domains import domain_ids
+
+        for domain in domain_ids():
+            with self.subTest(domain=domain):
+                guidance = reading_guidance(domain)
+                self.assertEqual(set(guidance), {"en", "zh"})
+                self.assertTrue(guidance["en"] and guidance["zh"])
+                self.assertEqual(enrich_item(fixture(domain=domain))["reading_context"], {})
+        value = reading_guidance("ai")
+        value["zh"] = "Caller mutation"
+        self.assertNotEqual(reading_guidance("ai")["zh"], "Caller mutation")
+
+    def test_registry_guidance_is_authoritative_for_custom_future_fields_and_never_article_specific(self):
+        custom = {"id": "future_field", "reading_guidance": {
+            "en": "Check the measurement conditions for this future technology field.",
+            "zh": "关注这一未来技术领域的测量条件与适用边界。",
+        }}
+        with patch("editorial_insights.domains", return_value=[custom]):
+            self.assertEqual(reading_guidance("future_field"), custom["reading_guidance"])
+            record = self.specific(domain="future_field", reading_context=custom["reading_guidance"])
+            self.assertEqual(article_reading_context(record), {})
+            enriched = enrich_item(record)
+            self.assertEqual(enriched["reading_context"], {})
+            self.assertEqual(enriched, enrich_item(enriched))
+        default = reading_guidance("ai")
+        with patch("editorial_insights.domains", return_value=[{"id": "ai", "reading_guidance": {"en": "Custom field-wide reading guidance.", "zh": []}}]):
+            self.assertEqual(reading_guidance("ai"), {"en": "Custom field-wide reading guidance.", "zh": default["zh"]})
+            legacy = self.specific(reading_context=default)
+            self.assertEqual(article_reading_context(legacy), {}, "old templates stay denylisted after registry copy changes")
+
+    def test_any_legacy_field_template_is_rejected_even_with_specific_metadata(self):
+        from editorial_domains import domain_ids
+
+        for domain in [*domain_ids(), "unknown_future_domain"]:
+            with self.subTest(legacy_domain=domain):
+                # The article is AI: a template from another field must not be
+                # misidentified as article-specific just because it differs.
+                record = self.specific(reading_context=reading_guidance(domain))
+                self.assertEqual(article_reading_context(record), {})
+                cleaned = enrich_item(record)
+                self.assertEqual(cleaned["reading_context"], {})
+                self.assertNotIn("reading_context_meta", cleaned)
+        record = self.specific(reading_context={"zh": "\n " + reading_guidance("ai")["zh"].rstrip("。") + "  "})
+        self.assertEqual(article_reading_context(record), {})
+
+    def test_missing_unbound_or_invalid_metadata_cannot_masquerade_as_specific(self):
+        for meta in (None, {}, {"scope": "article_specific"}):
+            with self.subTest(meta=meta):
+                self.assertEqual(article_reading_context(self.specific(reading_context_meta=meta)), {})
+        valid = self.specific()["reading_context_meta"]
+        for key, value in (("scope", "field_guidance"), ("validation", "unchecked"), ("version", "1"),
+                           ("version", True), ("article_id", "another-article"),
+                           ("source_url", "https://openai.com/index/another-result/")):
+            with self.subTest(key=key, value=value):
+                self.assertEqual(article_reading_context(self.specific(reading_context_meta={**valid, key: value})), {})
+        record = self.specific(url="https://new-source.example/replacement")
+        self.assertEqual(article_reading_context(record), {}, "official-source replacement invalidates stale context provenance")
+
+    def test_only_valid_locales_survive_and_internal_metadata_is_not_published(self):
+        record = self.specific(reading_context={"en": "Check whether the reported throughput persists on longer circuits.",
+                                              "zh": reading_guidance("programmable_life")["zh"]})
+        record["reading_context_meta"]["internal_note"] = "Do not publish"
+        enriched = enrich_item(record)
+        self.assertEqual(set(enriched["reading_context"]), {"en"})
+        self.assertNotIn("internal_note", enriched["reading_context_meta"])
+        for invalid in ("", "short", "a" * 801, "<script>alert(1)</script>", ["not", "text"]):
+            self.assertEqual(article_reading_context(self.specific(reading_context={"en": invalid})), {})
 
 
 class DailyPublicationGateTests(unittest.TestCase):

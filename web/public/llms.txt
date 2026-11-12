@@ -18,12 +18,16 @@ Polyemergence covers artificial intelligence, programmable life, energy and stor
 
 - English edition: https://polyemergence.com/en/
 - Chinese edition: https://polyemergence.com/zh/
+- Tech News overview: https://polyemergence.com/en/tech-news/
+- Chinese technology news overview: https://polyemergence.com/zh/tech-news/
 - English archive: https://polyemergence.com/en/archive/
 - Chinese archive: https://polyemergence.com/zh/archive/
 - English RSS: https://polyemergence.com/feed-en.xml
 - Chinese RSS: https://polyemergence.com/feed-zh.xml
 
 ## Editorial trust
+
+Field reading guides are general guidance, not article-specific verification. An article-specific observation is published only when explicitly bound to that article and its source; absence is intentional, not evidence of independent verification.
 
 - Editorial standards: https://polyemergence.com/en/standards/
 - Corrections: https://polyemergence.com/en/corrections/

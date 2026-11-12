@@ -20,10 +20,50 @@ from zoneinfo import ZoneInfo
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "src"))
-from editorial_insights import enrich_item
+from editorial_insights import enrich_item, reading_guidance, article_reading_context
 SITE = "https://polyemergence.com"
 SGT = ZoneInfo("Asia/Singapore")
 WINDOW = timedelta(hours=48)
+HUB_COPY = {
+    "en": {
+        "title": "Tech News by Field — AI, Biotech & Emerging Tech | Polyemergence",
+        "heading": "Tech News by Field",
+        "description": "Explore technology news by field: AI, biotech, energy, robotics and other emerging technologies. Choose a briefing for sourced summaries from the past 48 hours.",
+        "intro": "Start with a field, not a mixed news feed. Each briefing links to original reporting and separates recent developments from longer-term coverage and research questions.",
+    },
+    "zh": {
+        "title": "科技新闻总览：AI、生物技术与前沿科技｜多重涌现",
+        "heading": "科技新闻总览",
+        "description": "按领域浏览人工智能、生物技术、能源、机器人等前沿科技新闻。先选择关注领域，再阅读最近 48 小时的精选摘要、原始来源与研究背景。",
+        "intro": "先选择领域，再看具体新闻，而不是浏览混杂的信息流。各领域简报保留原始来源，并将近期进展、长期覆盖范围与待核查的问题分开呈现。",
+    },
+}
+RELATED_FIELDS = {
+    "ai": [("robotics_autonomy", "Intelligence acting in physical systems", "智能如何作用于物理系统"), ("programmable_life", "Computational tools for biological design", "用于生命设计的计算工具"), ("energy_storage", "Power and infrastructure constraints", "电力与基础设施约束")],
+    "programmable_life": [("ai", "Models and tools for biological research", "用于生命研究的模型与工具"), ("agrifood_technology", "Biological engineering in food production", "食品生产中的生物工程"), ("advanced_manufacturing", "Repeatable production and process engineering", "可重复生产与工艺工程")],
+    "energy_storage": [("advanced_materials", "Materials that determine performance and lifetime", "决定性能与寿命的材料"), ("climate_water_environment", "Deployment, resource use and environmental impact", "部署、资源使用与环境影响"), ("ai", "Electricity demand and computing infrastructure", "用电需求与计算基础设施")],
+    "robotics_autonomy": [("ai", "Perception, planning and learning systems", "感知、规划与学习系统"), ("advanced_manufacturing", "Factory integration and repeatable work", "工厂集成与可重复工作"), ("agrifood_technology", "Automation in farms and food production", "农场与食品生产中的自动化")],
+    "quantum_technology": [("advanced_materials", "Device materials and fabrication", "器件材料与制备"), ("advanced_manufacturing", "Fabrication, packaging and control systems", "制造、封装与控制系统"), ("ai", "Hybrid methods and computing infrastructure", "混合方法与计算基础设施")],
+    "space_economy": [("advanced_materials", "Mass, structure and durability", "质量、结构与耐久性"), ("robotics_autonomy", "Autonomous operation beyond Earth", "地外环境中的自主运行"), ("climate_water_environment", "Earth observation and measurement", "地球观测与测量")],
+    "advanced_materials": [("advanced_manufacturing", "From measured properties to repeatable production", "从实测性能到可重复制造"), ("energy_storage", "Materials for energy conversion and storage", "能源转换与储存材料"), ("space_economy", "Materials under demanding operating conditions", "严苛运行条件下的材料")],
+    "neurotechnology": [("programmable_life", "Biological interfaces and experimental evidence", "生物接口与实验证据"), ("ai", "Signal processing and adaptive interfaces", "信号处理与自适应接口"), ("advanced_materials", "Implant materials and device durability", "植入材料与器件耐久性")],
+    "climate_water_environment": [("energy_storage", "Energy inputs, grids and decarbonisation", "能源投入、电网与脱碳"), ("agrifood_technology", "Water, land and food-system resource use", "水、土地与食品系统资源使用"), ("advanced_materials", "Materials for treatment and environmental systems", "处理工艺与环境系统材料")],
+    "agrifood_technology": [("programmable_life", "Biological design and fermentation", "生物设计与发酵"), ("robotics_autonomy", "Machines working in agricultural settings", "农业环境中工作的机器"), ("climate_water_environment", "Water, emissions and resource efficiency", "水、排放与资源效率")],
+    "advanced_manufacturing": [("robotics_autonomy", "Automation and production-line integration", "自动化与产线集成"), ("advanced_materials", "Material processing and production yield", "材料加工与生产良率"), ("energy_storage", "Industrial energy use and infrastructure", "工业能源使用与基础设施")],
+}
+SEO_TITLES = {
+    "ai": ("AI News", "AI 新闻与人工智能动态"),
+    "programmable_life": ("Biotech News", "生物技术新闻"),
+    "energy_storage": ("Energy Storage News", "储能与新能源新闻"),
+    "robotics_autonomy": ("Robotics News", "机器人新闻"),
+    "quantum_technology": ("Quantum Computing News", "量子计算新闻"),
+    "space_economy": ("Space News", "商业航天新闻"),
+    "advanced_materials": ("Materials Science News", "材料科学与新材料新闻"),
+    "neurotechnology": ("Neurotechnology News", "神经科技与脑机接口新闻"),
+    "climate_water_environment": ("Climate & Water Tech News", "气候科技与水技术新闻"),
+    "agrifood_technology": ("AgriTech & FoodTech News", "农业科技与食品技术新闻"),
+    "advanced_manufacturing": ("Advanced Manufacturing News", "先进制造新闻"),
+}
 
 # Editorial copy supplements the registry. A newly registered field still gets
 # a complete page; optional domain["seo"][locale] values can override this copy.
@@ -85,7 +125,8 @@ def safe_url(value):
         return None
     try:
         parsed = urlparse(value)
-        return value if parsed.scheme in {"http", "https"} and parsed.netloc else None
+        _ = parsed.port
+        return value if parsed.scheme in {"http", "https"} and parsed.hostname and not parsed.username and not parsed.password else None
     except ValueError:
         return None
 
@@ -106,6 +147,10 @@ def field_path(locale, domain_id):
     return f"/{locale}/fields/{domain_id}/"
 
 
+def hub_path(locale):
+    return f"/{locale}/tech-news/"
+
+
 def localized(value, locale, fallback=""):
     return value.get(locale, value.get("en", fallback)) if isinstance(value, dict) else value or fallback
 
@@ -124,8 +169,41 @@ def seo_copy(domain, locale):
     custom = custom if isinstance(custom, dict) else {}
     values = dict(zip(("heading", "description", "intro", "scope"), defaults))
     values.update({key: str(custom[key]) for key in values if custom.get(key)})
-    values["title"] = str(custom.get("title") or f'{values["heading"]} | {"Polyemergence" if locale == "en" else "多重涌现 Polyemergence"}')
+    title_heading = SEO_TITLES.get(domain["id"], (values["heading"], values["heading"]))[0 if locale == "en" else 1]
+    values["title"] = str(custom.get("title") or f'{title_heading} | {"Polyemergence" if locale == "en" else "多重涌现 Polyemergence"}')
     return values
+
+
+def related_fields(domain_id, domains):
+    registry = {domain["id"]: domain for domain in domains}
+    return [entry for entry in RELATED_FIELDS.get(domain_id, []) if entry[0] in registry and entry[0] != domain_id]
+
+
+def render_related_fields(domain_id, locale, domains):
+    registry = {domain["id"]: domain for domain in domains}
+    entries = related_fields(domain_id, domains)
+    if not entries:
+        entries = [(domain["id"], localized(domain.get("description"), "en"), localized(domain.get("description"), "zh"))
+                   for domain in domains if domain["id"] != domain_id][:3]
+    if not entries:
+        return ""
+    links = "".join(f'<li><a href="{field_path(locale, identifier)}">{esc(localized(registry[identifier].get("label"), locale, identifier))}</a>'
+                    f'<p>{esc(en if locale == "en" else zh)}</p></li>' for identifier, en, zh in entries[:3])
+    return f'<nav class="field-related-links" aria-label="{"Related fields" if locale == "en" else "关联领域"}"><h3>{"Related fields" if locale == "en" else "关联领域"}</h3><ul>{links}</ul></nav>'
+
+
+def apply_metadata(page, locale, title, description, canonical, language_paths):
+    page = re.sub(r"<title>.*?</title>", lambda _: f'<title>{esc(title)}</title>', page, count=1, flags=re.S)
+    for key, attribute, value in [
+        ("description", "name", description), ("og:title", "property", title),
+        ("og:description", "property", description), ("og:url", "property", canonical),
+        ("twitter:title", "name", title), ("twitter:description", "name", description),
+    ]:
+        page = re.sub(rf'<meta\b[^>]*\b{attribute}="{re.escape(key)}"[^>]*>', lambda _, k=key, a=attribute, v=value: f'<meta {a}="{k}" content="{esc(v)}">', page, count=1)
+    page = re.sub(r'<link\b[^>]*\brel="canonical"[^>]*>', f'<link rel="canonical" href="{canonical}">', page, count=1)
+    for language, target_locale in (("en", "en"), ("zh-Hans", "zh"), ("x-default", "en")):
+        page = re.sub(rf'<link\b[^>]*\bhreflang="{language}"[^>]*>', f'<link rel="alternate" hreflang="{language}" href="{SITE + language_paths[target_locale]}">', page, count=1)
+    return page
 
 
 def item_domain(item, domains):
@@ -316,13 +394,13 @@ def story_markup(item, locale, corpus, public, lead=False, domains=None, tier="f
         if domain in labels:
             related.append(f'<a href="{field_path(locale, domain)}">{esc(labels[domain])}</a>')
     related_markup = '<div class="story-related">' + " × ".join(related) + '</div>' if related else ""
-    context = localized_insight(item.get("reading_context"), locale)
+    context = localized_insight(article_reading_context(item), locale)
     context_markup = f'<aside class="story-context"><strong>{"Observation focus (editorial lens)" if locale == "en" else "观察重点（编辑视角）"}</strong><p>{esc(context)}</p></aside>' if context else ""
     tags = "".join(f'<span class="tag">{esc(tag)}</span>' for tag in (item.get("tags") or [])[:4])
     tags_markup = f'<div class="tags">{tags}</div>' if tags else ""
     evidence_details = '<div class="screening-metadata">' + "".join(f'<span>{esc(part)}</span>' for part in evidence_parts if part) + '</div>'
     score_labels = {"signal": ("Signal", "信号"), "structure": ("Structure", "结构"), "consequence": ("Consequence", "影响"), "confidence": ("Confidence", "可信度"), "momentum": ("Momentum", "热度")}
-    score_values = "".join(f'<span><small>{labels[0 if locale == "en" else 1]}</small><strong>{esc((item.get("scores") or {}).get(key, 0))}</strong></span>' for key, labels in score_labels.items())
+    score_values = "".join(f'<span><small>{labels[0 if locale == "en" else 1]}</small><strong>{esc(str((item.get("scores") or {}).get(key) or 0))}</strong></span>' for key, labels in score_labels.items())
     screening = (f'<details class="screening-details"><summary>{"View selection rationale" if locale == "en" else "查看筛选依据"}</summary><p class="screening-importance">{"Importance" if locale == "en" else "重要性"} {esc(item.get("importance"))}/100</p><div class="score-breakdown">{score_values}</div>'
                  f'{evidence_details}{context_markup}{tags_markup}<p class="screening-note">{"Editorial assessments, not independent verification." if locale == "en" else "评分属于编辑评估，不代表独立核验。"} <a href="/{locale}/standards/">{"Editorial standards" if locale == "en" else "编辑标准"} →</a></p></details>')
     heading = (f'<div class="story-heading"><h3><a href="{esc(original)}" target="_blank" rel="noopener noreferrer">{esc(title)}</a></h3>'
@@ -490,6 +568,14 @@ def render_field_page(shell, domain, locale, domains, feed, sources, corpus, pub
     page = set_hidden(page, "section", "brief", False)
     page = replace_content(page, "span", "selected-field-label", esc(localized(domain.get("label"), locale)))
     page = replace_content(page, "h2", "brief-title", "Today’s selection" if locale == "en" else "今日精选")
+    if not re.search(r'\bid="field-reading-guidance"', page):
+        page = re.sub(r'(<section\b[^>]*\bid="brief"[^>]*>)', r'\1<aside id="field-reading-guidance" class="field-reading-guidance" hidden></aside>', page, count=1)
+    guidance = localized(domain.get("reading_guidance") or reading_guidance(domain["id"]), locale)
+    guidance_note = "General field guidance, not verification of this story." if locale == "en" else "领域通用指引，不是对单篇报道的核验结论。"
+    guidance_html = f'<details><summary>{"Reading guide" if locale == "en" else "阅读提示"}</summary><p>{esc(guidance)}</p><small>{guidance_note}</small></details>'
+    page = replace_content(page, "aside", "field-reading-guidance", guidance_html)
+    page = set_hidden(page, "aside", "field-reading-guidance", not bool(guidance))
+    page = re.sub(r'(<aside\b[^>]*\bid="field-reading-guidance"[^>]*)(>)', lambda m: m[1] + f' data-field="{esc(domain["id"])}"' + m[2], page, count=1)
     page = replace_content(page, "p", "field-description", esc(localized(domain.get("description"), locale)))
     page = replace_content(page, "div", "lead-story", story_markup(items[0], locale, corpus, public, True, domains) if items else "")
     page = set_class_flag(page, "div", "lead-story", "is-text-led", bool(items and not story_image(items[0])[0]))
@@ -531,8 +617,9 @@ def render_field_page(shell, domain, locale, domains, feed, sources, corpus, pub
     source_links = "".join(f'<li><a href="{esc(source_home(s[0]))}" target="_blank" rel="noopener noreferrer">{esc(s[1])}</a></li>' for s in source_list)
     evergreen = (f'<div><p class="section-index">{heading}</p><h2>{esc(copy["heading"])}</h2><p>{esc(copy["intro"])}</p>'
                  + (f'<p class="field-scope">{esc(copy["scope"])}</p>' if copy["scope"] else "")
-                 + f'<p><a href="/{locale}/archive/">{"Browse historical editions" if locale == "en" else "浏览历史归档"} →</a> · <a href="/{locale}/standards/">{"Editorial standards" if locale == "en" else "编辑标准"}</a></p></div>'
-                 + (f'<div><h3>{source_heading}</h3><p>{source_note}</p><ul>{source_links}</ul></div>' if source_links else ""))
+                 + f'<p><a class="tech-news-hub-link" href="{hub_path(locale)}">{"Tech News: all fields" if locale == "en" else "科技新闻总览：所有领域"}</a> · <a href="/{locale}/archive/">{"Browse historical editions" if locale == "en" else "浏览历史归档"} →</a> · <a href="/{locale}/standards/">{"Editorial standards" if locale == "en" else "编辑标准"}</a></p></div>'
+                 + (f'<div id="field-sources"><h3>{source_heading}</h3><p>{source_note}</p><ul>{source_links}</ul></div>' if source_links else f'<div id="field-sources"><h3>{source_heading}</h3><p>{"Source coverage for this field is still being configured. Stories are not added merely to fill the briefing." if locale == "en" else "本领域的信息源仍在配置中，不会为填充简报而补入新闻。"}</p></div>')
+                 + render_related_fields(domain["id"], locale, domains))
     page = replace_content(page, "section", "field-seo-content", evergreen)
     page = set_hidden(page, "section", "field-seo-content", False)
     page = re.sub(r'(<section\b[^>]*\bid="field-seo-content"[^>]*)(>)', lambda m: m[1] + f' data-field="{domain["id"]}"' + m[2], page, count=1)
@@ -566,10 +653,66 @@ def render_field_page(shell, domain, locale, domains, feed, sources, corpus, pub
                 {"@type": "ListItem", "position": 1, "name": "Fields" if locale == "en" else "领域", "item": SITE + f"/{locale}/#fields"},
                 {"@type": "ListItem", "position": 2, "name": localized(domain.get("label"), locale), "item": url},
             ]},
-            {"@type": "CollectionPage", "@id": url + "#page", "url": url, "name": copy["heading"], "description": copy["description"], "inLanguage": "en" if locale == "en" else "zh-Hans", "about": localized(domain.get("label"), locale), "isPartOf": {"@id": SITE + "/#website"}, "publisher": {"@id": SITE + "/#organization"}, "mainEntity": {"@id": url + "#brief-list"}},
+            {"@type": "CollectionPage", "@id": url + "#page", "url": url, "name": copy["heading"], "description": copy["description"], "inLanguage": "en" if locale == "en" else "zh-Hans", "about": {"@type": "Thing", "name": localized(domain.get("label"), locale), "description": copy["intro"]}, "isPartOf": {"@id": SITE + "/#website"}, "publisher": {"@id": SITE + "/#organization"}, "mainEntity": {"@id": url + "#brief-list"}},
             {"@type": "ItemList", "@id": url + "#brief-list", "name": ("Past 48 hours" if locale == "en" else "最近 48 小时"), "numberOfItems": len(items), "itemListElement": [{"@type": "ListItem", "position": n, "name": news_text(item, locale)[0], "url": archive_url(item, locale, corpus, public) or safe_url(item.get("url"))} for n, item in enumerate(items, 1)]},
         ],
     }
+    page = re.sub(r'<script\b[^>]*type="application/ld\+json"[^>]*>.*?</script>', lambda _: '<script type="application/ld+json">' + json_script(graph) + '</script>', page, count=1, flags=re.S)
+    return "\n".join(line.rstrip() for line in page.split("\n"))
+
+
+def render_hub_page(shell, locale, domains, feed, sources, now):
+    """A genuine field directory, not an unchosen mixed-domain news feed."""
+    copy = HUB_COPY[locale]
+    path = hub_path(locale)
+    canonical = SITE + path
+    page = re.sub(r'<html\b([^>]*)>', lambda m: f'<html{m[1]} data-page="tech-news">', shell, count=1)
+    page = re.sub(r'<body\b([^>]*)>', lambda m: ('<body' + re.sub(r'\bclass="([^"]*)"', lambda c: f'class="{c[1]} is-tech-news-page"', m[1]) + '>') if 'class="' in m[1] else f'<body{m[1]} class="is-tech-news-page">', page, count=1)
+    page = apply_metadata(page, locale, copy["title"], copy["description"], canonical, {language: hub_path(language) for language in ("en", "zh")})
+    page = replace_content(page, "h1", "intro-title", esc(copy["heading"]))
+    page = re.sub(r'(<p\b[^>]*\bdata-copy="promise"[^>]*>).*?</p>', lambda m: m[1] + esc(copy["description"]) + '</p>', page, count=1, flags=re.S)
+    page = re.sub(r'(<p\b[^>]*\bdata-copy="eyebrow"[^>]*>).*?</p>', lambda m: m[1] + ("TECH NEWS · CHOOSE A FIELD" if locale == "en" else "科技新闻 · 按领域阅读") + '</p>', page, count=1, flags=re.S)
+    for language in ("en", "zh"):
+        page = re.sub(rf'(<a\b[^>]*\bdata-locale-button="{language}"[^>]*>)', lambda m, lang=language: re.sub(r'href="[^"]*"', f'href="{hub_path(lang)}"', m[0]), page)
+    for tag, identifier in (("section", "fields"), ("section", "brief"), ("section", "field-observations"), ("section", "field-seo-content"), ("aside", "field-reading-guidance")):
+        page = set_hidden(page, tag, identifier, True)
+    # The shell's data-managed sections remain empty; only field selection is
+    # visible in this independently addressable, indexable hub section.
+    page = replace_content(page, "div", "lead-story", "")
+    page = replace_content(page, "div", "story-grid", "")
+    generated = parse_datetime(feed.get("generated_at"))
+    if generated and generated <= now:
+        page = replace_content(page, "span", "update-status", esc(("Feed updated " if locale == "en" else "数据更新于 ") + generated.astimezone(SGT).strftime("%Y-%m-%d %H:%M SGT")))
+    counted_at = now.astimezone(SGT).strftime("%Y-%m-%d %H:%M SGT")
+    count_note = (f"Selection counts as of {counted_at}, using original publication times within the preceding 48 hours. These are published snapshot counts, not measures of a field’s overall activity. Empty briefings are not padded."
+                  if locale == "en" else f"精选数量统计于 {counted_at}，仅计算此前 48 小时内原始发布且符合标准的内容。这是页面发布时的数量快照，不代表领域整体活跃度；没有达标内容时不补位。")
+    cards = []
+    for domain in domains:
+        field_copy = seo_copy(domain, locale)
+        field_url = field_path(locale, domain["id"])
+        count = len(current_items(feed, domain["id"], domains, now))
+        count_text = f'{count} selected {"story" if count == 1 else "stories"} · 48h' if locale == "en" else f'已精选 {count} 条 · 48 小时'
+        selected_sources = field_sources(domain["id"], sources, domains)[:3]
+        source_links = "".join(f'<li><a href="{esc(source_home(source[0]))}" target="_blank" rel="noopener noreferrer">{esc(source[1])}</a></li>' for source in selected_sources)
+        source_markup = ('<p class="hub-source-label">' + ("Configured source examples" if locale == "en" else "已配置的信息源示例") + '</p><ul class="hub-source-list">' + source_links + '</ul>') if source_links else '<p class="hub-source-label">' + ("Source coverage is still being configured." if locale == "en" else "信息源仍在配置中。") + '</p>'
+        empty_note = ('<p class="hub-field-empty">' + ("No qualifying stories in the current 48-hour window. Field coverage and source notes remain available." if locale == "en" else "当前 48 小时内暂无达标新闻，仍可查看领域覆盖范围与信息源。") + '</p>') if not count else ""
+        cards.append(f'<article class="tech-news-card" data-domain="{esc(domain["id"])}"><div class="hub-field-heading"><h3><a href="{field_url}">{esc(field_copy["heading"])}</a></h3><span class="tech-news-count" data-field-count="{esc(domain["id"])}">{count_text}</span></div>'
+                     f'<p>{esc(field_copy["intro"])}</p>' + (f'<p class="field-scope">{esc(field_copy["scope"])}</p>' if field_copy["scope"] else "")
+                     + empty_note + source_markup + f'<p class="hub-field-actions"><a href="{field_url}#brief">{"Read this field briefing" if locale == "en" else "进入领域简报"} →</a> · <a href="{field_url}#field-sources">{"Coverage and sources" if locale == "en" else "覆盖范围与信息源"}</a></p></article>')
+    resources = f'<nav class="tech-news-method" aria-label="{"Reading resources" if locale == "en" else "阅读资源"}"><a href="/{locale}/standards/">{"Editorial standards and verification limits" if locale == "en" else "编辑标准与核验边界"}</a><a href="/{locale}/archive/">{"Permanent archive" if locale == "en" else "永久历史归档"}</a><a href="/{locale}/#about">{"Selection method" if locale == "en" else "筛选方法"}</a></nav>'
+    hub = f'<section id="tech-news-hub" class="tech-news-hub" aria-label="{esc(copy["heading"])}" data-counted-at="{now.isoformat().replace("+00:00", "Z")}"><p class="tech-news-intro">{esc(copy["intro"])}</p><p class="hub-count-note">{esc(count_note)}</p>{resources}<h2>{"Choose a technology field" if locale == "en" else "选择科技领域"}</h2><div id="tech-news-field-directory" class="tech-news-grid">{"".join(cards)}</div></section>'
+    page, inserted = re.subn(r'(<section\b[^>]*\bid="fields"[^>]*>)', lambda m: hub + '\n' + m[0], page, count=1)
+    if not inserted:
+        raise ValueError("Home shell is missing #fields for the tech news hub")
+    graph = {"@context": "https://schema.org", "@graph": [
+        {"@type": "Organization", "@id": SITE + "/#organization", "name": "Polyemergence", "legalName": "PolyEmergence Pte Ltd.", "url": SITE + "/"},
+        {"@type": "WebSite", "@id": SITE + "/#website", "name": "Polyemergence", "url": SITE + "/"},
+        {"@type": "BreadcrumbList", "itemListElement": [
+            {"@type": "ListItem", "position": 1, "name": "Polyemergence", "item": SITE + f"/{locale}/"},
+            {"@type": "ListItem", "position": 2, "name": copy["heading"], "item": canonical}]},
+        {"@type": "CollectionPage", "@id": canonical + "#page", "url": canonical, "name": copy["heading"], "description": copy["description"], "inLanguage": "en" if locale == "en" else "zh-Hans", "isPartOf": {"@id": SITE + "/#website"}, "publisher": {"@id": SITE + "/#organization"}, "mainEntity": {"@id": canonical + "#tech-news-field-directory"}},
+        {"@type": "ItemList", "@id": canonical + "#tech-news-field-directory", "name": "Technology news fields" if locale == "en" else "科技新闻领域", "numberOfItems": len(domains), "itemListElement": [{"@type": "ListItem", "position": index, "name": seo_copy(domain, locale)["heading"], "url": SITE + field_path(locale, domain["id"])} for index, domain in enumerate(domains, 1)]},
+    ]}
     page = re.sub(r'<script\b[^>]*type="application/ld\+json"[^>]*>.*?</script>', lambda _: '<script type="application/ld+json">' + json_script(graph) + '</script>', page, count=1, flags=re.S)
     return "\n".join(line.rstrip() for line in page.split("\n"))
 
@@ -593,6 +736,10 @@ def export(public, registry_path, feed_path, sources_path, articles_path=None, n
         home = public / locale / "index.html"
         shell = sync_home_navigation(home.read_text(encoding="utf-8"), locale, domains)
         home.write_text(shell, encoding="utf-8")
+        destination = public / hub_path(locale).lstrip("/") / "index.html"
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        destination.write_text(render_hub_page(shell, locale, domains, feed, sources, now), encoding="utf-8")
+        urls.append(SITE + hub_path(locale))
         for domain in domains:
             path = field_path(locale, domain["id"])
             destination = public / path.lstrip("/") / "index.html"
@@ -619,7 +766,7 @@ def main():
     parser.add_argument("--observations", type=Path, default=ROOT / "web/public/data/observations.json")
     args = parser.parse_args()
     count = export(args.output, args.registry, args.feed, args.sources, args.articles, observations_path=args.observations)
-    print(f"Exported {count} bilingual field pages and field-sitemap.xml")
+    print(f"Exported {count} bilingual field and tech news hub pages, plus field-sitemap.xml")
 
 
 if __name__ == "__main__":

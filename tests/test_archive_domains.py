@@ -43,8 +43,8 @@ class ArchiveDomainTests(unittest.TestCase):
         record = fixture("new-field", "new_field", "New field research")
         with patch.dict(archive.DOMAIN_REGISTRY, {"new_field": {"label": {"en": "New Field", "zh": "新领域"}}}):
             context, _, evidence = archive.editorial_analysis(record, "en")
-        self.assertIn("New Field", context)
-        self.assertIn("original evidence", evidence)
+        self.assertEqual(context, "")
+        self.assertEqual(evidence, "")
 
     def test_daily_ai_page_excludes_other_fields_but_archive_keeps_them(self):
         ai = fixture("ai-result", "ai", "AI fixture title")
@@ -89,7 +89,8 @@ class ArchiveDomainTests(unittest.TestCase):
                 self.assertNotIn(archive.daily_brief_path(locale, day), page)
                 self.assertNotIn("what AI systems can do", page)
                 self.assertNotIn("改变 AI 系统", page)
-                self.assertIn("classical methods" if locale == "en" else "经典方法", page)
+                self.assertNotIn("classical methods" if locale == "en" else "经典方法", page)
+                self.assertIn("About this score" if locale == "en" else "评分说明", page)
                 for domain in archive.DOMAIN_REGISTRY:
                     self.assertIn(f'href="/{locale}/fields/{domain}/"', page)
                 nav = re.search(r'<nav class="desktop-nav".*?</nav>', page).group(0)
@@ -121,7 +122,7 @@ class ArchiveDomainTests(unittest.TestCase):
         record = archive.record_from_feed(item)
         self.assertTrue(record["evidence"])
         self.assertIn("ai", record["related_domains"])
-        self.assertTrue(record["reading_context"]["en"])
+        self.assertEqual(record["reading_context"], {})
         record = archive.enrich_record(record)
         page = archive.story_html(record, "en")
         self.assertLess(page.index('<h2>'), page.index('archive-story-meta'))
@@ -135,6 +136,24 @@ class ArchiveDomainTests(unittest.TestCase):
         self.assertEqual(exported["related_domains"], record["related_domains"])
         self.assertEqual(exported["reading_context"], record["reading_context"])
         self.assertIn("source_published_at", exported)
+
+    def test_generic_context_is_hidden_but_article_bound_context_survives_exports(self):
+        record = fixture("specific", "ai", "Model evaluation protocol")
+        legacy = "关注所称能力提升能否在独立评测与真实使用中成立，以及还有哪些未验证之处。"
+        record["reading_context"] = {"zh": legacy}
+        self.assertNotIn(legacy, archive.story_html(record, "zh", detail=True))
+        self.assertNotIn("核查所述评测条件", archive.story_html(record, "zh", detail=True))
+        record["reading_context"] = {"en": "Check whether the released test set supports the reported 4K result."}
+        record["reading_context_meta"] = {"scope": "article_specific", "validation": "source_grounded", "version": 1,
+                                          "article_id": record["id"], "source_url": record["url"]}
+        record = archive.enrich_record(record)
+        self.assertIn("released test set", archive.story_html(record, "en", detail=True))
+        with tempfile.TemporaryDirectory() as directory:
+            archive.render_public_data(Path(directory), [record])
+            exported = json.loads((Path(directory) / "data/articles.json").read_text())["items"][0]
+        restored = archive.enrich_record(archive.record_from_feed(exported))
+        self.assertEqual(restored["reading_context"], record["reading_context"])
+        self.assertEqual(restored["reading_context_meta"], record["reading_context_meta"])
 
     def test_ranked_repository_keeps_legacy_archive_path_but_uses_first_seen(self):
         record = fixture("repo", "ai", "NVIDIA repository")
@@ -319,7 +338,9 @@ The last sentence is still here.'''
         paragraphs = [f"Paragraph {index}: measured result {index}, with uncertainty retained." for index in range(100)]
         record["en"]["full"] = "## Overview\n\n" + "\n\n".join(paragraphs)
         record["en"]["summary"] = "A concise overview of the reported result."
-        record["reading_context"] = {"en": "Generic editorial reading guidance."}
+        record["reading_context"] = {"en": "Check whether the reported measurements apply to the stated test setup."}
+        record["reading_context_meta"] = {"scope": "article_specific", "validation": "source_grounded", "version": 1,
+                                          "article_id": record["id"], "source_url": record["url"]}
         detailed = archive.story_html(record, "en", detail=True)
         preview = archive.story_html(record, "en")
         self.assertIn('<h1>A detailed reported result</h1>', detailed)
@@ -329,8 +350,8 @@ The last sentence is still here.'''
         self.assertNotIn("Paragraph 99:", preview)
         self.assertIn('<p class="archive-summary">A concise overview', preview)
         self.assertIn('Read full summary', preview)
-        self.assertLess(detailed.index('<details class="screening-details">'), detailed.index('Generic editorial reading guidance.'))
-        self.assertLess(preview.index('<details class="screening-details">'), preview.index('Generic editorial reading guidance.'))
+        self.assertLess(detailed.index('<details class="screening-details">'), detailed.index('Check whether the reported measurements'))
+        self.assertLess(preview.index('<details class="screening-details">'), preview.index('Check whether the reported measurements'))
 
     def test_missing_short_summary_is_bounded_in_list_not_detail(self):
         record = fixture("missing-short", "ai", "A long report")
@@ -343,7 +364,7 @@ The last sentence is still here.'''
     def test_article_shell_uses_scoped_reading_layout_and_versioned_archive_styles(self):
         page = archive.page_shell("en", "Title", "Description", "https://polyemergence.com/en/archive/2026/11/12/id/", "https://polyemergence.com/zh/archive/2026/11/12/id/", "Body", og_type="article")
         self.assertIn('<body class="archive-detail">', page)
-        self.assertIn('/archive.css?v=7', page)
+        self.assertIn('/archive.css?v=8', page)
         self.assertIn('<script defer src="/archive-media.js?v=1"></script>', page)
         listing = archive.page_shell("en", "Title", "Description", archive.SITE + "/en/archive/", archive.SITE + "/zh/archive/", "Body")
         self.assertNotIn('/archive-media.js', listing)

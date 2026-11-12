@@ -11,6 +11,7 @@ from datetime import datetime, timezone
 from functools import lru_cache
 from pathlib import Path
 import re
+import unicodedata
 from urllib.parse import urlparse
 
 from editorial_domains import domains, infer_domain
@@ -192,7 +193,7 @@ def related_domains(item):
     return [row[2] for row in candidates[:2]]
 
 
-READING_CONTEXT = {
+DOMAIN_READING_GUIDANCE = {
     "ai": ("Check whether reported capability gains hold up in independent evaluations and real use, and what remains untested.", "关注所称能力提升能否在独立评测与真实使用中成立，以及还有哪些未验证之处。"),
     "programmable_life": ("Check the experimental setting, reproducibility and safety evidence before inferring effects in humans or production at scale.", "先核查实验条件、可重复性与安全证据，再判断能否推广到人体或规模化生产。"),
     "energy_storage": ("Check measured performance, costs, operating duration and scale; a technical milestone alone does not establish commercial viability.", "关注实测性能、成本、运行时长与规模；单次技术进展不等于商业可行性已经成立。"),
@@ -205,6 +206,104 @@ READING_CONTEXT = {
     "agrifood_technology": ("Check field or production conditions, safety, resource use and unit costs; laboratory results need not translate to commercial scale.", "关注田间或生产条件、安全性、资源消耗与单位成本；实验室结果未必能直接扩大到商业规模。"),
     "advanced_manufacturing": ("Check production yield, throughput, integration costs and sustained operation, rather than treating a prototype as a factory-wide result.", "关注生产良率、吞吐量、集成成本与持续运行表现，不把原型效果当作整座工厂的成果。"),
 }
+
+
+UNKNOWN_READING_GUIDANCE = (
+    "Check the original evidence, uncertainty and conditions before generalising the reported result.",
+    "关注原始证据、不确定性与适用条件，不把单篇报道直接外推为普遍结论。",
+)
+
+
+def reading_guidance(domain_id):
+    """Return field-wide reading guidance, never an individual article analysis."""
+    pair = DOMAIN_READING_GUIDANCE.get(domain_id, UNKNOWN_READING_GUIDANCE)
+    field = next((field for field in domains() if field.get("id") == domain_id), {})
+    configured = field.get("reading_guidance")
+    configured = configured if isinstance(configured, dict) else {}
+    return {
+        locale: configured[locale].strip() if isinstance(configured.get(locale), str) and configured[locale].strip() else pair[index]
+        for index, locale in enumerate(("en", "zh"))
+    }
+
+
+def _context_key(value):
+    value = unicodedata.normalize("NFKC", str(value or "")).casefold()
+    return re.sub(r"\s+", "", value).rstrip(".。!?！？;；")
+
+
+LEGACY_READING_CONTEXTS = frozenset(
+    _context_key(text)
+    for pair in [*DOMAIN_READING_GUIDANCE.values(), UNKNOWN_READING_GUIDANCE]
+    for text in pair
+)
+
+
+def _generic_context_keys():
+    # Keep old templates denylisted after copy changes, and also reject every
+    # current registry guide (including new fields) as individual analysis.
+    configured = (
+        field.get("reading_guidance")
+        for field in domains()
+        if isinstance(field.get("reading_guidance"), dict)
+    )
+    return LEGACY_READING_CONTEXTS | {
+        _context_key(value)
+        for guidance in configured
+        for locale in ("en", "zh")
+        if isinstance((value := guidance.get(locale)), str) and value.strip()
+    }
+
+
+def _context_metadata(item):
+    """Validate a specific-context producer's binding, not its factual truth.
+
+    ``source_grounded`` records the producer's content-validation declaration;
+    it must never be described to readers as independent fact checking.
+    """
+    meta = item.get("reading_context_meta")
+    if not isinstance(meta, dict) or not (
+        meta.get("scope") == "article_specific"
+        and meta.get("validation") == "source_grounded"
+        and type(meta.get("version")) is int and meta["version"] == 1
+    ):
+        return None
+    identifier, url = item.get("id"), item.get("url")
+    if (not identifier or not isinstance(meta.get("article_id"), str)
+            or meta["article_id"] != str(identifier)
+            or not isinstance(url, str) or meta.get("source_url") != url
+            or re.search(r"[\x00-\x20\\]", url) or not _host(url)):
+        return None
+    try:
+        _ = urlparse(url).port
+    except ValueError:
+        return None
+    return {"scope": "article_specific", "validation": "source_grounded", "version": 1,
+            "article_id": str(identifier), "source_url": url}
+
+
+def article_reading_context(item):
+    """Return only explicitly validated, article-bound {en, zh} context.
+
+    Required metadata: ``reading_context_meta = {scope: 'article_specific',
+    validation: 'source_grounded', version: 1, article_id: item.id,
+    source_url: item.url}``. Missing or stale provenance means no context, not a
+    generated replacement. Every legacy field template is rejected regardless
+    of the article's current domain or its metadata declaration.
+    """
+    if not _context_metadata(item) or not isinstance(item.get("reading_context"), dict):
+        return {}
+    result = {}
+    generic_keys = _generic_context_keys()
+    for locale in ("en", "zh"):
+        value = item["reading_context"].get(locale)
+        if not isinstance(value, str):
+            continue
+        value = value.strip()
+        if (not 8 <= len(value) <= 800 or _context_key(value) in generic_keys
+                or re.search(r"[\x00-\x08\x0b\x0c\x0e-\x1f]|<[^>]*>", value)):
+            continue
+        result[locale] = value
+    return result
 
 
 def _attribute(text, source, locale, kind):
@@ -244,11 +343,11 @@ def enrich_item(item):
     if is_github_trending(result):
         result["evidence"]["stage"] = "unspecified"
     result["related_domains"] = related_domains(result)
-    context = READING_CONTEXT.get(result["domain"], (
-        "Check the original evidence, uncertainty and conditions before generalising the reported result.",
-        "关注原始证据、不确定性与适用条件，不把单篇报道直接外推为普遍结论。",
-    ))
-    result["reading_context"] = {"en": context[0], "zh": context[1]}
+    result["reading_context"] = article_reading_context(result)
+    if result["reading_context"]:
+        result["reading_context_meta"] = _context_metadata(result)
+    else:
+        result.pop("reading_context_meta", None)
     source = re.sub(r"[\r\n]+", " ", str(result.get("source") or "the publisher")).strip()[:100]
     for locale in ("en", "zh"):
         localized = result.get(locale)

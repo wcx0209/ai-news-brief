@@ -28,7 +28,7 @@ SHELL = '''<!doctype html><html lang="en"><head><title>Home</title>
 <a class="choose-field-link" href="#fields" data-fields-link>Choose field</a>
 <h1 id="intro-title" data-copy="tagline">Home</h1><p data-copy="promise">Home</p><p data-copy="eyebrow">Home</p>
 <span id="update-status">Loading</span><section id="fields"><div class="field-grid" id="field-grid" aria-label="News fields"><a href="/stale-card/">Stale card</a></div></section>
-<section id="brief" hidden><p id="edition-note" class="edition-note"></p><span id="selected-field-label"></span><h2 id="brief-title"></h2>
+<section id="brief" hidden><p id="edition-note" class="edition-note"></p><aside id="field-reading-guidance" class="field-reading-guidance" hidden></aside><span id="selected-field-label"></span><h2 id="brief-title"></h2>
 <p id="field-description"></p><div id="lead-story"></div><div id="story-grid"></div><div id="empty-state" hidden></div></section>
 <section id="field-seo-content" class="field-seo-content" hidden></section>
 <footer>PolyEmergence Pte Ltd. Singapore <nav class="footer-topics" aria-label="Fields"><a href="/stale-footer/">Stale footer</a></nav><a href="/en/standards/">Editorial standards</a></footer>
@@ -146,7 +146,9 @@ class DomainPagesTests(unittest.TestCase):
         self.assertLess(card.index('card-visual'), card.index('story-body'))
         self.assertLess(card.index('story-body'), card.index('story-summary'))
         self.assertIn('story-evidence', card)
-        self.assertIn('story-context', card)
+        self.assertNotIn('story-context', card)
+        self.assertEqual(result.count('id="field-reading-guidance"'), 1)
+        self.assertEqual(result.count('General field guidance, not verification of this story.'), 1)
         self.assertIn('details class="screening-details"', card)
         self.assertIn('<h2 id="brief-title">Today’s selection</h2>', result)
         lead = re.search(r'<div id="lead-story"[^>]*>(.*?)<div id="story-grid"', result, re.S)[1]
@@ -213,7 +215,7 @@ class DomainPagesTests(unittest.TestCase):
         text = "`__init__` keeps __checkpoint_key__ unchanged"
         self.assertEqual(pages.clean_text(text), "__init__ keeps __checkpoint_key__ unchanged")
 
-    def test_details_keep_context_tags_and_unknown_stage_out_of_heading(self):
+    def test_details_keep_tags_and_unknown_stage_out_of_heading_without_generic_article_context(self):
         item = self.item(en={"title": "A complete title", "summary": "Short readable preview.", "full_summary": "A longer summary with full detail."},
                          tags=['<script>alert(1)</script>', "biology"])
         with tempfile.TemporaryDirectory() as folder:
@@ -229,7 +231,7 @@ class DomainPagesTests(unittest.TestCase):
                 self.assertIn('<div class="summary-full" data-summary-full><p>A longer summary with full detail.</p></div>', body)
                 screening = re.search(r'<details class="screening-details">(.*?)</details>', body, re.S)[1]
                 self.assertIn("Stage not specified", screening)
-                self.assertIn("story-context", screening)
+                self.assertNotIn("story-context", screening)
                 self.assertIn('class="tags"', screening)
                 self.assertIn("not independent verification", screening)
                 self.assertNotIn('<script>alert(1)</script>', rendered)
@@ -309,11 +311,14 @@ class DomainPagesTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as folder:
             public = Path(folder)
             registry, feed, sources = self.export_fixture(public, self.domains)
-            self.assertEqual(pages.export(public, registry, feed, sources, now=self.now), 4)
+            self.assertEqual(pages.export(public, registry, feed, sources, now=self.now), 6)
             sitemap = (public / "field-sitemap.xml").read_text(encoding="utf-8")
             self.assertIn("/en/fields/programmable_life/", sitemap)
             self.assertIn("/zh/fields/ai/", sitemap)
+            self.assertIn("/en/tech-news/", sitemap)
+            self.assertIn("/zh/tech-news/", sitemap)
             self.assertEqual(len(list(public.glob("*/fields/*/index.html"))), 4)
+            self.assertEqual(len(list(public.glob("*/tech-news/index.html"))), 2)
 
     def test_new_registered_field_syncs_escaped_home_and_field_page_navigation(self):
         new_domain = {"id": "new_field", "order": 1, "label": {"en": 'New <field> & "science"', "zh": '新<领域>与"科技"'}, "short_label": {"en": "New <&>", "zh": "新<&>"}, "description": {"en": 'A <scope> & "evidence"', "zh": '有<范围>与"证据"'}}
@@ -321,7 +326,7 @@ class DomainPagesTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as folder:
             public = Path(folder)
             registry, feed, sources = self.export_fixture(public, domains)
-            self.assertEqual(pages.export(public, registry, feed, sources, now=self.now), 6)
+            self.assertEqual(pages.export(public, registry, feed, sources, now=self.now), 8)
             for locale in ("en", "zh"):
                 home = (public / locale / "index.html").read_text(encoding="utf-8")
                 field = (public / locale / "fields/new_field/index.html").read_text(encoding="utf-8")
@@ -359,6 +364,98 @@ class DomainPagesTests(unittest.TestCase):
                     self.assertEqual((public / locale / "index.html").read_text(encoding="utf-8"), SHELL)
                     self.assertFalse((public / locale / "fields").exists())
                 self.assertFalse((public / "field-sitemap.xml").exists())
+
+    def test_all_registered_fields_have_distinct_useful_bilingual_seo_and_one_guidance(self):
+        domains = json.loads((ROOT / "web/public/data/editorial-domains.json").read_text())["domains"]
+        self.assertEqual(len(domains), 11)
+        source_catalog = pages.load_sources(ROOT / "scripts/bootstrap_sources.py")
+        with tempfile.TemporaryDirectory() as folder:
+            public = Path(folder)
+            for locale in ("en", "zh"):
+                titles, descriptions = set(), set()
+                for domain in domains:
+                    with self.subTest(locale=locale, domain=domain["id"]):
+                        result = pages.render_field_page(SHELL, domain, locale, domains, {"items": []}, source_catalog, {}, public, self.now)
+                        copy = pages.seo_copy(domain, locale)
+                        titles.add(copy["title"])
+                        descriptions.add(copy["description"])
+                        self.assertLess(len(copy["title"]), 75)
+                        self.assertIn(f'<title>{pages.esc(copy["title"])}</title>', result)
+                        self.assertIn(f'content="{pages.esc(copy["description"])}"', result)
+                        self.assertIn(pages.esc(copy["intro"]), result)
+                        self.assertIn(pages.esc(copy["scope"]), result)
+                        self.assertEqual(len(re.findall(r'<h1\b', result)), 1)
+                        self.assertEqual(result.count('id="field-reading-guidance"'), 1)
+                        self.assertEqual(result.count('General field guidance, not verification of this story.' if locale == "en" else '领域通用指引，不是对单篇报道的核验结论。'), 1)
+                        self.assertIn(f'href="/{locale}/tech-news/"', result)
+                        self.assertIn('class="field-related-links"', result)
+                        self.assertIn('id="field-sources"', result)
+                        self.assertNotIn('"@type":"FAQPage"', result)
+                        graph = json.loads(re.search(r'<script type="application/ld\+json">(.*?)</script>', result, re.S)[1])["@graph"]
+                        self.assertEqual(graph[-1]["numberOfItems"], 0)
+                        for node in graph:
+                            self.assertNotIn("datePublished", node)
+                            self.assertNotIn("dateModified", node)
+                        self.assertIn('No qualifying stories from the past 48 hours' if locale == "en" else '最近 48 小时内暂无符合筛选标准的新闻', result)
+                self.assertEqual(len(titles), len(domains))
+                self.assertEqual(len(descriptions), len(domains))
+
+    def test_tech_news_hub_is_a_bilingual_field_directory_with_true_counts_not_news_stream(self):
+        feed = {"generated_at": self.now.isoformat(), "items": [self.item(), self.item("ai-story", domain="ai"),
+                self.item("old", source_published_at=(self.now - timedelta(hours=49)).isoformat()),
+                self.item("future", source_published_at=(self.now + timedelta(hours=1)).isoformat()),
+                self.item("ranked", source="GitHub Trending"), self.item("weak", importance=64)]}
+        for locale in ("en", "zh"):
+            with self.subTest(locale=locale):
+                result = pages.render_hub_page(SHELL, locale, self.domains, feed, self.sources, self.now)
+                self.assertIn('data-page="tech-news"', result)
+                self.assertIn('class="is-tech-news-page"', result)
+                self.assertIn('id="tech-news-hub"', result)
+                self.assertIn('id="fields" hidden', result)
+                self.assertIn('id="brief" hidden', result)
+                self.assertEqual(result.count('class="tech-news-card"'), 2)
+                self.assertEqual(len(re.findall(r'<h1\b', result)), 1)
+                self.assertIn('data-field-count="ai">1 selected story · 48h' if locale == "en" else 'data-field-count="ai">已精选 1 条 · 48 小时', result)
+                self.assertIn('data-field-count="programmable_life">1 selected story · 48h' if locale == "en" else 'data-field-count="programmable_life">已精选 1 条 · 48 小时', result)
+                self.assertNotIn('Current biology', result)
+                self.assertNotIn('生命研究进展', result)
+                for path in (f'/{locale}/standards/', f'/{locale}/archive/', f'/{locale}/fields/ai/#brief', f'/{locale}/fields/programmable_life/#field-sources'):
+                    self.assertIn(f'href="{path}"', result)
+                self.assertIn('Lab &lt;R&amp;D&gt; &quot;Official&quot;', result)
+                self.assertIn(f'rel="canonical" href="https://polyemergence.com/{locale}/tech-news/"', result)
+                self.assertIn('hreflang="en" href="https://polyemergence.com/en/tech-news/"', result)
+                self.assertIn('hreflang="zh-Hans" href="https://polyemergence.com/zh/tech-news/"', result)
+                graph = json.loads(re.search(r'<script type="application/ld\+json">(.*?)</script>', result, re.S)[1])["@graph"]
+                self.assertEqual(graph[-1]["numberOfItems"], 2)
+                self.assertEqual([item["url"] for item in graph[-1]["itemListElement"]], [pages.SITE + pages.field_path(locale, domain["id"]) for domain in self.domains])
+                self.assertNotIn('NewsArticle', result)
+
+    def test_hub_empty_future_registry_and_untrusted_copy_remain_useful_and_escaped(self):
+        domain = {"id": "new_field", "label": {"en": '<img src=x onerror="bad()"> & future'},
+                  "description": {"en": 'A <scope> & "evidence"'}, "reading_guidance": {"en": "Check <script>bad()</script> safely"}}
+        domains = [*self.domains, domain]
+        result = pages.render_hub_page(SHELL, "en", domains, {"items": []}, self.sources, self.now)
+        self.assertEqual(result.count('class="tech-news-card"'), 3)
+        self.assertEqual(result.count('0 selected stories · 48h'), 3)
+        self.assertIn('No qualifying stories in the current 48-hour window', result)
+        self.assertIn('href="/en/fields/new_field/"', result)
+        self.assertIn('&lt;img src=x onerror=&quot;bad()&quot;&gt;', result)
+        self.assertNotIn('<img src=x', result)
+        with tempfile.TemporaryDirectory() as folder:
+            field = pages.render_field_page(SHELL, domain, "en", domains, {"items": []}, self.sources, {}, Path(folder), self.now)
+        self.assertIn('Check &lt;script&gt;bad()&lt;/script&gt; safely', field)
+        self.assertNotIn('<script>bad()</script>', field)
+        self.assertIn('Source coverage for this field is still being configured', field)
+        self.assertIn('class="field-related-links"', field)
+
+    def test_direct_story_renderer_rejects_unbound_context_but_keeps_true_specific_context(self):
+        item = self.item(reading_context={"en": "Check how the reported gain changes with larger sample sizes."})
+        with tempfile.TemporaryDirectory() as folder:
+            public = Path(folder)
+            self.assertNotIn('story-context', pages.story_markup(item, "en", {}, public))
+            item["reading_context_meta"] = {"scope": "article_specific", "validation": "source_grounded", "version": 1,
+                                            "article_id": item["id"], "source_url": item["url"]}
+            self.assertIn('story-context', pages.story_markup(item, "en", {}, public))
 
 
 if __name__ == "__main__":

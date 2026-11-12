@@ -20,7 +20,7 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "src"))
 from relevance_filter import passes_source_ai_filter
 from editorial_domains import categories, category_ids, category_labels, domains, infer_domain, match_category
-from editorial_insights import enrich_item
+from editorial_insights import enrich_item, article_reading_context
 
 
 SITE = "https://polyemergence.com"
@@ -503,6 +503,7 @@ def record_from_feed(item):
         "tags": tags,
         "evidence": item.get("evidence") or {}, "related_domains": item.get("related_domains") or [],
         "reading_context": item.get("reading_context") or {},
+        "reading_context_meta": item.get("reading_context_meta") or {},
         "date_basis": item.get("date_basis") or ("first_seen" if is_trending(item) else "source_published"),
         "first_seen_at": item.get("first_seen_at") if is_trending(item) else item.get("first_seen_at") or site_published.isoformat().replace("+00:00", "Z"),
         "canonical_urls": {locale: SITE + path for locale, path in prior_trending_paths(item).items()},
@@ -574,7 +575,7 @@ def enrich_record(record):
             "site_published_at": first_seen if is_trending(record) else record["site_published"].isoformat().replace("+00:00", "Z"),
             **{locale: {**record[locale], "full_summary": record[locale].get("full")} for locale in ("en", "zh")}}
     enriched = enrich_item(item)
-    for key in ("evidence", "related_domains", "reading_context"):
+    for key in ("evidence", "related_domains", "reading_context", "reading_context_meta"):
         record[key] = enriched.get(key) or ([] if key == "related_domains" else {})
     record["date_basis"] = enriched.get("date_basis") or ("first_seen" if is_trending(record) else "source_published")
     record["first_seen_at"] = enriched.get("first_seen_at") if is_trending(record) else enriched.get("first_seen_at") or item["first_seen_at"]
@@ -672,7 +673,7 @@ def page_shell(locale, title, description, canonical, alternate, body, structure
         f'<a href="{topic_path(locale, category)}">{esc(CATEGORY_LABELS[locale][category])}</a>'
         for category in STORY_ANGLE_ORDER
     )
-    field_links = "".join(
+    field_links = f'<a href="/{locale}/tech-news/">{"Tech News overview" if locale == "en" else "科技新闻总览"}</a>' + "".join(
         f'<a href="{field_path(locale, domain)}">{esc(item["label"][locale])}</a>'
         for domain, item in DOMAIN_REGISTRY.items()
     )
@@ -691,7 +692,7 @@ def page_shell(locale, title, description, canonical, alternate, body, structure
 <link rel="alternate" type="application/rss+xml" title="{esc(c['brand'])} RSS" href="/feed-{locale}.xml">
 <meta property="og:type" content="{esc(og_type)}"><meta property="og:site_name" content="{esc(c['brand'])}"><meta property="og:title" content="{esc(title)}"><meta property="og:description" content="{esc(description)}"><meta property="og:url" content="{esc(canonical)}"><meta property="og:image" content="{SITE}/assets/social-preview.png">
 <meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="{esc(title)}"><meta name="twitter:description" content="{esc(description)}"><meta name="twitter:image" content="{SITE}/assets/social-preview.png">
-<link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="/styles.css?v=20261112-29"><link rel="stylesheet" href="/archive.css?v=7">{media_script}{structured_html}</head>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="/styles.css?v=20261113-1"><link rel="stylesheet" href="/archive.css?v=8">{media_script}{structured_html}</head>
 <body{body_class}><header class="site-header"><a class="brand" href="/{locale}/" aria-label="{esc(c['brand'])}"><img src="/assets/{logo}" alt="{esc(c['brand'])}" width="420" height="70"></a>
 <nav class="desktop-nav" aria-label="{'Primary' if locale == 'en' else '主导航'}"><a href="/{locale}/#fields"{fields_current}>{esc(c['fields'])}</a><a href="/{locale}/archive/"{archive_current}>{esc(c['archive'])}</a><a href="/{locale}/#about">{esc(c['method'])}</a></nav>
 <div class="header-tools"><span class="edition">{esc(c['edition'])}</span><div class="language-switch"><a href="{esc(alternate)}" hreflang="{COPY[other]['lang']}">{'中' if other == 'zh' else 'EN'}</a><span>|</span><a href="{esc(canonical)}" aria-current="page">{'中' if locale == 'zh' else 'EN'}</a></div></div></header>
@@ -699,14 +700,9 @@ def page_shell(locale, title, description, canonical, alternate, body, structure
 
 
 def editorial_analysis(record, locale):
-    """Offer field-specific reading guidance, not fabricated article analysis."""
-    domain = record_domain(record)
-    label = DOMAIN_REGISTRY[domain]["label"][locale]
-    why = (
-        f"Read this {label} brief alongside the original source. Distinguish what was demonstrated from what is proposed or planned."
-        if locale == "en" else
-        f"阅读这篇{label}简报时，可结合原文区分已展示的成果、提出的设想与未来计划。"
-    )
+    """Describe stored scores, with no invented explanation or watch point."""
+    # Do not present field-wide advice as an individual editorial assessment.
+    why = ""
     scores = record["scores"]
     dimensions = [("signal", scores["signal"]), ("structure", scores["structure"]), ("consequence", scores["consequence"])]
     strongest, score = max(dimensions, key=lambda item: item[1])
@@ -718,35 +714,16 @@ def editorial_analysis(record, locale):
         signal = f"The recorded importance score is {record['importance']}/100; the highest of its signal, structure and consequence scores is {dimension_names[locale][strongest]} ({score}/100). These are editorial assessments, not independent verification."
     else:
         signal = f"本条新闻记录的重要性评分为 {record['importance']}/100；信号、结构、影响三个维度中，{dimension_names[locale][strongest]}得分最高（{score}/100）。这些评分属于编辑评估，不代表独立核验。"
-    watch = {
-        "ai": ("Check the stated evaluation setup, independent tests, access terms and evidence of real use.", "核查所述评测条件、独立测试、使用条款与实际应用证据。"),
-        "programmable_life": ("Check the experimental stage, reproducibility, safety evidence, regulatory status and manufacturing scale.", "核查实验阶段、可重复性、安全证据、监管状态与制造规模。"),
-        "energy_storage": ("Check operating conditions, measured performance, lifetime, cost assumptions and deployment scale.", "核查运行条件、实测表现、使用寿命、成本假设与部署规模。"),
-        "robotics_autonomy": ("Check the test environment, human intervention, safety limits and repeated performance in real deployments.", "核查测试环境、人工干预、安全边界与实际部署中的重复表现。"),
-        "quantum_technology": ("Check the measured task, error rates, physical versus logical qubits where relevant, and comparisons with classical methods.", "核查测量任务、错误率、适用时的物理与逻辑量子比特区别，以及与经典方法的比较。"),
-        "space_economy": ("Check completed flight or orbital tests, mission status, reliability and disclosed cost assumptions.", "核查已完成的飞行或在轨测试、任务状态、可靠性与披露的成本假设。"),
-        "advanced_materials": ("Check test conditions, independent reproduction, durability, feedstock requirements and production scale.", "核查测试条件、独立复现、耐久性、原料要求与生产规模。"),
-        "neurotechnology": ("Check whether evidence comes from lab, animal or human studies, along with safety, consent and follow-up duration.", "核查证据来自实验室、动物还是人体研究，以及安全性、知情同意与随访时长。"),
-        "climate_water_environment": ("Check system boundaries, lifecycle measurements, energy and water inputs, and performance at the reported scale.", "核查系统边界、全生命周期测量、能源与水投入，以及所述规模下的表现。"),
-        "agrifood_technology": ("Check the trial or production setting, yields, input requirements, safety evidence and regulatory status.", "核查试验或生产条件、产量、投入要求、安全证据与监管状态。"),
-        "advanced_manufacturing": ("Check throughput, defect rates, integration requirements, unit costs and evidence beyond a demonstration line.", "核查产能、缺陷率、集成要求、单位成本与示范线之外的应用证据。"),
-    }.get(domain, (
-        "Check the original evidence, test conditions, stated limitations and independent confirmation.",
-        "核查原始证据、测试条件、所述限制与独立验证情况。",
-    ))[0 if locale == "en" else 1]
+    watch = article_reading_context(record).get(locale, "")
     return why, signal, watch
 
 
 def editorial_analysis_html(record, locale):
     if record["importance"] < 75:
         return ""
-    why, signal, watch = editorial_analysis(record, locale)
-    labels = SEO_COPY[locale]
-    return f'''<aside class="editorial-analysis" aria-label="{esc(labels['signal'])}">
-<div><h3>{esc(labels['why'])}</h3><p>{esc(why)}</p></div>
-<div><h3>{esc(labels['signal'])}</h3><p>{esc(signal)}</p></div>
-<div><h3>{esc(labels['watch'])}</h3><p>{esc(watch)}</p></div>
-</aside>'''
+    _, signal, _ = editorial_analysis(record, locale)
+    label = "About this score" if locale == "en" else "评分说明"
+    return f'<aside class="editorial-analysis" aria-label="{label}"><div><h3>{label}</h3><p>{esc(signal)}</p></div></aside>'
 
 
 def story_html(record, locale, detail=False):
@@ -780,7 +757,7 @@ def story_html(record, locale, detail=False):
     type_label = evidence_labels[document_type][0 if locale == "en" else 1] if document_type in evidence_labels and document_type != "unknown" else content_type(record, locale)
     provenance = f'<div class="archive-story-meta archive-provenance"><a class="archive-source" href="{esc(safe_url(record["url"]))}" target="_blank" rel="noopener noreferrer">{esc(record["source"])} ↗</a><span class="archive-date"><span>{esc(date_label)}</span> {date_markup}</span><span class="archive-document-type">{esc(type_label)}</span><a class="archive-field" href="{field_path(locale, domain)}">{esc(field_label)}</a></div>'
     related = " × ".join(f'<a href="{field_path(locale, domain_id)}">{esc(DOMAIN_REGISTRY[domain_id]["label"][locale])}</a>' for domain_id in (record.get("related_domains") or [])[:2] if domain_id in DOMAIN_REGISTRY)
-    context = (record.get("reading_context") or {}).get(locale)
+    context = article_reading_context(record).get(locale)
     context_html = f'<p class="story-context"><strong>{"Observation focus (editorial lens)" if locale == "en" else "观察重点（编辑视角）"}</strong> {esc(context)}</p>' if context else ""
     dek_html = ""
     if detail:
@@ -1088,6 +1065,7 @@ def render_public_data(output, records):
             "tags": record["tags"],
             "evidence": record.get("evidence") or {}, "related_domains": record.get("related_domains") or [],
             "reading_context": record.get("reading_context") or {},
+            "reading_context_meta": record.get("reading_context_meta") or {},
             "canonical_urls": {locale: SITE + article_path(locale, day, record) for locale in ("en", "zh")},
             "en": {"title": clean_text(record["en"]["title"]), "summary": clean_text(record["en"]["summary"]), "full_summary": clean_text(record["en"]["full"])},
             "zh": {"title": clean_text(record["zh"]["title"]), "summary": clean_text(record["zh"]["summary"]), "full_summary": clean_text(record["zh"]["full"])},

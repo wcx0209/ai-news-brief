@@ -87,6 +87,7 @@ const COPY = {
 
 const routeLocale = location.pathname.split("/").filter(Boolean)[0];
 const routeField = location.pathname.match(/^\/(?:en|zh)\/fields\/([^/]+)\/?$/)?.[1] || null;
+const routeTechNews = /^\/(?:en|zh)\/tech-news\/?$/.test(location.pathname) || document.documentElement.dataset?.page === "tech-news" || Boolean(document.body?.classList.contains?.("is-tech-news-page"));
 const state = {
   locale: routeLocale === "zh" ? "zh" : routeLocale === "en" ? "en" : (navigator.language.startsWith("zh") ? "zh" : "en"),
   domain: null, category: "all", feed: null, pendingFeed: null, interactions: {}, viewer: null, openComments: new Set(), reading: {}
@@ -427,9 +428,61 @@ function relatedMarkup(item) {
 }
 
 function readingContextMarkup(item) {
+  const meta = item.reading_context_meta;
+  if (!meta || meta.scope !== "article_specific" || meta.validation !== "source_grounded" || meta.version !== 1 || !item.id || typeof meta.article_id !== "string" || !meta.article_id || meta.article_id !== String(item.id) || typeof meta.source_url !== "string" || meta.source_url !== item.url || /[\u0000-\u0020\\]/.test(meta.source_url) || safeUrl(meta.source_url) === "#") return "";
+  try { const url = new URL(meta.source_url); if (url.username || url.password) return ""; } catch { return ""; }
   const value = item.reading_context?.[state.locale];
-  if (!value || typeof value !== "string") return "";
+  if (typeof value !== "string" || value.trim().length < 8 || value.trim().length > 800 || /[\u0000-\u0008\u000b\u000c\u000e-\u001f]|<[^>]*>/.test(value)) return "";
+  const normalized = normalizeReadingContext(value);
+  if (LEGACY_READING_CONTEXT.has(normalized) || domainRegistry.some(field => ["en", "zh"].some(locale => typeof field.reading_guidance?.[locale] === "string" && normalizeReadingContext(field.reading_guidance[locale]) === normalized))) return "";
   return `<aside class="story-context"><strong>${escapeHtml(COPY[state.locale].readingContext)}</strong><p>${inlineMarkup(value)}</p></aside>`;
+}
+
+function normalizeReadingContext(value) { return String(value || "").normalize("NFKC").toLowerCase().replace(/\s+/g, "").replace(/[.。!?！？;；]+$/, ""); }
+
+// Legacy domain-wide checklists are useful once per field, never as article findings.
+const LEGACY_READING_CONTEXT = new Set([
+  "Check whether reported capability gains hold up in independent evaluations and real use, and what remains untested.",
+  "关注所称能力提升能否在独立评测与真实使用中成立，以及还有哪些未验证之处。",
+  "Check the experimental setting, reproducibility and safety evidence before inferring effects in humans or production at scale.",
+  "先核查实验条件、可重复性与安全证据，再判断能否推广到人体或规模化生产。",
+  "Check measured performance, costs, operating duration and scale; a technical milestone alone does not establish commercial viability.",
+  "关注实测性能、成本、运行时长与规模；单次技术进展不等于商业可行性已经成立。",
+  "Check whether results come from a controlled demonstration or sustained operation, including failure rates, human assistance and costs.",
+  "关注成果来自受控演示还是持续运行，并核查失败率、人工介入与成本。",
+  "Check the task, verification method and classical baseline before treating a claimed quantum advantage as a general capability.",
+  "关注任务范围、核验方法和经典计算基线，不把特定任务的量子优势直接等同于普遍能力。",
+  "Distinguish announced plans from completed missions, and check reliability, costs and the evidence for repeatable operations.",
+  "区分计划宣布与任务完成，关注可靠性、成本以及能否重复运行的证据。",
+  "Check measurement conditions, reproducibility, durability and manufacturing scale before extrapolating a material's performance.",
+  "关注测量条件、可重复性、耐久性与制造规模，不把特定条件下的性能直接外推。",
+  "Check participant numbers, study duration, safety and independent replication; a demonstration does not establish broad clinical benefit.",
+  "关注参与人数、研究时长、安全性和独立复现；一次演示不代表已证实广泛临床获益。",
+  "Check system boundaries, lifecycle impacts, measured resource use and local conditions before extrapolating environmental benefits.",
+  "关注系统边界、全生命周期影响、实测资源消耗与当地条件，再判断环境收益能否推广。",
+  "Check field or production conditions, safety, resource use and unit costs; laboratory results need not translate to commercial scale.",
+  "关注田间或生产条件、安全性、资源消耗与单位成本；实验室结果未必能直接扩大到商业规模。",
+  "Check production yield, throughput, integration costs and sustained operation, rather than treating a prototype as a factory-wide result.",
+  "关注生产良率、吞吐量、集成成本与持续运行表现，不把原型效果当作整座工厂的成果。",
+  "Check the original evidence, uncertainty and conditions before generalising the reported result.",
+  "关注原始证据、不确定性与适用条件，不把单篇报道直接外推为普遍结论。"
+].map(normalizeReadingContext));
+
+function renderFieldReadingGuidance() {
+  const section = $("#field-reading-guidance");
+  if (!section) return;
+  const field = !routeTechNews && domainRegistry.find(field => field.id === state.domain);
+  if (!field) { section.hidden = true; return; }
+  const guidance = field.reading_guidance?.[state.locale];
+  if (typeof guidance !== "string" || !guidance.trim()) {
+    section.hidden = !(section.dataset.field === state.domain && section.textContent?.trim());
+    return;
+  }
+  section.dataset.field = state.domain;
+  section.hidden = false;
+  const title = state.locale === "zh" ? "阅读提示" : "Reading guide";
+  const boundary = state.locale === "zh" ? "领域通用指引，不是对单篇报道的核验结论。" : "General field guidance, not verification of this story.";
+  section.innerHTML = `<details><summary>${escapeHtml(title)}</summary><p>${escapeHtml(guidance)}</p><small class="reading-guidance-boundary">${escapeHtml(boundary)}</small></details>`;
 }
 
 function screeningMarkup(item) {
@@ -801,6 +854,13 @@ document.addEventListener("click", event => {
 let readingHydrated = false;
 
 function renderFeed() {
+  if (routeTechNews) {
+    state.domain = null;
+    document.body.classList.toggle("is-field-page", false);
+    ["#fields", "#brief", "#field-observations", "#field-seo-content", "#field-reading-guidance"].forEach(selector => { const node = $(selector); if (node) node.hidden = true; });
+    updateFieldLinks();
+    return;
+  }
   const position = readingHydrated ? captureReadingState() : null;
   const items = state.feed?.items || [];
   const hasField = domains.includes(state.domain);
@@ -813,6 +873,7 @@ function renderFeed() {
   const seoContent = $("#field-seo-content");
   if (seoContent) seoContent.hidden = !hasField || Boolean(seoContent.dataset.field && seoContent.dataset.field !== state.domain);
   updateFieldLinks();
+  renderFieldReadingGuidance();
   updateEditionNote();
   if (state.feed) {
     const updated = formatDate(state.feed.generated_at);
@@ -1029,6 +1090,7 @@ document.addEventListener("submit", async event => {
 });
 
 function renderFilters() {
+  if (routeTechNews) return;
   const focusedCategory = document.activeElement?.closest?.('#filters [data-category]')?.dataset.category;
   const items = state.feed?.items || [];
   $("#field-grid").innerHTML = domainRegistry.map((field, index) => {
@@ -1061,13 +1123,14 @@ function updateFilterOverflow() {
 window.addEventListener("resize", updateFilterOverflow, { passive: true });
 
 function fieldFromUrl() {
+  if (routeTechNews) return null;
   const requested = routeField || new URL(location.href).searchParams.get("field");
   return domains.includes(requested) ? requested : null;
 }
 
 function updateFieldLinks() {
   $$('[data-locale-button]').forEach(link => {
-    const target = new URL(state.domain ? `/${link.dataset.localeButton}/fields/${state.domain}/` : `/${link.dataset.localeButton}/`, location.origin);
+    const target = new URL(routeTechNews ? `/${link.dataset.localeButton}/tech-news/` : state.domain ? `/${link.dataset.localeButton}/fields/${state.domain}/` : `/${link.dataset.localeButton}/`, location.origin);
     target.hash = location.hash === "#brief" && !state.domain ? "#fields" : location.hash;
     link.href = `${target.pathname}${target.search}${target.hash}`;
   });
@@ -1086,9 +1149,9 @@ function setLocale(locale) {
   localStorage.setItem("polyemergence-locale", state.locale);
   document.documentElement.lang = state.locale === "zh" ? "zh-Hans" : "en";
   document.documentElement.dataset.locale = state.locale;
-  if (!routeField) document.title = COPY[state.locale].seoTitle;
+  if (!routeField && !routeTechNews) document.title = COPY[state.locale].seoTitle;
   const description = document.querySelector('meta[name="description"]');
-  if (description && !routeField) description.content = COPY[state.locale].seoDescription;
+  if (description && !routeField && !routeTechNews) description.content = COPY[state.locale].seoDescription;
   const logoName = state.locale === "zh" ? "logo-zh-reverse.svg" : "logo-en-reverse.svg";
   $("#brand-logo").src = `/assets/${logoName}`;
   $("#brand-logo").alt = COPY[state.locale].brand;
@@ -1099,7 +1162,7 @@ function setLocale(locale) {
     else link.removeAttribute("aria-current");
   });
   $$('[data-copy]').forEach(node => {
-    if (routeField && ["tagline", "promise", "eyebrow"].includes(node.dataset.copy)) return;
+    if ((routeField || routeTechNews) && ["tagline", "promise", "eyebrow"].includes(node.dataset.copy)) return;
     node.innerHTML = COPY[state.locale][node.dataset.copy];
   });
   $$('[data-copy-placeholder]').forEach(node => { node.placeholder = COPY[state.locale][node.dataset.copyPlaceholder]; });
