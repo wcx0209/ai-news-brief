@@ -20,6 +20,17 @@ Public RSS + Hacker News + YouTube + GitHub Trending
 
 The browser never connects to Postgres and never receives a database URL or API key. Postgres permanently retains the complete article and vector history; the Daily Brief contains only stories whose original source publication time is within the latest 48-hour reading window.
 
+After archive export, `export_observations.py` builds a separate 30-day,
+evidence-linked observation set from the public corpus. Field-page export then
+renders that set alongside, but not inside, the 48-hour news list. This uses no
+additional LLM calls or paid service. The workflow commits all outputs and the
+public site remains independent of a local computer.
+
+For a presentation or methodology change, a manual workflow run can set
+`refresh_only=true`. It validates the suite and regenerates public exports from
+stored Postgres articles without new collection or LLM calls. Scheduled runs
+continue normal collection at 06:00 and 18:00 UTC.
+
 Reader likes and comments are handled separately by a Cloudflare Pages Function and a free D1 database. The service stores a salted visitor hash for like deduplication and rate limiting. It never stores the full visitor IP; public comments show only `poly`, the approximate Cloudflare region, and the final three IP characters.
 
 ## 1. Gemini

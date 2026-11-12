@@ -65,10 +65,15 @@ export function publicArticle(article, locale = "en", includeFull = false) {
     language: lang === "zh" ? "zh-Hans" : "en",
     category: article.category,
     domain: article.domain || "ai",
+    related_domains: (article.related_domains || []).slice(0, 2),
+    evidence: article.evidence || { type: "unknown", stage: "unspecified" },
+    reading_context: article.reading_context?.[lang] || "",
     importance: article.importance,
     scores: article.scores,
     published_at: article.published_at,
     source_published_at: article.source_published_at,
+    date_basis: article.date_basis || "source_published",
+    first_seen_at: article.first_seen_at || null,
     tags: article.tags || [],
   };
   if (includeFull) output.full_summary = copy.full_summary || copy.summary || "";
@@ -81,13 +86,33 @@ export function filterArticles(payload, params, { defaultHours = 48 } = {}) {
   const selectedDomain = domain(params.get("domain"));
   const limit = clampInt(params.get("limit"), 20, 1, 100);
   const hours = clampInt(params.get("hours"), defaultHours, 1, 8760);
-  const generatedAt = Date.parse(payload.generated_at) || Date.now();
-  const cutoff = generatedAt - hours * 60 * 60 * 1000;
+  const now = Date.now();
+  const cutoff = now - hours * 60 * 60 * 1000;
+  let academicCount = 0;
+  let githubCount = 0;
   const items = (payload.items || [])
+    // A repository's presence on a trending list has no original release date.
+    // Rank/stars changing is not a newly published article. Real release feeds
+    // retain their own source names and timestamps and remain eligible.
+    .filter((item) => item.source !== "GitHub Trending")
     .filter((item) => !selectedDomain || (item.domain || "ai") === selectedDomain)
     .filter((item) => !selectedCategory || item.category === selectedCategory)
-    .filter((item) => Date.parse(item.source_published_at || item.published_at) >= cutoff)
+    .filter((item) => {
+      const published = Date.parse(item.source_published_at || item.published_at);
+      return published >= cutoff && published <= now && Number(item.importance || 0) >= 65;
+    })
     .sort((a, b) => (b.importance - a.importance) || Date.parse(b.published_at) - Date.parse(a.published_at))
+    .filter((item) => {
+      if (item.category === "academia") {
+        if (Number(item.importance || 0) < 70 || Number(item.scores?.confidence || 0) < 65 || academicCount >= 2) return false;
+        academicCount += 1;
+      }
+      if (item.source === "GitHub Trending") {
+        if (githubCount >= 2) return false;
+        githubCount += 1;
+      }
+      return true;
+    })
     .slice(0, limit)
     .map((item) => publicArticle(item, lang, false));
   return { lang, selectedCategory, selectedDomain, limit, hours, items };
@@ -127,14 +152,17 @@ export function findArticle(payload, id) {
 
 export const METHODOLOGY = {
   name: "Polyemergence Method",
-  version: "1.0",
+  version: "1.1",
   importance_formula: {
     signal: 0.35,
     structure: 0.35,
     consequence: 0.30,
   },
   separate_scores: ["confidence", "momentum"],
+  brief_rules: { minimum_importance: 65, default_window_hours: 48, future_dates_excluded: true, below_threshold_field_fill: false, undated_trending_repositories_excluded: true },
   academia_rules: { minimum_importance: 70, minimum_confidence: 65, maximum_per_daily_brief: 2 },
+  evidence_labels: "Describe source provenance, not independent verification. Technical stage is unspecified unless explicitly supported. Reading context is an editorial lens.",
+  observations: { window_days: 30, maximum_per_field: 3, event_identity_uncertain: true, automatic_promotion: false, status: "Tentative signals only. Heuristic report groups are not confirmed distinct events, independent verification, a trend or causation." },
   disclosure: "AI-assisted collection, translation, summarisation, classification and scoring. Original links and publication metadata are retained. Summaries are not independently fact-checked unless explicitly stated.",
   publisher: "PolyEmergence Pte Ltd., Singapore",
   conflict_disclosure: "No current financial or commercial conflict declared.",

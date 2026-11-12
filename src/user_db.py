@@ -945,21 +945,18 @@ class UserDatabase:
             row = cursor.fetchone()
             return dict(row) if row else None
 
-    def update_article_refresh(self, article_id: str, published_at: str,
-                               importance_score: int, summary_en: str, summary_zh: str,
+    def update_article_refresh(self, article_id: str, summary_en: str, summary_zh: str,
                                momentum_score: int = 0) -> bool:
-        """Refresh an existing article's timestamp / score / summary (for trending re-fetch)."""
+        """Refresh popularity metadata only; publication/history is immutable."""
         with self._get_connection() as conn:
             cursor = conn.cursor()
             cursor.execute('''
                 UPDATE articles SET
-                    published_at = %s,
-                    importance_score = %s,
                     momentum_score = %s,
                     summary_en = %s,
                     summary_zh = %s
                 WHERE id = %s
-            ''', (published_at, importance_score, momentum_score, summary_en, summary_zh, article_id))
+            ''', (momentum_score, summary_en, summary_zh, article_id))
             return cursor.rowcount > 0
 
     def get_articles_count_by_sources(self, source_ids: List[int], since_time: str = None) -> int:
@@ -1097,8 +1094,8 @@ class UserDatabase:
     def get_articles_count_by_category_published_today(self, category: str) -> int:
         """Count articles in category whose published_at is today (UTC).
 
-        Used by GitHub trending pipeline: even if an article is reused (no new row),
-        we refresh published_at to NOW(), so this signals 'pipeline ran today'.
+        Legacy reporting helper only, not a collection-run marker. Dedicated
+        collectors use rss_sources.last_fetch_at and never change article dates.
         """
         today_start = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
         with self._get_connection() as conn:

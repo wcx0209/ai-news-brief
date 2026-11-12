@@ -11,16 +11,11 @@ from pathlib import Path
 from datetime import datetime, timedelta, timezone
 from urllib.parse import parse_qs, urlparse
 
-import psycopg2
-import psycopg2.extras
-import requests
-from bs4 import BeautifulSoup
-
-
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "src"))
 from relevance_filter import passes_source_ai_filter
 from editorial_domains import category_ids, infer_domain, match_category
+from editorial_insights import enrich_item, is_github_trending
 
 
 TOPIC_CATEGORIES = set(category_ids())
@@ -55,6 +50,9 @@ def youtube_thumbnail(url):
 
 
 def discover_image(url, timeout=8):
+    import requests
+    from bs4 import BeautifulSoup
+
     try:
         response = requests.get(
             url,
@@ -157,12 +155,17 @@ def _balanced_domain_limit(items, limit, domain_getter, key_getter):
 
 
 def select_balanced_rows(rows, limit, max_open_source, max_academia,
-                         min_academia_importance, min_academia_confidence):
+                         min_academia_importance, min_academia_confidence,
+                         min_importance=65):
     """Apply source/category caps while keeping the strongest eligible rows."""
     selected = []
     github_count = 0
     academia_count = 0
     for row in rows:
+        if is_github_trending(row):
+            continue
+        if int(row.get("importance_score") or 0) < min_importance:
+            continue
         source_name = row.get("source_name") or ""
         title = row.get("title") or row.get("title_en") or row.get("title_zh") or ""
         if not passes_source_ai_filter(source_name, title):
@@ -203,6 +206,8 @@ def load_previous_items(path, max_age_hours=48):
     cutoff = now - timedelta(hours=max_age_hours)
     recent = []
     for item in items:
+        if is_github_trending(item):
+            continue
         try:
             source_published = item.get("source_published_at") or item.get("published_at")
             published = datetime.fromisoformat(str(source_published or "").replace("Z", "+00:00"))
@@ -216,7 +221,8 @@ def load_previous_items(path, max_age_hours=48):
 
 
 def merge_recent_items(current, previous, limit, max_github, max_academia,
-                       min_academia_importance, min_academia_confidence):
+                       min_academia_importance, min_academia_confidence,
+                       min_importance=65):
     """Merge, rank, and reapply publication gates to carried-forward items."""
     deduped = {}
     for item in previous + current:
@@ -235,6 +241,10 @@ def merge_recent_items(current, previous, limit, max_github, max_academia,
     github_count = 0
     academia_count = 0
     for item in sorted(deduped.values(), key=rank, reverse=True):
+        if is_github_trending(item):
+            continue
+        if int(item.get("importance") or 0) < min_importance:
+            continue
         title = (item.get("en") or {}).get("title") or (item.get("zh") or {}).get("title") or ""
         if not passes_source_ai_filter(item.get("source") or "", title):
             continue
@@ -269,21 +279,51 @@ def merge_recent_items(current, previous, limit, max_github, max_academia,
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--output", default="web/public/data/latest.json")
+    parser.add_argument("--input-json", help="Re-export already-public JSON offline; never connect to a database or discover images")
     parser.add_argument("--limit", type=int, default=60)
     parser.add_argument("--discover-images", type=int, default=60)
     parser.add_argument("--max-open-source", type=int, default=2)
     parser.add_argument("--max-academia", type=int, default=2)
     parser.add_argument("--min-academia-importance", type=int, default=70)
     parser.add_argument("--min-academia-confidence", type=int, default=65)
+    parser.add_argument("--min-importance", type=int, default=65)
     parser.add_argument("--carry-forward-hours", type=int, default=48)
     parser.add_argument("--max-age-hours", type=int, default=48)
     args = parser.parse_args()
+
+    if args.input_json:
+        # This path is intentionally dependency-free and read-only except for
+        # its requested public output. It does not scrape or re-summarize news.
+        with open(args.input_json, encoding="utf-8") as handle:
+            original_payload = json.load(handle)
+        current = load_previous_items(args.input_json, args.max_age_hours)
+        items = merge_recent_items(
+            current, [], args.limit, args.max_open_source, args.max_academia,
+            args.min_academia_importance, args.min_academia_confidence,
+            args.min_importance,
+        )
+        payload = {
+            "brand": "Polyemergence",
+            # Preserve the actual collection time, not the re-render time.
+            "generated_at": original_payload.get("generated_at"),
+            "count": len(items),
+            "items": [enrich_item(item) for item in items],
+        }
+        Path(args.output).parent.mkdir(parents=True, exist_ok=True)
+        with open(args.output, "w", encoding="utf-8") as handle:
+            json.dump(payload, handle, ensure_ascii=False, separators=(",", ":"))
+            handle.write("\n")
+        print(f"Re-exported {len(items)} already-public articles to {args.output}; no database, collection or LLM calls")
+        return
 
     previous_items = load_previous_items(args.output, args.carry_forward_hours)
 
     db_url = os.environ.get("INBRIEF_SUPABASE_DB_URL")
     if not db_url:
         raise SystemExit("INBRIEF_SUPABASE_DB_URL is required")
+
+    import psycopg2
+    import psycopg2.extras
 
     with psycopg2.connect(db_url) as conn:
         with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
@@ -302,6 +342,7 @@ def main():
                 WHERE COALESCE(a.source_published_at, a.published_at, a.created_at)
                       >= NOW() - (%s * INTERVAL '1 hour')
                   AND COALESCE(a.source_published_at, a.published_at, a.created_at) <= NOW()
+                  AND LOWER(BTRIM(COALESCE(rs.name, ''))) <> 'github trending'
                 ORDER BY (a.importance_score - CASE WHEN a.category IN ('opensource', 'open_source') AND rs.name = 'GitHub Trending' THEN 25 ELSE 0 END) DESC,
                          COALESCE(rs.importance_score, 0) DESC,
                          COALESCE(a.source_published_at, a.published_at, a.created_at) DESC
@@ -312,7 +353,7 @@ def main():
             rows = select_balanced_rows(
                 cursor.fetchall(), args.limit, args.max_open_source,
                 args.max_academia, args.min_academia_importance,
-                args.min_academia_confidence,
+                args.min_academia_confidence, args.min_importance,
             )
 
     image_urls = [youtube_thumbnail(safe_http_url(row["url"])) for row in rows]
@@ -374,7 +415,7 @@ def main():
     items = merge_recent_items(
         items, previous_items, args.limit, args.max_open_source,
         args.max_academia, args.min_academia_importance,
-        args.min_academia_confidence,
+        args.min_academia_confidence, args.min_importance,
     )
     for item in items:
         item["domain"] = item.get("domain") or infer_domain(
@@ -398,6 +439,8 @@ def main():
                 "summary": localized.get("summary") or localized.get("long_summary") or "",
                 "full_summary": localized.get("full_summary") or localized.get("long_summary") or localized.get("summary") or "",
             }
+
+    items = [enrich_item(item) for item in items]
 
     payload = {
         "brand": "Polyemergence",

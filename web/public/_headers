@@ -25,6 +25,12 @@
 /sw.js
   Cache-Control: no-cache, no-store, must-revalidate
 
+/en/*
+  Cache-Control: no-cache, must-revalidate
+
+/zh/*
+  Cache-Control: no-cache, must-revalidate
+
 /manifest.webmanifest
   Cache-Control: no-cache
 

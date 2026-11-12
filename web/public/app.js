@@ -7,14 +7,14 @@ const COPY = {
     eyebrow: "EMERGING TECHNOLOGY · DAILY BRIEF", tagline: "Tech moves fast.<br>Know what matters.",
     promise: "Essential developments across AI, biotech, energy and more—selected, sourced and explained.",
     loading: "Loading today’s brief…", updated: "Updated", story: "story", stories: "stories", dailyBrief: "Emerging Intelligence",
-    refreshFeed: "Refresh", refreshingFeed: "Refreshing…",
+    refreshFeed: "Refresh", refreshingFeed: "Refreshing…", pendingFeed: "New content available — update", selectedCount: "Selected", screening: "Selection rationale", screeningNote: "Editorial scores guide selection; they are not independent verification. Source claims remain attributed to their authors.", readingContext: "What to watch · editorial perspective", evidenceUnknown: "Source type not yet identified", stageUnknown: "Stage not specified",
     domainGroup: "Fields", angleGroup: "Story angle", allAngles: "All angles",
     chooseField: "Choose your field", fieldsTitle: "Start with a field.", fieldsIntro: "Choose a field to read its latest news. Each briefing covers the past 48 hours.",
     fieldStep: "CHOOSE A FIELD", newsStep: "READ YOUR BRIEF", changeField: "Change field", past48: "PAST 48 HOURS", noCurrentStories: "No current stories", fieldNews: "news",
     fieldEmpty: "No qualifying news in this field from the past 48 hours. Check back after the next update or choose another field.",
     domainFilters: { all: "All fields" },
-    filters: { all: "All", models: "Models", company: "Company", startups: "Startups", research: "Research", academia: "Academia", biotech: "Programmable Life", open_source: "Open Source", interviews: "Interviews", policy: "Policy", business: "Business", society: "Society" }, importance: "Importance", published: "Published",
-    expandSummary: "Expand full summary", collapseSummary: "Collapse summary", share: "Share", like: "Like", comments: "Comments",
+    filters: { all: "All", models: "Models", company: "Company", startups: "Startups", research: "Research", academia: "Academia", biotech: "Programmable Life", open_source: "Open Source", interviews: "Interviews", policy: "Policy", business: "Business", society: "Society" }, importance: "Importance", published: "Published", firstSeen: "First seen", observationUpdate: "Observations have a newer update. Refresh this page to view it.", observationExpired: "This observation snapshot is over 30 days old. Refresh this page for current observations.",
+    expandSummary: "Expand summary", collapseSummary: "Collapse summary", share: "Share", like: "Like", comments: "Comments",
     commentPlaceholder: "Add to the conversation…", commentSubmit: "Post", commentSending: "Posting…", commentEmpty: "No comments yet. Start the conversation.",
     commentIdentity: "You’ll appear as", commentPrivacy: "Only an approximate IP location and the last three characters are public. Your full IP is not stored.",
     interactionError: "Couldn’t update this right now. Please try again.", commentTooLong: "Maximum 500 characters.",
@@ -25,7 +25,7 @@ const COPY = {
     methodStructure: "Structure", methodStructureText: "System change · durable pattern",
     methodConsequence: "Consequence", methodConsequenceText: "Business · policy · society",
     methodFormula: "Importance = 35% Signal + 35% Structure + 30% Consequence. Confidence and momentum remain separate.",
-    methodAcademia: "Academic items require Importance ≥70 and Confidence ≥65. No more than two are published per daily brief; the quota is never padded.",
+    methodAcademia: "News requires Importance ≥65. Academic items require Importance ≥70 and Confidence ≥65, with no more than two per daily brief. Empty fields are never padded.",
     trustNews: "News summary", trustResearch: "Research summary", trustInterview: "Interview summary",
     trustAi: "AI-assisted", trustSource: "Original source linked", trustConflict: "No conflict declared", trustStandards: "Standards",
     feedbackIndex: "READER SIGNAL", feedbackTitle: "Help sharpen<br>the signal.",
@@ -49,14 +49,14 @@ const COPY = {
     eyebrow: "前沿科技 · 每日精选", tagline: "科技在变。<br>看清重点。",
     promise: "每天精选 AI、生命科技、能源等前沿领域的重要进展，附上原始来源与影响摘要。",
     loading: "正在载入今日简报…", updated: "更新于", stories: "条内容", dailyBrief: "涌现情报",
-    refreshFeed: "刷新", refreshingFeed: "正在刷新…",
+    refreshFeed: "刷新", refreshingFeed: "正在刷新…", pendingFeed: "有新内容，点击更新", selectedCount: "已精选", screening: "筛选依据", screeningNote: "编辑评分用于筛选，不代表独立验证。来源中的主张仍归属于原作者。", readingContext: "观察重点 · 编辑视角", evidenceUnknown: "来源类型待识别", stageUnknown: "阶段未说明",
     domainGroup: "领域", angleGroup: "报道分类", allAngles: "全部分类",
     chooseField: "选择关注领域", fieldsTitle: "先选领域，再读新闻。", fieldsIntro: "选择你关注的领域，阅读最近 48 小时的重要进展。",
     fieldStep: "选择领域", newsStep: "阅读领域简报", changeField: "更换领域", past48: "最近 48 小时", noCurrentStories: "暂无最新内容", fieldNews: "新闻",
     fieldEmpty: "最近 48 小时内，这个领域暂时没有符合筛选标准的新闻。可在下次更新后回来，或选择其他领域。",
     domainFilters: { all: "全部领域" },
-    filters: { all: "全部", models: "模型", company: "公司", startups: "创业", research: "研究", academia: "学术", biotech: "可编程生命", open_source: "开源", interviews: "访谈", policy: "政策", business: "商业", society: "社会" }, importance: "重要性", published: "发布",
-    expandSummary: "展开全文", collapseSummary: "收起全文", share: "分享", like: "点赞", comments: "评论",
+    filters: { all: "全部", models: "模型", company: "公司", startups: "创业", research: "研究", academia: "学术", biotech: "可编程生命", open_source: "开源", interviews: "访谈", policy: "政策", business: "商业", society: "社会" }, importance: "重要性", published: "发布", firstSeen: "首次发现", observationUpdate: "观察已有更新，请刷新页面查看。", observationExpired: "这份观察快照已超过 30 天，请刷新页面查看当前观察。",
+    expandSummary: "展开摘要", collapseSummary: "收起摘要", share: "分享", like: "点赞", comments: "评论",
     commentPlaceholder: "加入讨论……", commentSubmit: "发布", commentSending: "正在发布……", commentEmpty: "还没有评论，来说第一句。",
     commentIdentity: "你将显示为", commentPrivacy: "只公开粗略 IP 归属地和末三位，完整 IP 不会入库。",
     interactionError: "暂时无法更新，请稍后再试。", commentTooLong: "最多输入 500 个字符。",
@@ -67,7 +67,7 @@ const COPY = {
     methodStructure: "结构", methodStructureText: "系统变化 · 持续趋势",
     methodConsequence: "影响", methodConsequenceText: "商业 · 政策 · 社会",
     methodFormula: "重要性 = 35% 信号 + 35% 结构 + 30% 影响；可信度与热度独立呈现。",
-    methodAcademia: "学术内容需同时达到重要性 ≥70、可信度 ≥65；每期最多发布两条，不足则不补位。",
+    methodAcademia: "新闻重要性需 ≥65；学术内容另需重要性 ≥70、可信度 ≥65，每期最多两条。没有达标内容的领域不补位。",
     trustNews: "新闻摘要", trustResearch: "研究摘要", trustInterview: "访谈摘要",
     trustAi: "AI 辅助", trustSource: "保留原始来源", trustConflict: "无利益冲突", trustStandards: "编辑标准",
     feedbackIndex: "读者信号", feedbackTitle: "帮助我们<br>校准信号。",
@@ -89,8 +89,21 @@ const routeLocale = location.pathname.split("/").filter(Boolean)[0];
 const routeField = location.pathname.match(/^\/(?:en|zh)\/fields\/([^/]+)\/?$/)?.[1] || null;
 const state = {
   locale: routeLocale === "zh" ? "zh" : routeLocale === "en" ? "en" : (navigator.language.startsWith("zh") ? "zh" : "en"),
-  domain: null, category: "all", feed: null, interactions: {}, viewer: null, openComments: new Set()
+  domain: null, category: "all", feed: null, pendingFeed: null, interactions: {}, viewer: null, openComments: new Set(), reading: {}
 };
+const READING_STATE_KEY = "polyemergence-reading-v2";
+let savedReadingPosition = null;
+try {
+  const saved = JSON.parse(sessionStorage.getItem(READING_STATE_KEY) || "null");
+  if (saved && typeof saved === "object") {
+    state.reading = saved.articles || {};
+    state.openComments = new Set(Object.entries(state.reading).filter(([, value]) => value.commentsOpen).map(([id]) => id));
+    if (saved.path === location.pathname.replace(/^\/(en|zh)\//, "/")) {
+      if (saved.category) state.category = saved.category;
+      savedReadingPosition = saved.position || null;
+    }
+  }
+} catch {}
 // The complete field chooser stays available even if the taxonomy request fails.
 let domainRegistry = [
   { id: "ai", label: { en: "Artificial Intelligence", zh: "人工智能" }, description: { en: "Models, companies, research, policy and social impact.", zh: "模型、公司、研究、政策及社会影响。" } },
@@ -106,6 +119,15 @@ let domainRegistry = [
   { id: "advanced_manufacturing", label: { en: "Advanced Manufacturing & Infrastructure", zh: "新制造与产业基础设施" }, description: { en: "Additive manufacturing, digital twins and automated laboratories.", zh: "增材制造、数字孪生、先进封装与自动化实验室。" } }
 ];
 let domains = domainRegistry.map(item => item.id);
+const SHORT_FIELD_NAMES = {
+  ai: ["AI", "人工智能"], programmable_life: ["Programmable Life", "可编程生命"], energy_storage: ["Energy", "能源储存"],
+  robotics_autonomy: ["Robotics", "机器人"], quantum_technology: ["Quantum", "量子技术"], space_economy: ["Space", "太空经济"],
+  advanced_materials: ["Materials", "新材料"], neurotechnology: ["Neurotechnology", "神经科技"],
+  climate_water_environment: ["Climate & Water", "气候与水"], agrifood_technology: ["Agrifood", "农业食品"], advanced_manufacturing: ["Manufacturing", "新制造"]
+};
+function shortFieldLabel(field) {
+  return field?.short_label?.[state.locale] || SHORT_FIELD_NAMES[field?.id]?.[state.locale === "en" ? 0 : 1] || field?.label?.[state.locale] || "";
+}
 state.domain = fieldFromUrl();
 let categories = ["all", "models", "company", "startups", "research", "academia", "open_source", "interviews", "policy", "business", "society"];
 
@@ -129,6 +151,62 @@ async function loadEditorialDomains() {
 }
 const $ = (selector) => document.querySelector(selector);
 const $$ = (selector) => [...document.querySelectorAll(selector)];
+
+function captureReadingState() {
+  const roots = $$('[data-story-id]');
+  roots.forEach(root => {
+    const id = root.dataset.storyId;
+    if (!id) return;
+    const previous = state.reading[id] || {};
+    const textarea = root.querySelector('[data-comment-form] textarea');
+    state.reading[id] = {
+      ...previous,
+      draft: textarea?.value ?? previous.draft ?? "",
+      summaryOpen: root.querySelector('[data-summary-toggle]')?.getAttribute('aria-expanded') === 'true',
+      screeningOpen: root.querySelector('.screening-details')?.open || false,
+      commentsOpen: state.openComments.has(id)
+    };
+  });
+  const anchor = roots.find(root => { const box = root.getBoundingClientRect(); return box.bottom > 140 && box.top < innerHeight; });
+  const focused = document.activeElement?.closest?.('[data-story-id]');
+  return {
+    x: scrollX, y: scrollY,
+    anchorId: anchor?.dataset.storyId, anchorTop: anchor?.getBoundingClientRect().top,
+    focusId: focused?.dataset.storyId,
+    caret: document.activeElement?.matches?.('[data-comment-form] textarea') ? document.activeElement.selectionStart : null
+  };
+}
+
+function saveReadingState() {
+  const position = captureReadingState();
+  try {
+    sessionStorage.setItem(READING_STATE_KEY, JSON.stringify({
+      articles: state.reading, position, category: state.category,
+      path: location.pathname.replace(/^\/(en|zh)\//, "/")
+    }));
+  } catch {}
+  return position;
+}
+
+function restoreReadingPosition(position) {
+  if (!position) return;
+  requestAnimationFrame(() => {
+    const anchor = position.anchorId && $$('[data-story-id]').find(root => root.dataset.storyId === position.anchorId);
+    const oldBehavior = document.documentElement.style.scrollBehavior;
+    document.documentElement.style.scrollBehavior = "auto";
+    if (anchor && Number.isFinite(position.anchorTop)) window.scrollBy(0, anchor.getBoundingClientRect().top - position.anchorTop);
+    else window.scrollTo(position.x || 0, position.y || 0);
+    if (position.focusId && position.caret !== null) {
+      const textarea = $$('[data-story-id]').find(root => root.dataset.storyId === position.focusId)?.querySelector('[data-comment-form] textarea');
+      textarea?.focus({ preventScroll: true });
+      textarea?.setSelectionRange(position.caret, position.caret);
+    }
+    requestAnimationFrame(() => { document.documentElement.style.scrollBehavior = oldBehavior; });
+  });
+}
+
+window.addEventListener("pagehide", saveReadingState);
+document.addEventListener("click", event => { if (event.target.closest?.('[data-locale-button]')) saveReadingState(); });
 
 function escapeHtml(value = "") {
   return String(value).replace(/[&<>'"]/g, char => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" }[char]));
@@ -167,8 +245,16 @@ function sourcePublishedAt(item) {
   return item?.source_published_at || item?.published_at || "";
 }
 
+function displayedDate(item) {
+  const firstSeen = item?.date_basis === "first_seen" || item?.source === "GitHub Trending";
+  return {
+    value: firstSeen ? (item.first_seen_at || item.site_published_at || "") : sourcePublishedAt(item),
+    label: COPY[state.locale][firstSeen ? "firstSeen" : "published"]
+  };
+}
+
 function formatSourcePublished(item) {
-  const value = sourcePublishedAt(item);
+  const { value, label } = displayedDate(item);
   if (!value) return "";
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return "";
@@ -177,11 +263,11 @@ function formatSourcePublished(item) {
     timeZone: "Asia/Singapore", month: "short", day: "numeric",
     hour: "2-digit", minute: "2-digit", hour12: false
   }).format(date);
-  return `${COPY[state.locale].published} ${formatted} SGT`;
+  return `${label} ${formatted} SGT`;
 }
 
 function publishedTimeMarkup(item) {
-  const value = sourcePublishedAt(item);
+  const { value } = displayedDate(item);
   const label = formatSourcePublished(item);
   return value && label
     ? `<div class="story-published"><time datetime="${escapeHtml(value)}">${escapeHtml(label)}</time></div>`
@@ -189,7 +275,8 @@ function publishedTimeMarkup(item) {
 }
 
 function archiveShareUrl(item) {
-  const date = new Date(item.published_at);
+  const date = new Date(item.published_at || sourcePublishedAt(item));
+  if (Number.isNaN(date.getTime())) return safeUrl(item.url);
   const parts = Object.fromEntries(new Intl.DateTimeFormat("en", {
     timeZone: "Asia/Singapore", year: "numeric", month: "2-digit", day: "2-digit"
   }).formatToParts(date).filter(part => part.type !== "literal").map(part => [part.type, part.value]));
@@ -222,6 +309,7 @@ function interactionMarkup(item) {
   const articleId = escapeHtml(item.id || "");
   const interaction = interactionFor(item.id);
   const expanded = state.openComments.has(item.id);
+  const draft = state.reading[item.id]?.draft || "";
   return `<div class="story-social" data-interaction data-article-id="${articleId}">
     <div class="social-actions">
       <button class="social-button like-button${interaction.liked ? " is-active" : ""}" type="button" data-like aria-pressed="${interaction.liked}" aria-label="${escapeHtml(COPY[state.locale].like)}">
@@ -237,10 +325,10 @@ function interactionMarkup(item) {
       <div class="comment-list" data-comment-list><p class="comment-empty">${escapeHtml(COPY[state.locale].commentEmpty)}</p></div>
       <form class="comment-form" data-comment-form>
         <label><span>${escapeHtml(COPY[state.locale].commentIdentity)} <strong data-viewer-label>${escapeHtml(identityLabel())}</strong></span>
-          <textarea name="body" rows="3" minlength="2" maxlength="500" required placeholder="${escapeHtml(COPY[state.locale].commentPlaceholder)}"></textarea>
+          <textarea name="body" rows="3" minlength="2" maxlength="500" required placeholder="${escapeHtml(COPY[state.locale].commentPlaceholder)}">${escapeHtml(draft)}</textarea>
         </label>
         <input class="comment-trap" name="website" type="text" tabindex="-1" autocomplete="off" aria-hidden="true">
-        <div class="comment-form-meta"><small>${escapeHtml(COPY[state.locale].commentPrivacy)}</small><span><output data-comment-length>0</output>/500</span></div>
+        <div class="comment-form-meta"><small>${escapeHtml(COPY[state.locale].commentPrivacy)}</small><span><output data-comment-length>${draft.length}</output>/500</span></div>
         <div class="comment-form-actions"><button type="submit">${escapeHtml(COPY[state.locale].commentSubmit)}</button><p data-comment-status role="status" aria-live="polite"></p></div>
       </form>
     </div>
@@ -256,13 +344,14 @@ function textFor(item) {
   };
 }
 
-function summaryMarkup(text) {
+function summaryMarkup(text, item = {}) {
   const shortText = String(text.summary || "").trim();
   const fullText = String(text.fullSummary || "").trim();
   const expandable = fullText && plainText(fullText) !== plainText(shortText);
+  const expanded = Boolean(expandable && state.reading[item.id]?.summaryOpen);
   return `<div class="story-summary">
-    <p data-summary-short>${inlineMarkup(shortText)}</p>
-    ${expandable ? `<div class="summary-full" data-summary-full hidden>${inlineMarkup(fullText)}</div><button class="summary-toggle" type="button" data-summary-toggle aria-expanded="false">${escapeHtml(COPY[state.locale].expandSummary)} ↓</button>` : ""}
+    <p data-summary-short ${expanded ? "hidden" : ""}>${inlineMarkup(shortText)}</p>
+    ${expandable ? `<div class="summary-full" data-summary-full ${expanded ? "" : "hidden"}>${inlineMarkup(fullText)}</div><button class="summary-toggle" type="button" data-summary-toggle aria-expanded="${expanded}">${escapeHtml(COPY[state.locale][expanded ? "collapseSummary" : "expandSummary"])} ${expanded ? "↑" : "↓"}</button>` : ""}
   </div>`;
 }
 
@@ -299,10 +388,34 @@ function matchesFilter(item, filter) {
   return categoryFor(item) === filter;
 }
 
-function trustStrip(item) {
-  const category = categoryFor(item);
-  const type = category === "interviews" ? COPY[state.locale].trustInterview : ["research", "academia"].includes(category) ? COPY[state.locale].trustResearch : COPY[state.locale].trustNews;
-  return `<div class="trust-strip" aria-label="${escapeHtml(COPY[state.locale].trustStandards)}"><span>${escapeHtml(type)}</span><span>${escapeHtml(COPY[state.locale].trustAi)}</span><span>${escapeHtml(COPY[state.locale].trustSource)}</span><span>${escapeHtml(COPY[state.locale].trustConflict)}</span><a href="/${state.locale}/standards/">${escapeHtml(COPY[state.locale].trustStandards)} →</a></div>`;
+function evidenceMarkup(item) {
+  const evidence = item.evidence || {};
+  const labels = state.locale === "zh" ? {
+    official_release: "官方发布", preprint: "预印本", research_paper: "研究论文", media_report: "媒体报道", interview: "访谈", open_source: "开源项目",
+    laboratory: "实验室结果", demonstration: "演示", pilot: "试点／试验", deployment: "报道已部署"
+  } : {
+    official_release: "Official release", preprint: "Preprint", research_paper: "Research paper", media_report: "Media report", interview: "Interview", open_source: "Open-source project",
+    laboratory: "Laboratory result", demonstration: "Demonstration", pilot: "Pilot / trial", deployment: "Reported deployment"
+  };
+  return `<div class="story-evidence"><span>${escapeHtml(labels[evidence.type] || COPY[state.locale].evidenceUnknown)}</span><span>${escapeHtml(labels[evidence.stage] || COPY[state.locale].stageUnknown)}</span></div>`;
+}
+
+function relatedMarkup(item) {
+  const related = [...new Set(Array.isArray(item.related_domains) ? item.related_domains : [])]
+    .filter(id => domains.includes(id) && id !== domainFor(item)).slice(0, 2);
+  if (!related.length) return "";
+  const current = domainRegistry.find(field => field.id === domainFor(item));
+  return `<div class="story-related">${related.map(id => `<a href="/${state.locale}/fields/${escapeHtml(id)}/#brief">${escapeHtml(shortFieldLabel(current))} × ${escapeHtml(shortFieldLabel(domainRegistry.find(field => field.id === id)))}</a>`).join("")}</div>`;
+}
+
+function readingContextMarkup(item) {
+  const value = item.reading_context?.[state.locale];
+  if (!value || typeof value !== "string") return "";
+  return `<aside class="story-context"><strong>${escapeHtml(COPY[state.locale].readingContext)}</strong><p>${inlineMarkup(value)}</p></aside>`;
+}
+
+function screeningMarkup(item) {
+  return `<details class="screening-details" ${state.reading[item.id]?.screeningOpen ? "open" : ""}><summary>${escapeHtml(COPY[state.locale].screening)}</summary><p class="screening-importance">${escapeHtml(COPY[state.locale].importance)} ${Number(item.importance || 0)}</p>${scoreBreakdown(item)}<p class="screening-note">${escapeHtml(COPY[state.locale].screeningNote)} <a href="/${state.locale}/standards/">${escapeHtml(COPY[state.locale].trustStandards)} →</a></p></details>`;
 }
 
 function imageFit(item) {
@@ -433,7 +546,7 @@ function coverArtwork(category, label, source, format = "landscape") {
   const categoryY = square ? 760 : 535;
   const sourceY = square ? 820 : 594;
   const labelX = square ? 56 : 68;
-  return `<svg class="cover-art cover-art-${format}" viewBox="${viewBox}" preserveAspectRatio="${square ? "xMidYMid meet" : "xMidYMid slice"}" aria-hidden="true" focusable="false">
+  return `<svg class="cover-art cover-art-${format}" viewBox="${viewBox}" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
     <rect class="cover-bg" width="100%" height="100%"/>
     <path class="cover-grid" d="${grid}"/>
     <path class="cover-emergence" d="${emergence}"/>
@@ -501,12 +614,9 @@ document.addEventListener("click", event => {
 });
 
 function renderHero(items) {
-  $("#hero-ticker").hidden = !state.domain || items.length === 0;
-  $(".hero-stage").classList.toggle("has-ticker", Boolean(state.domain && items.length));
-  $("#hero-ticker").innerHTML = items.slice(0, 3).map((item, index) => {
-    const text = textFor(item);
-    return `<a href="${escapeHtml(safeUrl(item.url))}" target="_blank" rel="noopener noreferrer"><span>${String(index + 1).padStart(2, "0")}</span><strong>${escapeHtml(text.title)}</strong><small>${escapeHtml(formatSourcePublished(item))}</small></a>`;
-  }).join("");
+  // Field pages lead directly into the briefing, without a repeated headline ticker.
+  $("#hero-ticker").hidden = true;
+  $(".hero-stage").classList.remove("has-ticker");
 }
 
 function scoreBreakdown(item, compact = false) {
@@ -526,15 +636,17 @@ function scoreBreakdown(item, compact = false) {
 
 function renderLead(item) {
   $("#lead-story").hidden = !item;
-  if (!item) { $("#lead-story").innerHTML = ""; return; }
+  if (!item) { $("#lead-story").innerHTML = ""; delete $("#lead-story").dataset.storyId; return; }
   const text = textFor(item);
-  const importance = Number(item.importance || 0);
+  $("#lead-story").dataset.storyId = item.id;
   $("#lead-story").innerHTML = `
     <div class="lead-copy">
-      <div class="story-kicker"><span>${escapeHtml(item.source)} · ${COPY[state.locale].filters[categoryFor(item)]}</span><span class="score" title="${COPY[state.locale].importance} ${importance}"><small>${COPY[state.locale].importance}</small>${importance}</span></div>
+      <h3><a href="${escapeHtml(safeUrl(item.url))}" target="_blank" rel="noopener noreferrer">${escapeHtml(text.title)}</a></h3>
+      <div class="story-kicker"><span>${escapeHtml(item.source)} · ${COPY[state.locale].filters[categoryFor(item)]}</span></div>
       ${publishedTimeMarkup(item)}
-      ${scoreBreakdown(item)}
-      <div><h3>${escapeHtml(text.title)}</h3>${summaryMarkup(text)}${trustStrip(item)}<div class="story-actions"><a class="read-link" href="${escapeHtml(safeUrl(item.url))}" target="_blank" rel="noopener noreferrer">${COPY[state.locale].read} ↗</a>${shareButton(item, text)}</div>${interactionMarkup(item)}</div>
+      ${evidenceMarkup(item)}${relatedMarkup(item)}${summaryMarkup(text, item)}${readingContextMarkup(item)}
+      ${screeningMarkup(item)}
+      <div class="story-actions"><a class="read-link" href="${escapeHtml(safeUrl(item.url))}" target="_blank" rel="noopener noreferrer">${COPY[state.locale].read} ↗</a>${shareButton(item, text)}</div>${interactionMarkup(item)}
     </div>
     <div class="story-visual">${imageMarkup(item, true)}</div>`;
 }
@@ -542,18 +654,18 @@ function renderLead(item) {
 function renderCard(item) {
   const text = textFor(item);
   const tags = (item.tags || []).slice(0, 4).map(tag => `<span class="tag">${escapeHtml(tag)}</span>`).join("");
-  const importance = Number(item.importance || 0);
-  return `<article class="story-card">
-    <div class="card-visual">${imageMarkup(item)}<span class="card-plane" aria-hidden="true"></span></div>
+  return `<article class="story-card" data-story-id="${escapeHtml(item.id)}">
     <div class="card-copy">
-    <div class="story-kicker"><span>${escapeHtml(item.source)} · ${COPY[state.locale].filters[categoryFor(item)]}</span><span>${COPY[state.locale].importance} ${importance}</span></div>
+    <h3><a href="${escapeHtml(safeUrl(item.url))}" target="_blank" rel="noopener noreferrer">${escapeHtml(text.title)}</a></h3>
+    <div class="story-kicker"><span>${escapeHtml(item.source)} · ${COPY[state.locale].filters[categoryFor(item)]}</span></div>
     ${publishedTimeMarkup(item)}
-    ${scoreBreakdown(item, true)}
-    <h3>${escapeHtml(text.title)}</h3>${summaryMarkup(text)}${trustStrip(item)}
+    ${evidenceMarkup(item)}${relatedMarkup(item)}${summaryMarkup(text, item)}${readingContextMarkup(item)}
+    ${screeningMarkup(item)}
     <div class="story-actions"><a class="read-link" href="${escapeHtml(safeUrl(item.url))}" target="_blank" rel="noopener noreferrer">${COPY[state.locale].read} ↗</a>${shareButton(item, text)}</div>
     ${interactionMarkup(item)}
     <div class="tags">${tags}</div>
     </div>
+    <div class="card-visual">${imageMarkup(item)}<span class="card-plane" aria-hidden="true"></span></div>
   </article>`;
 }
 
@@ -567,15 +679,75 @@ function isCurrentBriefItem(item, now = Date.now()) {
 }
 
 function applyBriefWindow(feed) {
-  const items = Array.isArray(feed?.items) ? feed.items.filter(item => isCurrentBriefItem(item)) : [];
+  let academicCount = 0;
+  const items = Array.isArray(feed?.items) ? feed.items.filter(item => {
+    if (item.source === "GitHub Trending" || !isCurrentBriefItem(item) || Number(item.importance || 0) < 65) return false;
+    if (categoryFor(item) !== "academia") return true;
+    if (Number(item.importance) < 70 || Number(item.scores?.confidence || 0) < 65 || academicCount >= 2) return false;
+    academicCount += 1;
+    return true;
+  }) : [];
   return { ...feed, count: items.length, items };
 }
 
+function observationFreshness(snapshotAt, feedAt, now = Date.now()) {
+  const snapshot = Date.parse(snapshotAt || "");
+  const feed = Date.parse(feedAt || "");
+  return {
+    expired: Number.isFinite(snapshot) && now - snapshot > 30 * 24 * 60 * 60 * 1000,
+    newer: Number.isFinite(snapshot) && Number.isFinite(feed) && feed > snapshot
+  };
+}
+
+function updateObservationFreshness() {
+  const section = $("#field-observations");
+  if (!section?.dataset?.generatedAt) return;
+  const { expired, newer } = observationFreshness(section.dataset.generatedAt, state.pendingFeed?.generated_at || state.feed?.generated_at);
+  const grid = section.querySelector(".observation-grid");
+  if (grid) grid.hidden = expired;
+  let notice = section.querySelector("[data-observation-update-status]");
+  if (!expired && !newer) {
+    if (notice) notice.hidden = true;
+    return;
+  }
+  if (!notice) {
+    notice = document.createElement("p");
+    notice.dataset.observationUpdateStatus = "";
+    notice.className = "observation-update-status";
+    notice.setAttribute("role", "status");
+    const link = document.createElement("a");
+    link.dataset.observationRefresh = "";
+    link.href = section.querySelector("[data-observation-refresh]")?.href || location.href;
+    notice.append(link);
+    section.querySelector(".observation-snapshot-time")?.after(notice);
+  }
+  notice.hidden = false;
+  notice.querySelector("a").textContent = COPY[state.locale][expired ? "observationExpired" : "observationUpdate"];
+}
+
+document.addEventListener("click", event => {
+  const link = event.target.closest?.("[data-observation-refresh]");
+  if (!link) return;
+  saveReadingState();
+  const target = new URL(link.href, location.href);
+  if (target.origin === location.origin && target.pathname === location.pathname && target.search === new URL(location.href).search) {
+    event.preventDefault();
+    location.reload();
+  }
+});
+
+let readingHydrated = false;
+
 function renderFeed() {
+  const position = readingHydrated ? captureReadingState() : null;
   const items = state.feed?.items || [];
   const hasField = domains.includes(state.domain);
+  document.body.classList.toggle("is-field-page", hasField);
   $("#fields").hidden = hasField;
   $("#brief").hidden = !hasField;
+  const observations = $("#field-observations");
+  if (observations) observations.hidden = !hasField || Boolean(observations.dataset.field && observations.dataset.field !== state.domain) || !observations.children.length;
+  updateObservationFreshness();
   const seoContent = $("#field-seo-content");
   if (seoContent) seoContent.hidden = !hasField || Boolean(seoContent.dataset.field && seoContent.dataset.field !== state.domain);
   updateFieldLinks();
@@ -583,7 +755,7 @@ function renderFeed() {
     const updated = formatDate(state.feed.generated_at);
     const count = hasField ? items.filter(item => matchesDomain(item, state.domain)).length : items.length;
     const noun = state.locale === "en" && count === 1 ? COPY.en.story : COPY[state.locale].stories;
-    $("#update-status").textContent = `${COPY[state.locale].updated} ${updated} · ${count} ${noun}`;
+    $("#update-status").textContent = `${COPY[state.locale].updated} ${updated} · ${COPY[state.locale].selectedCount} ${count} ${state.locale === "zh" ? "条" : noun}`;
   }
   if (!hasField) {
     renderHero([]);
@@ -598,6 +770,11 @@ function renderFeed() {
   const fieldItems = items.filter(item => matchesDomain(item, state.domain));
   renderHero(fieldItems);
   const field = domainRegistry.find(item => item.id === state.domain);
+  if (!routeField) {
+    $("#intro-title").textContent = field.label[state.locale];
+    const promise = $('.hero-copy [data-copy="promise"]');
+    if (promise) promise.textContent = field.description?.[state.locale] || "";
+  }
   const label = field.short_label?.[state.locale] || field.label[state.locale];
   $("#brief-title").textContent = `${label}${state.locale === "zh" ? "" : " "}${COPY[state.locale].fieldNews}`;
   $("#selected-field-label").textContent = field.label[state.locale];
@@ -610,6 +787,8 @@ function renderFeed() {
   $("#empty-state").textContent = fieldItems.length ? COPY[state.locale].noStories : COPY[state.locale].fieldEmpty;
   $("#demo-notice").hidden = !state.feed?.demo;
   $("#demo-notice").textContent = COPY[state.locale].demo;
+  readingHydrated = true;
+  restoreReadingPosition(position);
   loadInteractionSummary(filtered.map(item => item.id).filter(Boolean));
 }
 
@@ -745,6 +924,8 @@ document.addEventListener("input", event => {
   if (!event.target.matches?.("[data-comment-form] textarea")) return;
   const output = event.target.closest("[data-comment-form]")?.querySelector("[data-comment-length]");
   if (output) output.textContent = String(event.target.value.length);
+  const id = event.target.closest('[data-story-id]')?.dataset.storyId;
+  if (id) state.reading[id] = { ...state.reading[id], draft: event.target.value };
 });
 
 document.addEventListener("submit", async event => {
@@ -772,6 +953,7 @@ document.addEventListener("submit", async event => {
     state.interactions[articleId] = { ...interactionFor(articleId), comments: payload.comments };
     applyInteractionToDom(articleId);
     textarea.value = "";
+    state.reading[articleId] = { ...state.reading[articleId], draft: "" };
     const output = form.querySelector("[data-comment-length]");
     if (output) output.textContent = "0";
     await loadComments(root);
@@ -784,25 +966,36 @@ document.addEventListener("submit", async event => {
 });
 
 function renderFilters() {
+  const focusedCategory = document.activeElement?.closest?.('#filters [data-category]')?.dataset.category;
   const items = state.feed?.items || [];
   $("#field-grid").innerHTML = domainRegistry.map((field, index) => {
     const count = items.filter(item => matchesDomain(item, field.id)).length;
     const noun = state.locale === "en" && count === 1 ? COPY.en.story : COPY[state.locale].stories;
-    const status = !state.feed ? COPY[state.locale].loading : count ? `${count} ${noun}` : COPY[state.locale].noCurrentStories;
-    return `<a class="field-card" data-domain="${escapeHtml(field.id)}" href="/${state.locale}/fields/${escapeHtml(field.id)}/#brief"><span class="field-card-top"><span class="field-number">${String(index + 1).padStart(2, "0")}</span><span class="field-arrow" aria-hidden="true">↗</span></span><strong>${escapeHtml(field.label[state.locale])}</strong><span class="field-card-description">${escapeHtml(field.description?.[state.locale] || "")}</span><span class="field-card-meta${count ? " has-stories" : ""}"><span>${escapeHtml(status)}</span><small>${escapeHtml(COPY[state.locale].past48)}</small></span></a>`;
+    const status = !state.feed ? COPY[state.locale].loading : `${COPY[state.locale].selectedCount} ${count} ${state.locale === "zh" ? "条" : noun}`;
+    const shortLabel = shortFieldLabel(field);
+    return `<a class="field-card" data-domain="${escapeHtml(field.id)}" href="/${state.locale}/fields/${escapeHtml(field.id)}/#brief"><span class="field-card-top"><span class="field-number">${String(index + 1).padStart(2, "0")}</span><span class="field-arrow" aria-hidden="true">↗</span></span><strong><span class="field-label-full">${escapeHtml(field.label[state.locale])}</span><span class="field-label-short">${escapeHtml(shortLabel)}</span></strong><span class="field-card-description">${escapeHtml(field.description?.[state.locale] || "")}</span><span class="field-card-meta${count ? " has-stories" : ""}"><span>${escapeHtml(status)}</span><small>${escapeHtml(COPY[state.locale].past48)}</small></span></a>`;
   }).join("");
 
   if (!state.domain) { $("#filters").innerHTML = ""; return; }
   const scopedItems = items.filter(item => matchesDomain(item, state.domain));
   const availableCategories = categories.filter(category => category === "all" || scopedItems.some(item => matchesFilter(item, category)));
-  if (!availableCategories.includes(state.category)) state.category = "all";
+  if (state.feed && !availableCategories.includes(state.category)) state.category = "all";
   $("#filters").innerHTML = availableCategories.map(category => {
     const count = scopedItems.filter(item => matchesFilter(item, category)).length;
     const label = category === "all" ? COPY[state.locale].allAngles : COPY[state.locale].filters[category];
     return `<button type="button" data-category="${category}" aria-pressed="${category === state.category}">${escapeHtml(label)} <span>${count}</span></button>`;
   }).join("");
   $$('[data-category]').forEach(button => button.addEventListener("click", () => { state.category = button.dataset.category; renderFilters(); renderFeed(); }));
+  if (focusedCategory) $$('[data-category]').find(button => button.dataset.category === focusedCategory)?.focus({ preventScroll: true });
+  $("#filters").onscroll = updateFilterOverflow;
+  requestAnimationFrame(updateFilterOverflow);
 }
+
+function updateFilterOverflow() {
+  $$('.filters').forEach(group => group.classList.toggle("can-scroll-right", group.scrollWidth - group.clientWidth - group.scrollLeft > 5));
+}
+
+window.addEventListener("resize", updateFilterOverflow, { passive: true });
 
 function fieldFromUrl() {
   const requested = routeField || new URL(location.href).searchParams.get("field");
@@ -848,26 +1041,79 @@ function setLocale(locale) {
   });
   $$('[data-copy-placeholder]').forEach(node => { node.placeholder = COPY[state.locale][node.dataset.copyPlaceholder]; });
   renderFilters(); renderFeed();
+  showPendingUpdate();
 }
 
 $$('[data-filter-link]').forEach(link => link.addEventListener("click", () => { state.category = link.dataset.filterLink; renderFilters(); renderFeed(); }));
 
 let lastFeedRequestAt = 0;
+let activeFeedRequest = null;
+
+function feedFingerprint(feed) {
+  return JSON.stringify({ items: feed?.items || [], demo: Boolean(feed?.demo) });
+}
+
+function updateFeedStatus() {
+  if (!state.feed) return;
+  const count = state.domain ? state.feed.items.filter(item => matchesDomain(item, state.domain)).length : state.feed.items.length;
+  const noun = state.locale === "zh" ? "条" : count === 1 ? COPY.en.story : COPY.en.stories;
+  $("#update-status").textContent = `${COPY[state.locale].updated} ${formatDate(state.feed.generated_at)} · ${COPY[state.locale].selectedCount} ${count} ${noun}`;
+  updateObservationFreshness();
+}
+
+function showPendingUpdate() {
+  const notice = $("#feed-update-notice");
+  if (notice) notice.hidden = !state.pendingFeed;
+  const button = $("#apply-feed-update");
+  if (button) button.textContent = COPY[state.locale].pendingFeed;
+}
+
+function applyFeed(next) {
+  if (readingHydrated) captureReadingState();
+  state.feed = applyBriefWindow(next);
+  state.pendingFeed = null;
+  showPendingUpdate();
+  updateObservationFreshness();
+  setLocale(state.locale);
+}
 
 async function loadFeed({ background = false, force = false } = {}) {
+  if (activeFeedRequest) return activeFeedRequest;
+  activeFeedRequest = fetchFeed({ background, force }).finally(() => { activeFeedRequest = null; });
+  return activeFeedRequest;
+}
+
+async function fetchFeed({ background = false, force = false } = {}) {
   lastFeedRequestAt = Date.now();
+  const isInitial = !state.feed;
   try {
     const endpoint = force ? `/data/latest.json?refresh=${Date.now()}` : "/data/latest.json";
     const response = await fetch(endpoint, { cache: "no-store", credentials: "omit" });
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    state.feed = applyBriefWindow(await response.json());
+    const next = applyBriefWindow(await response.json());
+    if (state.feed && feedFingerprint(next) === feedFingerprint(state.feed)) {
+      state.feed = { ...state.feed, generated_at: next.generated_at };
+      state.pendingFeed = null;
+      updateFeedStatus();
+      showPendingUpdate();
+      return true;
+    }
+    if (background && state.feed) {
+      state.pendingFeed = next;
+      showPendingUpdate();
+      updateObservationFreshness();
+      return true;
+    }
+    applyFeed(next);
   } catch (error) {
     $("#update-status").textContent = COPY[state.locale].error;
     if (state.feed) return false;
-    state.feed = { generated_at: new Date().toISOString(), items: [], demo: true };
+    applyFeed({ generated_at: new Date().toISOString(), items: [], demo: true });
   }
-  setLocale(state.locale);
-  if (!background && location.hash) {
+  if (isInitial && savedReadingPosition) {
+    restoreReadingPosition(savedReadingPosition);
+    savedReadingPosition = null;
+  } else if (isInitial && !background && location.hash) {
     let target = null;
     try { target = document.getElementById(decodeURIComponent(location.hash.slice(1))); } catch {}
     if (target === $("#brief") && !state.domain) target = $("#fields");
@@ -881,8 +1127,13 @@ async function loadFeed({ background = false, force = false } = {}) {
   return true;
 }
 
+$("#apply-feed-update")?.addEventListener("click", () => {
+  if (state.pendingFeed) applyFeed(state.pendingFeed);
+});
+
 function refreshFeedIfStale() {
   if (document.visibilityState === "hidden") return;
+  updateObservationFreshness();
   if (Date.now() - lastFeedRequestAt < 60_000) return;
   loadFeed({ background: true });
 }
@@ -898,6 +1149,7 @@ refreshFeedButton?.addEventListener("click", async () => {
   if (label) label.textContent = COPY[state.locale].refreshingFeed;
   try {
     await loadFeed({ force: true });
+    if (state.pendingFeed) applyFeed(state.pendingFeed);
   } finally {
     refreshFeedButton.disabled = false;
     refreshFeedButton.classList.remove("is-refreshing");

@@ -128,6 +128,62 @@ class DomainPagesTests(unittest.TestCase):
         self.assertEqual(pages.item_domain({"category": "biotech"}, self.domains), "programmable_life")
         self.assertEqual(pages.field_sources("programmable_life", self.sources, self.domains)[0][1], 'Lab <R&D> "Official"')
 
+    def test_reading_order_unique_h1_and_old_feed_screening_floor(self):
+        items = [self.item("normal"), self.item("weak", importance=64), self.item("academic-low", category="academia", importance=69, scores={"confidence": 90}),
+                 *[self.item(f"academic-{n}", category="academia", importance=90-n, scores={"confidence": 80}) for n in range(4)]]
+        with tempfile.TemporaryDirectory() as folder:
+            result = self.render(items, Path(folder))
+        self.assertEqual(len(re.findall(r'<h1\b', result)), 1)
+        self.assertIn('<body class="is-field-page">', result)
+        self.assertNotIn('Current biology weak', result)
+        self.assertNotIn('Current biology academic-low', result)
+        self.assertNotIn('Current biology academic-2', result)
+        self.assertIn('data-story-id="academic-0"', result)
+        card = re.search(r'<article class="story-card".*?</article>', result, re.S)[0]
+        self.assertLess(card.index('<h3>'), card.index('story-kicker'))
+        self.assertLess(card.index('card-copy'), card.index('card-visual'))
+        self.assertIn('story-evidence', card)
+        self.assertIn('story-context', card)
+        self.assertIn('details class="screening-details"', card)
+
+    def test_github_rankings_cannot_become_daily_news_but_releases_can(self):
+        ranked = self.item("ranked", source="GitHub Trending", source_published_at=self.now.isoformat())
+        release = self.item("release", source="NVIDIA Official Releases", url="https://github.com/NVIDIA/project/releases/tag/v2")
+        with tempfile.TemporaryDirectory() as folder:
+            result = self.render([ranked, release], Path(folder))
+        self.assertNotIn("Current biology ranked", result)
+        self.assertIn("Current biology release", result)
+
+    def test_observations_are_separate_escaped_and_link_original_even_with_archive(self):
+        evidence = {"title": {"en": '<script>alert(1)</script>', "zh": "原文"}, "source": '<img onerror="evil()">',
+                    "date": self.now.isoformat(), "url": "https://research.example/evidence", "canonical_urls": {"en": "https://polyemergence.com/en/archive/2026/11/12/evidence/"}}
+        card = {"title": {"en": "A reading question"}, "change": {"en": "A hypothesis, not a forecast"}, "uncertainty": {"en": "No independent confirmation"}, "next_check": {"en": "Check repeated performance"}, "status": "unverified_signal", "evidence": [evidence]}
+        with tempfile.TemporaryDirectory() as folder:
+            public = Path(folder)
+            html = pages.render_field_page(SHELL, self.domains[1], "en", self.domains, {"items": []}, self.sources, {}, public, self.now, {"generated_at": self.now.isoformat(), "fields": {"programmable_life": [card]}})
+            self.assertIn('id="field-observations" class="field-observations" data-field="programmable_life"', html)
+            self.assertIn('30-day evidence snapshot as of', html)
+            self.assertIn('class="observation-snapshot-time"', html)
+            self.assertIn('2026-11-12 20:00 SGT', html)
+            self.assertIn('data-generated-at="2026-11-12T12:00:00Z"', html)
+            self.assertIn('data-window-start="2026-10-13T12:00:00Z"', html)
+            self.assertIn('href="/en/fields/programmable_life/#field-observations"', html)
+            self.assertEqual(len(re.findall(r'<h1\b', html)), 1)
+            self.assertIn('Signal to examine', html)
+            self.assertIn('No qualifying stories from the past 48 hours', html)
+            self.assertIn('href="https://research.example/evidence"', html)
+            self.assertNotIn('href="https://polyemergence.com/en/archive/2026/11/12/evidence/"', html)
+            self.assertNotIn('<script>alert(1)</script>', html)
+            self.assertIn('&lt;script&gt;alert(1)&lt;/script&gt;', html)
+            archive = public / "en/archive/2026/11/12/evidence/index.html"
+            archive.parent.mkdir(parents=True)
+            archive.write_text("Real archive")
+            html = pages.observation_markup([card], "en", public, self.now)
+            self.assertIn('href="https://research.example/evidence"', html)
+            self.assertIn('href="https://polyemergence.com/en/archive/2026/11/12/evidence/"', html)
+            evidence["date"] = (self.now - timedelta(days=31)).isoformat()
+            self.assertEqual(pages.observation_markup([card], "en", public, self.now), "")
+
     def test_export_expands_registry_to_both_languages_and_sitemap(self):
         with tempfile.TemporaryDirectory() as folder:
             public = Path(folder)

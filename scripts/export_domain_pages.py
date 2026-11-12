@@ -10,6 +10,7 @@ import ast
 import html
 import json
 import re
+import sys
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from urllib.parse import urlparse
@@ -18,6 +19,8 @@ from zoneinfo import ZoneInfo
 
 
 ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT / "src"))
+from editorial_insights import enrich_item
 SITE = "https://polyemergence.com"
 SGT = ZoneInfo("Asia/Singapore")
 WINDOW = timedelta(hours=48)
@@ -139,15 +142,30 @@ def current_items(feed, domain_id, domains, now):
     """Apply the exact original-publication 48-hour window, including future gate."""
     selected, seen = [], set()
     for item in feed.get("items", []):
+        # A repeated ranking is a discovery signal, not a newly published story.
+        # Real repository releases from other configured sources remain eligible.
+        if str(item.get("source") or "").strip().casefold() == "github trending":
+            continue
         published = parse_datetime(item.get("source_published_at") or item.get("published_at"))
         url = safe_url(item.get("url"))
         key = item.get("id") or url
         if (not published or not now - WINDOW <= published <= now or not url
-                or item_domain(item, domains) != domain_id or key in seen):
+                or float(item.get("importance") or 0) < 65 or key in seen):
             continue
         seen.add(key)
         selected.append(item)
-    return sorted(selected, key=lambda i: (float(i.get("importance") or 0), parse_datetime(i.get("source_published_at") or i.get("published_at"))), reverse=True)
+    ordered = sorted(selected, key=lambda i: (float(i.get("importance") or 0), parse_datetime(i.get("source_published_at") or i.get("published_at"))), reverse=True)
+    eligible, academic_count = [], 0
+    for item in ordered:
+        if item.get("category") == "academia":
+            if (float(item.get("importance") or 0) < 70
+                    or float((item.get("scores") or {}).get("confidence") or 0) < 65
+                    or academic_count >= 2):
+                continue
+            academic_count += 1
+        if item_domain(item, domains) == domain_id:
+            eligible.append(item)
+    return eligible
 
 
 def load_sources(path):
@@ -204,7 +222,24 @@ def news_text(item, locale):
     return clean_text(text.get("title") or item.get("title")), clean_text(text.get("summary") or text.get("full_summary"))
 
 
-def story_markup(item, locale, corpus, public, lead=False):
+def localized_insight(value, locale):
+    """Accept bilingual insight dictionaries and never turn them into repr text."""
+    return clean_text(localized(value, locale)) if isinstance(value, (dict, str)) else ""
+
+
+def evidence_labels(item, locale):
+    labels = {
+        "official_release": ("Official release", "官方发布"), "preprint": ("Preprint", "预印本"),
+        "research_paper": ("Research paper", "研究论文"), "media_report": ("Media report", "媒体报道"),
+        "interview": ("Interview", "访谈"), "open_source": ("Open source", "开源项目"), "unknown": ("Source type unconfirmed", "信源类型待确认"),
+        "laboratory": ("Laboratory result", "实验室结果"), "demonstration": ("Demonstration", "演示"),
+        "pilot": ("Pilot / trial", "试点／试验"), "deployment": ("Reported deployment", "报道已部署"),
+        "unspecified": ("Stage not established", "阶段未明确"),
+    }
+    return [labels.get((item.get("evidence") or {}).get(key), ("", ""))[0 if locale == "en" else 1] for key in ("type", "stage")]
+
+
+def story_markup(item, locale, corpus, public, lead=False, domains=None):
     title, summary = news_text(item, locale)
     original = safe_url(item.get("url"))
     summary_url = archive_url(item, locale, corpus, public)
@@ -216,10 +251,24 @@ def story_markup(item, locale, corpus, public, lead=False):
     actions = f'<a class="read-link" href="{esc(original)}" target="_blank" rel="noopener noreferrer">{original_label} ↗</a>'
     if summary_url:
         actions += f'<a class="read-link" href="{esc(summary_url)}">{summary_label} →</a>'
-    copy = (f'<div class="story-kicker"><span>{esc(item.get("source"))}</span></div>'
+    evidence_parts = evidence_labels(item, locale)
+    evidence_markup = (f'<div class="story-evidence">' + "".join(f'<span>{esc(part)}</span>' for part in evidence_parts if part) + '</div>') if any(evidence_parts) else ""
+    related = []
+    labels = {domain["id"]: localized(domain.get("short_label") or domain.get("label"), locale, domain["id"]) for domain in (domains or [])}
+    for domain in (item.get("related_domains") or [])[:2]:
+        if domain in labels:
+            related.append(f'<a href="{field_path(locale, domain)}">{esc(labels[domain])}</a>')
+    related_markup = '<div class="story-related">' + " × ".join(related) + '</div>' if related else ""
+    context = localized_insight(item.get("reading_context"), locale)
+    context_markup = f'<aside class="story-context"><strong>{"Observation focus (editorial lens)" if locale == "en" else "观察重点（编辑视角）"}</strong><p>{esc(context)}</p></aside>' if context else ""
+    score_labels = {"signal": ("Signal", "信号"), "structure": ("Structure", "结构"), "consequence": ("Consequence", "影响"), "confidence": ("Confidence", "可信度"), "momentum": ("Momentum", "热度")}
+    score_values = "".join(f'<span><small>{labels[0 if locale == "en" else 1]}</small><strong>{esc((item.get("scores") or {}).get(key, 0))}</strong></span>' for key, labels in score_labels.items())
+    screening = (f'<details class="screening-details"><summary>{"View selection rationale" if locale == "en" else "查看筛选依据"}</summary><p class="screening-importance">{"Importance" if locale == "en" else "重要性"} {esc(item.get("importance"))}/100</p><div class="score-breakdown">{score_values}</div>'
+                 f'<p class="screening-note">{"Editorial assessments, not independent verification." if locale == "en" else "评分属于编辑评估，不代表独立核验。"} <a href="/{locale}/standards/">{"Editorial standards" if locale == "en" else "编辑标准"} →</a></p></details>')
+    copy = (f'<h3><a href="{esc(original)}" target="_blank" rel="noopener noreferrer">{esc(title)}</a></h3>'
+            f'<div class="story-kicker"><span>{esc(item.get("source"))}</span></div>'
             f'<div class="story-published"><time datetime="{published.isoformat().replace("+00:00", "Z")}">{published_label} {date_label}</time></div>'
-            f'<h3><a href="{esc(summary_url or original)}">{esc(title)}</a></h3>'
-            f'<p>{esc(summary)}</p><div class="story-actions">{actions}</div>')
+            f'{evidence_markup}{related_markup}<p>{esc(summary)}</p>{context_markup}{screening}<div class="story-actions">{actions}</div>')
     image_url = safe_url(item.get("image_url"))
     if image_url:
         visual = f'<img class="media-contain" src="{esc(image_url)}" alt="{esc(title)}" loading="lazy" decoding="async" referrerpolicy="no-referrer">'
@@ -233,7 +282,7 @@ def story_markup(item, locale, corpus, public, lead=False):
                   '</svg></div>')
     if lead:
         return f'<div class="lead-copy">{copy}</div><div class="story-visual">{visual}</div>'
-    return f'<article class="story-card"><div class="card-visual">{visual}</div><div class="card-copy">{copy}</div></article>'
+    return f'<article class="story-card" data-story-id="{esc(item.get("id"))}"><div class="card-copy">{copy}</div><div class="card-visual">{visual}</div></article>'
 
 
 def replace_content(page, tag, element_id, content):
@@ -270,7 +319,8 @@ def sync_home_navigation(shell, locale, domains):
         f'<a class="field-card" href="{field_path(locale, d["id"])}#brief">'
         f'<span class="field-card-top"><span class="field-number">{index:02d}</span>'
         '<span class="field-arrow" aria-hidden="true">↗</span></span>'
-        f'<strong>{esc(localized(d.get("label"), locale, d["id"]))}</strong>'
+        f'<strong><span class="field-label-full">{esc(localized(d.get("label"), locale, d["id"]))}</span>'
+        f'<span class="field-label-short">{esc(localized(d.get("short_label") or d.get("label"), locale, d["id"]))}</span></strong>'
         f'<span class="field-card-description">{esc(localized(d.get("description"), locale))}</span></a>'
         for index, d in enumerate(domains, 1)
     )
@@ -282,11 +332,54 @@ def sync_home_navigation(shell, locale, domains):
     return shell
 
 
-def render_field_page(shell, domain, locale, domains, feed, sources, corpus, public, now):
+def observation_markup(cards, locale, public, now, generated_at=None, refresh_path=None):
+    """Render public evidence, never claims of independent trend validation."""
+    rendered = []
+    for card in cards[:3]:
+        evidence = []
+        for item in card.get("evidence", []):
+            url = safe_url(item.get("url"))
+            published = parse_datetime(item.get("date"))
+            if not url or not published or not now - timedelta(days=30) <= published <= now:
+                continue
+            title = localized_insight(item.get("title"), locale)
+            canonical = (item.get("canonical_urls") or {}).get(locale)
+            summary_link = ""
+            if safe_url(canonical):
+                parts = urlparse(canonical)
+                if parts.netloc == "polyemergence.com" and re.fullmatch(rf"/{locale}/archive/\d{{4}}/\d{{2}}/\d{{2}}/[A-Za-z0-9_-]+/", parts.path) and (public / parts.path.lstrip("/") / "index.html").is_file():
+                    summary_link = f' · <a href="{esc(SITE + parts.path)}">{"Our summary" if locale == "en" else "本站摘要"}</a>'
+            evidence.append(f'<li><a href="{esc(url)}" target="_blank" rel="noopener noreferrer">{esc(title)} ↗</a><span>{esc(item.get("source"))} · <time datetime="{esc(item.get("date"))}">{published:%Y-%m-%d}</time>{summary_link}</span></li>')
+        if not evidence:
+            continue
+        # Public lexical groupings are not editor-confirmed independent events.
+        status = "Signal to examine" if locale == "en" else "待验证信号"
+        rendered.append(f'<article class="observation-card"><span class="observation-status">{status}</span><h3>{esc(localized_insight(card.get("title"), locale))}</h3>'
+                        f'<p>{esc(localized_insight(card.get("change"), locale))}</p><p class="observation-uncertainty">{esc(localized_insight(card.get("uncertainty"), locale))}</p>'
+                        f'<p class="observation-next"><strong>{"Next check" if locale == "en" else "下一步看什么"}</strong> {esc(localized_insight(card.get("next_check"), locale))}</p>'
+                        f'<details class="observation-evidence"><summary>{"Reported evidence" if locale == "en" else "查看报道证据"} ({len(evidence)})</summary><ul>{"".join(evidence)}</ul></details></article>')
+    if not rendered:
+        return ""
+    heading = "Signals worth following" if locale == "en" else "持续观察"
+    generated = parse_datetime(generated_at)
+    if generated:
+        label = generated.astimezone(SGT).strftime("%Y-%m-%d %H:%M SGT")
+        snapshot = f'<time datetime="{esc(generated_at)}">{label}</time>'
+        snapshot = (f"30-day evidence snapshot as of {snapshot}." if locale == "en" else f"截至 {snapshot} 的 30 天证据快照。")
+    else:
+        snapshot = "Evidence snapshot · capture time unavailable." if locale == "en" else "证据快照 · 快照时间未知。"
+    note = ("Separate from the 48-hour brief: changes worth checking next, with links to the underlying reports. These are tentative leads, not predictions or established trends. Topics appear only when relevant evidence is available." if locale == "en" else "与 48 小时日报分开，追踪值得继续核查的变化，并附上相关报道。它们是待验证的线索，不是预测或已经证实的趋势；没有合适证据的主题不补位。")
+    refresh_path = refresh_path or f"/{locale}/#fields"
+    refresh = f'<a class="observation-refresh" data-observation-refresh href="{esc(refresh_path)}">{"Refresh evidence snapshot" if locale == "en" else "刷新证据快照"} ↻</a>'
+    return f'<div class="section-heading"><p class="section-index">30 DAYS</p><h2>{heading}</h2><p class="observation-snapshot-time">{snapshot} {refresh}</p><p>{note}</p></div><div class="observation-grid">{"".join(rendered)}</div>'
+
+
+def render_field_page(shell, domain, locale, domains, feed, sources, corpus, public, now, observations=None):
     copy = seo_copy(domain, locale)
     url = SITE + field_path(locale, domain["id"])
-    items = current_items(feed, domain["id"], domains, now)
+    items = [enrich_item(item) for item in current_items(feed, domain["id"], domains, now)]
     page = re.sub(r"<html\b([^>]*)>", lambda m: f'<html{m[1]} data-field="{esc(domain["id"])}">', shell, count=1)
+    page = re.sub(r'<body\b([^>]*)>', lambda m: ('<body' + re.sub(r'\bclass="([^"]*)"', lambda c: f'class="{c[1]} is-field-page"', m[1]) + '>') if 'class="' in m[1] else f'<body{m[1]} class="is-field-page">', page, count=1)
     page = re.sub(r"<title>.*?</title>", lambda _: f'<title>{esc(copy["title"])}</title>', page, count=1, flags=re.S)
     for key, attribute, value in [
         ("description", "name", copy["description"]),
@@ -310,8 +403,10 @@ def render_field_page(shell, domain, locale, domains, feed, sources, corpus, pub
     page = replace_content(page, "span", "selected-field-label", esc(localized(domain.get("label"), locale)))
     page = replace_content(page, "h2", "brief-title", esc(copy["heading"]) + (" · Past 48 hours" if locale == "en" else " · 最近 48 小时"))
     page = replace_content(page, "p", "field-description", esc(localized(domain.get("description"), locale)))
-    page = replace_content(page, "div", "lead-story", story_markup(items[0], locale, corpus, public, True) if items else "")
-    page = replace_content(page, "div", "story-grid", "".join(story_markup(item, locale, corpus, public) for item in items[1:]))
+    page = replace_content(page, "div", "lead-story", story_markup(items[0], locale, corpus, public, True, domains) if items else "")
+    if items:
+        page = re.sub(r'(<div\b[^>]*\bid="lead-story"[^>]*)(>)', lambda m: m[1] + f' data-story-id="{esc(items[0].get("id"))}"' + m[2], page, count=1)
+    page = replace_content(page, "div", "story-grid", "".join(story_markup(item, locale, corpus, public, domains=domains) for item in items[1:]))
     page = set_hidden(page, "div", "lead-story", not items)
     page = set_hidden(page, "div", "story-grid", len(items) <= 1)
     empty = ("No qualifying stories from the past 48 hours. Explore the field coverage and sources below, or browse the archive." if locale == "en" else "最近 48 小时内暂无符合筛选标准的新闻。可以阅读下方领域介绍与信息源，或浏览历史归档。")
@@ -333,6 +428,27 @@ def render_field_page(shell, domain, locale, domains, feed, sources, corpus, pub
     page = replace_content(page, "section", "field-seo-content", evergreen)
     page = set_hidden(page, "section", "field-seo-content", False)
     page = re.sub(r'(<section\b[^>]*\bid="field-seo-content"[^>]*)(>)', lambda m: m[1] + f' data-field="{domain["id"]}"' + m[2], page, count=1)
+    observation_payload = observations or {}
+    snapshot_date = parse_datetime(observation_payload.get("generated_at"))
+    window_start = parse_datetime(observation_payload.get("window_start"))
+    if snapshot_date and not window_start:
+        window_start = snapshot_date - timedelta(days=30)
+    observations_html = observation_markup(observation_payload.get("fields", {}).get(domain["id"], []), locale, public, now,
+                                           generated_at=observation_payload.get("generated_at"), refresh_path=field_path(locale, domain["id"]) + "#field-observations")
+    if not re.search(r'<section\b[^>]*\bid="field-observations"', page):
+        page = page.replace('<section id="field-seo-content"', '<section id="field-observations" class="field-observations" hidden></section>\n<section id="field-seo-content"', 1)
+    page = replace_content(page, "section", "field-observations", observations_html)
+    page = set_hidden(page, "section", "field-observations", not bool(observations_html))
+    snapshot_attrs = f' data-field="{domain["id"]}"'
+    if snapshot_date:
+        snapshot_attrs += f' data-generated-at="{snapshot_date.isoformat().replace("+00:00", "Z")}"'
+    if window_start:
+        snapshot_attrs += f' data-window-start="{window_start.isoformat().replace("+00:00", "Z")}"'
+    page = re.sub(r'(<section\b[^>]*\bid="field-observations"[^>]*)(>)', lambda m: m[1] + snapshot_attrs + m[2], page, count=1)
+    observation_section = re.search(r'<section\b[^>]*\bid="field-observations"[^>]*>.*?</section>', page, re.S)
+    if observation_section:
+        page = page[:observation_section.start()] + page[observation_section.end():]
+        page = page.replace('<section id="field-seo-content"', observation_section[0] + '\n<section id="field-seo-content"', 1)
     # Replace the generic homepage graph with truthful collection/list data.
     graph = {
         "@context": "https://schema.org", "@graph": [
@@ -347,10 +463,10 @@ def render_field_page(shell, domain, locale, domains, feed, sources, corpus, pub
         ],
     }
     page = re.sub(r'<script\b[^>]*type="application/ld\+json"[^>]*>.*?</script>', lambda _: '<script type="application/ld+json">' + json_script(graph) + '</script>', page, count=1, flags=re.S)
-    return page
+    return "\n".join(line.rstrip() for line in page.split("\n"))
 
 
-def export(public, registry_path, feed_path, sources_path, articles_path=None, now=None):
+def export(public, registry_path, feed_path, sources_path, articles_path=None, now=None, observations_path=None):
     now = now or datetime.now(timezone.utc)
     registry = json.loads(Path(registry_path).read_text(encoding="utf-8"))
     domains = sorted(registry["domains"], key=lambda d: d.get("order", 999))
@@ -362,6 +478,8 @@ def export(public, registry_path, feed_path, sources_path, articles_path=None, n
     corpus = {}
     if articles_path and Path(articles_path).is_file():
         corpus = {str(item.get("id")): item for item in json.loads(Path(articles_path).read_text(encoding="utf-8")).get("items", [])}
+    observations_path = Path(observations_path) if observations_path else public / "data/observations.json"
+    observations = json.loads(observations_path.read_text(encoding="utf-8")) if observations_path.is_file() else {}
     urls = []
     for locale in ("en", "zh"):
         home = public / locale / "index.html"
@@ -371,7 +489,7 @@ def export(public, registry_path, feed_path, sources_path, articles_path=None, n
             path = field_path(locale, domain["id"])
             destination = public / path.lstrip("/") / "index.html"
             destination.parent.mkdir(parents=True, exist_ok=True)
-            destination.write_text(render_field_page(shell, domain, locale, domains, feed, sources, corpus, public, now), encoding="utf-8")
+            destination.write_text(render_field_page(shell, domain, locale, domains, feed, sources, corpus, public, now, observations), encoding="utf-8")
             urls.append(SITE + path)
     namespace = "http://www.sitemaps.org/schemas/sitemap/0.9"
     ET.register_namespace("", namespace)
@@ -390,8 +508,9 @@ def main():
     parser.add_argument("--feed", type=Path, default=ROOT / "web/public/data/latest.json")
     parser.add_argument("--sources", type=Path, default=ROOT / "scripts/bootstrap_sources.py")
     parser.add_argument("--articles", type=Path, default=ROOT / "web/public/data/articles.json")
+    parser.add_argument("--observations", type=Path, default=ROOT / "web/public/data/observations.json")
     args = parser.parse_args()
-    count = export(args.output, args.registry, args.feed, args.sources, args.articles)
+    count = export(args.output, args.registry, args.feed, args.sources, args.articles, observations_path=args.observations)
     print(f"Exported {count} bilingual field pages and field-sitemap.xml")
 
 

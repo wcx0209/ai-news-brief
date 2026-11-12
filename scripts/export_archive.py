@@ -20,6 +20,7 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "src"))
 from relevance_filter import passes_source_ai_filter
 from editorial_domains import categories, category_ids, category_labels, domains, infer_domain, match_category
+from editorial_insights import enrich_item
 
 
 SITE = "https://polyemergence.com"
@@ -98,9 +99,12 @@ def clean_text(value):
 
 
 def safe_url(value):
+    value = str(value or "")
+    if re.search(r"[\x00-\x20\\]", value):
+        return "#"
     try:
-        parsed = urlparse(str(value or ""))
-        return str(value) if parsed.scheme in {"http", "https"} and parsed.netloc else "#"
+        parsed = urlparse(value)
+        return value if parsed.scheme in {"http", "https"} and parsed.hostname and not parsed.username and not parsed.password else "#"
     except ValueError:
         return "#"
 
@@ -222,10 +226,24 @@ def source_type(record, locale):
     return "Publisher report" if locale == "en" else "媒体报道"
 
 
+def is_trending(record):
+    return str(record.get("source") or "").strip().casefold() == "github trending"
+
+
+def display_date(record):
+    """Keep legacy archive paths, but never call a ranking refresh publication."""
+    if is_trending(record) or record.get("date_basis") == "first_seen":
+        first_seen = record.get("first_seen_at") if "first_seen_at" in record else record.get("site_published") or record.get("created_at")
+        return parse_datetime(first_seen) if first_seen else None, True
+    return record.get("source_published") or record["published"], False
+
+
 def trust_box(record, locale):
     c = COPY[locale]
-    source_published = record.get("source_published") or record["published"]
-    published_local = source_published.astimezone(LOCAL_TZ)
+    source_published, first_seen = display_date(record)
+    date_label = ("First seen" if locale == "en" else "首次发现") if first_seen else c["published"]
+    published_local = source_published.astimezone(LOCAL_TZ) if source_published else None
+    date_markup = f'<time datetime="{source_published.isoformat()}">{published_local:%Y-%m-%d %H:%M} SGT</time>' if source_published else ("Unknown" if locale == "en" else "时间未知")
     process = (
         "AI-assisted discovery, translation, summarisation, classification and scoring; standards and corrections are maintained by the editorial desk."
         if locale == "en" else
@@ -241,7 +259,7 @@ def trust_box(record, locale):
 <div><dt>{esc(c['content_type'])}</dt><dd>{esc(content_type(record, locale))}</dd></div>
 <div><dt>{esc(c['source_type'])}</dt><dd>{esc(source_type(record, locale))}</dd></div>
 <div><dt>{esc(c['source'])}</dt><dd><a href="{esc(record['url'])}" target="_blank" rel="noopener noreferrer">{esc(record['source'])} ↗</a></dd></div>
-<div><dt>{esc(c['published'])}</dt><dd><time datetime="{source_published.isoformat()}">{published_local:%Y-%m-%d %H:%M} SGT</time></dd></div>
+<div><dt>{esc(date_label)}</dt><dd>{date_markup}</dd></div>
 <div><dt>{esc(c['process'])}</dt><dd>{esc(process)}</dd></div>
 <div><dt>{esc(c['verification'])}</dt><dd>{esc(verification)}</dd></div>
 <div><dt>{esc(c['byline'])}</dt><dd>Polyemergence Editorial Desk · PolyEmergence Pte Ltd.</dd></div>
@@ -250,6 +268,7 @@ def trust_box(record, locale):
 
 
 def record_from_feed(item):
+    item = enrich_item(item)
     published = parse_datetime(item.get("published_at"))
     source_published = parse_datetime(item.get("source_published_at") or item.get("published_at"))
     site_published = parse_datetime(item.get("site_published_at") or item.get("published_at"))
@@ -268,6 +287,10 @@ def record_from_feed(item):
         "importance": int(item.get("importance") or 0),
         "scores": {key: int(scores.get(key) or 0) for key in ("signal", "structure", "consequence", "confidence", "momentum")},
         "tags": tags,
+        "evidence": item.get("evidence") or {}, "related_domains": item.get("related_domains") or [],
+        "reading_context": item.get("reading_context") or {},
+        "date_basis": item.get("date_basis") or ("first_seen" if is_trending(item) else "source_published"),
+        "first_seen_at": item.get("first_seen_at") if is_trending(item) else item.get("first_seen_at") or site_published.isoformat().replace("+00:00", "Z"),
         "en": {"title": (item.get("en") or {}).get("title") or title, "summary": (item.get("en") or {}).get("summary") or "", "full": (item.get("en") or {}).get("full_summary") or (item.get("en") or {}).get("summary") or ""},
         "zh": {"title": (item.get("zh") or {}).get("title") or title, "summary": (item.get("zh") or {}).get("summary") or "", "full": (item.get("zh") or {}).get("full_summary") or (item.get("zh") or {}).get("summary") or ""},
     }
@@ -294,7 +317,8 @@ def load_database():
                        a.importance_score, a.signal_score, a.structure_score,
                        a.consequence_score, a.confidence_score, a.momentum_score,
                        a.tags, a.category, COALESCE(a.published_at, a.created_at) AS published_at,
-                       COALESCE(a.source_published_at, a.published_at, a.created_at) AS source_published_at,
+                       CASE WHEN rs.name = 'GitHub Trending' THEN a.created_at
+                            ELSE COALESCE(a.source_published_at, a.published_at, a.created_at) END AS source_published_at,
                        a.created_at AS site_published_at,
                        rs.name AS source_name,
                        rs.category AS source_category
@@ -325,7 +349,24 @@ def load_database():
             "en": {"title": row["title_en"] or row["title"] or "", "summary": row["summary_en"] or row["long_summary_en"] or "", "full": row["long_summary_en"] or row["summary_en"] or ""},
             "zh": {"title": row["title_zh"] or row["title"] or "", "summary": row["summary_zh"] or row["long_summary_zh"] or "", "full": row["long_summary_zh"] or row["summary_zh"] or ""},
         })
-    return records
+    return [enrich_record(record) for record in records]
+
+
+def enrich_record(record):
+    """Use the same evidence rules for PostgreSQL and public-feed archives."""
+    first_seen = record.get("first_seen_at") if "first_seen_at" in record else record["site_published"].isoformat().replace("+00:00", "Z")
+    item = {**record, "first_seen_at": first_seen,
+            "site_published_at": first_seen if is_trending(record) else record["site_published"].isoformat().replace("+00:00", "Z"),
+            **{locale: {**record[locale], "full_summary": record[locale].get("full")} for locale in ("en", "zh")}}
+    enriched = enrich_item(item)
+    for key in ("evidence", "related_domains", "reading_context"):
+        record[key] = enriched.get(key) or ([] if key == "related_domains" else {})
+    record["date_basis"] = enriched.get("date_basis") or ("first_seen" if is_trending(record) else "source_published")
+    record["first_seen_at"] = enriched.get("first_seen_at") if is_trending(record) else enriched.get("first_seen_at") or item["first_seen_at"]
+    for locale in ("en", "zh"):
+        record[locale]["summary"] = enriched[locale].get("summary") or record[locale]["summary"]
+        record[locale]["full"] = enriched[locale].get("full_summary") or record[locale]["full"]
+    return record
 
 
 def select_daily(records):
@@ -464,7 +505,10 @@ def story_html(record, locale, detail=False):
     c = COPY[locale]
     text = record[locale]
     scores = record["scores"]
-    published_local = record["site_published"].astimezone(LOCAL_TZ)
+    source_published, first_seen = display_date(record)
+    date_label = ("First seen" if locale == "en" else "首次发现") if first_seen else c["published"]
+    published_local = source_published.astimezone(LOCAL_TZ) if source_published else None
+    date_markup = f'<time datetime="{source_published.isoformat()}">{published_local:%Y-%m-%d %H:%M} SGT</time>' if source_published else ("Unknown" if locale == "en" else "时间未知")
     tags = "".join(f'<span>{esc(tag)}</span>' for tag in record["tags"])
     score_html = "".join(f'<span><small>{esc(c[key])}</small><strong>{scores[key]}</strong></span>' for key in ("signal", "structure", "consequence", "confidence", "momentum"))
     anchor = anchor_for(record)
@@ -475,11 +519,25 @@ def story_html(record, locale, detail=False):
     share_summary = re.sub(r"\s+", " ", clean_text(text["summary"] or text["full"])).strip()[:180]
     heading = "h1" if detail else "h2"
     title_html = esc(clean_text(text["title"])) if detail else f'<a href="{article_path(locale, day, record)}">{esc(clean_text(text["title"]))}</a>'
+    evidence_labels = {
+        "official_release": ("Official release", "官方发布"), "preprint": ("Preprint", "预印本"),
+        "research_paper": ("Research paper", "研究论文"), "media_report": ("Media report", "媒体报道"),
+        "interview": ("Interview", "访谈"), "open_source": ("Open source", "开源项目"), "unknown": ("Source type unconfirmed", "信源类型待确认"),
+        "laboratory": ("Laboratory result", "实验室结果"), "demonstration": ("Demonstration", "演示"),
+        "pilot": ("Pilot / trial", "试点／试验"), "deployment": ("Reported deployment", "报道已部署"),
+        "unspecified": ("Stage not established", "阶段未明确"),
+    }
+    evidence = "".join(f'<span>{esc(evidence_labels[value][0 if locale == "en" else 1])}</span>' for value in (record.get("evidence") or {}).values() if value in evidence_labels)
+    related = " × ".join(f'<a href="{field_path(locale, domain_id)}">{esc(DOMAIN_REGISTRY[domain_id]["label"][locale])}</a>' for domain_id in (record.get("related_domains") or [])[:2] if domain_id in DOMAIN_REGISTRY)
+    context = (record.get("reading_context") or {}).get(locale)
+    context_html = f'<p class="story-context"><strong>{"Observation focus (editorial lens)" if locale == "en" else "观察重点（编辑视角）"}</strong> {esc(context)}</p>' if context else ""
+    screening = "View selection rationale" if locale == "en" else "查看筛选依据"
     share_button = f'''<button class="share-button" type="button" data-share-button data-share-id="{esc(record['id'])}" data-share-locale="{locale}" data-share-title="{esc(clean_text(text['title']))}" data-share-summary="{esc(share_summary)}" data-share-url="{share_url}" aria-label="{esc(c['share'])}: {esc(clean_text(text['title']))}"><svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="18" cy="5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="19" r="2.5"/><path d="m8.2 10.8 7.6-4.5M8.2 13.2l7.6 4.5"/></svg><span>{esc(c['share'])}</span></button>'''
-    return f'''<article class="archive-story" id="{anchor_for(record)}">
-<div class="archive-story-meta"><span>{esc(record['source'])}</span><a href="{field_path(locale, domain)}">{esc(field_label)}</a><span>{esc(CATEGORY_LABELS[locale][record['category']])}</span><span>{esc(SEO_COPY[locale]['site_published'])}</span><time datetime="{record['site_published'].isoformat()}">{published_local:%Y-%m-%d %H:%M} SGT</time><strong>{esc(c['importance'])} {record['importance']}</strong></div>
-<{heading}>{title_html}</{heading}><p>{esc(clean_text(text['full'] or text['summary']))}</p>
-<div class="archive-scores" aria-label="Polyemergence Method scores">{score_html}</div>{editorial_analysis_html(record, locale)}{trust_box(record, locale)}<div class="archive-story-footer"><div class="archive-tags">{tags}</div><div class="archive-actions">{share_button}<a class="archive-original" href="{esc(record['url'])}" target="_blank" rel="noopener noreferrer">{esc(c['original'])} ↗</a></div></div></article>'''
+    return f'''<article class="archive-story" id="{anchor_for(record)}" data-story-id="{esc(record['id'])}">
+<{heading}>{title_html}</{heading}>
+<div class="archive-story-meta"><span>{esc(record['source'])}</span><a href="{field_path(locale, domain)}">{esc(field_label)}</a><span>{esc(CATEGORY_LABELS[locale][record['category']])}</span><span>{esc(date_label)}</span>{date_markup}</div>
+<div class="story-evidence">{evidence}</div><div class="story-related">{related}</div><p>{esc(clean_text(text['full'] or text['summary']))}</p>{context_html}
+<details class="screening-details"><summary>{screening}</summary><p>{esc(c['importance'])} {record['importance']}/100</p><div class="archive-scores" aria-label="Polyemergence Method scores">{score_html}</div>{editorial_analysis_html(record, locale)}</details>{trust_box(record, locale)}<div class="archive-story-footer"><div class="archive-tags">{tags}</div><div class="archive-actions">{share_button}<a class="archive-original" href="{esc(record['url'])}" target="_blank" rel="noopener noreferrer">{esc(c['original'])} ↗</a></div></div></article>'''
 
 
 def render_daily(output, locale, day, items, ordered_days):
@@ -505,7 +563,7 @@ def render_daily(output, locale, day, items, ordered_days):
 
 def render_daily_brief(output, locale, day, items):
     c = COPY[locale]
-    items = [item for item in items if record_domain(item) == "ai"]
+    items = [item for item in items if record_domain(item) == "ai" and not is_trending(item)]
     top = sorted(items, key=lambda item: (item["importance"], item["published"]), reverse=True)[:5]
     category_counts = Counter(item["category"] for item in items)
     leading_categories = [CATEGORY_LABELS[locale][key] for key, _ in category_counts.most_common(3)]
@@ -531,14 +589,9 @@ def render_daily_brief(output, locale, day, items):
     canonical = SITE + daily_brief_path(locale, day)
     other = "zh" if locale == "en" else "en"
     alternate = SITE + daily_brief_path(other, day)
-    cards = []
-    for index, record in enumerate(top, 1):
-        text = record[locale]
-        summary = re.sub(r"\s+", " ", clean_text(text["summary"] or text["full"])).strip()
-        cards.append(f'''<article class="daily-signal">
-<div class="daily-signal-meta"><strong>{index:02d}</strong><span>{esc(CATEGORY_LABELS[locale][record['category']])}</span><span>{esc(c['importance'])} {record['importance']}</span></div>
-<h2><a href="{article_path(locale, day, record)}">{esc(clean_text(text['title']))}</a></h2><p>{esc(summary)}</p>
-{editorial_analysis_html(record, locale)}</article>''')
+    # The same title-first, evidence-aware layout is used in historical editions.
+    # Scores remain available inside disclosure rather than competing with titles.
+    cards = [story_html(record, locale) for record in top]
     body = f'''<section class="archive-hero"><p class="section-index">{esc(SEO_COPY[locale]['daily']).upper()}</p><h1>{esc(heading)}</h1><p class="daily-brief-lede">{esc(lede)}</p></section>
 <nav class="archive-period-nav"><a href="{field_path(locale, 'ai')}">{esc(DOMAIN_REGISTRY['ai']['label'][locale])}</a><a href="{archive_path(locale, day)}">{esc(SEO_COPY[locale]['full_archive'])} →</a></nav>
 <section class="daily-brief-list">{"".join(cards)}</section>'''
@@ -741,7 +794,7 @@ def render_news_sitemap(output, grouped):
     root = ET.Element(f"{{{namespace}}}urlset")
     cutoff = datetime.now(timezone.utc) - timedelta(days=2)
     recent = sorted(
-        (record for items in grouped.values() for record in items if record["site_published"] >= cutoff),
+        (record for items in grouped.values() for record in items if record["site_published"] >= cutoff and not is_trending(record)),
         key=lambda record: record["site_published"], reverse=True,
     )[:500]
     for record in recent:
@@ -763,19 +816,23 @@ def render_public_data(output, records):
     items = []
     for record in sorted(records, key=lambda item: (item["published"], item["importance"]), reverse=True):
         day = record["published"].astimezone(LOCAL_TZ).date()
-        items.append({
+        items.append(enrich_item({
             "id": str(record["id"]), "url": record["url"], "source": record["source"],
             "category": record["category"], "domain": record.get("domain", "ai"), "importance": record["importance"],
             "scores": record["scores"],
             "published_at": record["published"].isoformat().replace("+00:00", "Z"),
-            "site_published_at": record["site_published"].isoformat().replace("+00:00", "Z"),
-            "source_published_at": record["source_published"].isoformat().replace("+00:00", "Z"),
+            "site_published_at": record.get("first_seen_at") if is_trending(record) and "first_seen_at" in record else record["site_published"].isoformat().replace("+00:00", "Z"),
+            "source_published_at": None if is_trending(record) else record["source_published"].isoformat().replace("+00:00", "Z"),
+            "first_seen_at": record.get("first_seen_at") if is_trending(record) and "first_seen_at" in record else record.get("first_seen_at") or record["site_published"].isoformat().replace("+00:00", "Z"),
+            "date_basis": record.get("date_basis") or ("first_seen" if is_trending(record) else "source_published"),
             "image_url": None if record.get("image_url") == "#" else record.get("image_url"),
             "tags": record["tags"],
+            "evidence": record.get("evidence") or {}, "related_domains": record.get("related_domains") or [],
+            "reading_context": record.get("reading_context") or {},
             "canonical_urls": {locale: SITE + article_path(locale, day, record) for locale in ("en", "zh")},
             "en": {"title": clean_text(record["en"]["title"]), "summary": clean_text(record["en"]["summary"]), "full_summary": clean_text(record["en"]["full"])},
             "zh": {"title": clean_text(record["zh"]["title"]), "summary": clean_text(record["zh"]["summary"]), "full_summary": clean_text(record["zh"]["full"])},
-        })
+        }))
     target = output / "data" / "articles.json"
     target.parent.mkdir(parents=True, exist_ok=True)
     target.write_text(json.dumps({

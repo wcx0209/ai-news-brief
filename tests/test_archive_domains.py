@@ -108,6 +108,75 @@ class ArchiveDomainTests(unittest.TestCase):
         record["url"] = "https://openai.com.example.org/research"
         self.assertEqual(archive.source_type(record, "en"), "Publisher report")
 
+    def test_insights_survive_feed_archive_corpus_and_scores_stay_folded(self):
+        item = {"id": "bci", "domain": "neurotechnology", "category": "research", "source": "BrainGate",
+                "url": "https://www.braingate.org/research/", "published_at": "2026-11-12T01:00:00Z", "importance": 85,
+                "en": {"title": "Brain-computer interface uses AI in a clinical trial", "summary": "Reported research result."},
+                "zh": {"title": "脑机接口临床试验使用人工智能", "summary": "研究成果摘要。"}}
+        record = archive.record_from_feed(item)
+        self.assertTrue(record["evidence"])
+        self.assertIn("ai", record["related_domains"])
+        self.assertTrue(record["reading_context"]["en"])
+        record = archive.enrich_record(record)
+        page = archive.story_html(record, "en")
+        self.assertLess(page.index('<h2>'), page.index('archive-story-meta'))
+        self.assertLess(page.index('<details class="screening-details">'), page.index('Importance 85'))
+        self.assertIn('story-evidence', page)
+        with tempfile.TemporaryDirectory() as directory:
+            output = Path(directory)
+            archive.render_public_data(output, [record])
+            exported = json.loads((output / "data/articles.json").read_text())["items"][0]
+        self.assertEqual(exported["evidence"], record["evidence"])
+        self.assertEqual(exported["related_domains"], record["related_domains"])
+        self.assertEqual(exported["reading_context"], record["reading_context"])
+        self.assertIn("source_published_at", exported)
+
+    def test_ranked_repository_keeps_legacy_archive_path_but_uses_first_seen(self):
+        record = fixture("repo", "ai", "NVIDIA repository")
+        record["source"] = "GitHub Trending"
+        record["url"] = "https://github.com/NVIDIA/project"
+        record["site_published"] = archive.parse_datetime("2026-11-08T02:00:00Z")
+        record = archive.enrich_record(record)
+        original_day = record["published"].astimezone(archive.LOCAL_TZ).date()
+        path = archive.article_path("en", original_day, record)
+        self.assertEqual(record["date_basis"], "first_seen")
+        self.assertEqual(record["first_seen_at"], "2026-11-08T02:00:00Z")
+        self.assertIn("/2026/11/12/", path)
+        for locale, label in (("en", "First seen"), ("zh", "首次发现")):
+            page = archive.story_html(record, locale)
+            self.assertIn(label, page)
+            self.assertIn("2026-11-08 10:00 SGT", page)
+            self.assertNotIn("2026-11-12 09:00 SGT", page)
+        with tempfile.TemporaryDirectory() as directory:
+            output = Path(directory)
+            archive.render_article(output, "en", record)
+            self.assertTrue((output / path.lstrip("/") / "index.html").exists())
+            archive.render_public_data(output, [record])
+            exported = json.loads((output / "data/articles.json").read_text())["items"][0]
+        self.assertEqual(exported["first_seen_at"], "2026-11-08T02:00:00Z")
+        self.assertIsNone(exported["source_published_at"])
+        self.assertEqual(exported["published_at"], "2026-11-12T01:00:00Z")
+
+    def test_ranked_repository_stays_in_permanent_archive_not_daily_news_or_news_sitemap(self):
+        ranked = fixture("ranked-repo", "ai", "Ranked NVIDIA repository", 95)
+        ranked["source"] = "GitHub Trending"
+        release = fixture("release", "ai", "Official repository release", 80)
+        release["source"] = "Vendor Releases"
+        day = ranked["published"].astimezone(archive.LOCAL_TZ).date()
+        with tempfile.TemporaryDirectory() as directory:
+            output = Path(directory)
+            archive.render_daily_brief(output, "en", day, [ranked, release])
+            news = (output / archive.daily_brief_path("en", day).lstrip("/") / "index.html").read_text()
+            self.assertNotIn(ranked["en"]["title"], news)
+            self.assertIn(release["en"]["title"], news)
+            archive.render_daily(output, "en", day, [ranked, release], [day])
+            permanent = (output / archive.archive_path("en", day).lstrip("/") / "index.html").read_text()
+            self.assertIn(ranked["en"]["title"], permanent)
+            archive.render_news_sitemap(output, {day: [ranked, release]})
+            sitemap = (output / "news-sitemap.xml").read_text()
+            self.assertNotIn(ranked["en"]["title"], sitemap)
+            self.assertIn(release["en"]["title"], sitemap)
+
 
 if __name__ == "__main__":
     unittest.main()

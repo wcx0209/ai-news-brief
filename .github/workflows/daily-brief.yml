@@ -2,6 +2,11 @@ name: Polyemergence daily brief
 
 on:
   workflow_dispatch:
+    inputs:
+      refresh_only:
+        description: Re-export stored news and observations without new collection or LLM calls
+        type: boolean
+        default: false
   schedule:
     - cron: "0 6 * * *"  # 06:00 UTC / 14:00 Singapore
     - cron: "0 18 * * *" # 18:00 UTC / 02:00 Singapore (next day)
@@ -35,6 +40,7 @@ jobs:
           cache: pip
 
       - name: Cache embedding model
+        if: ${{ !inputs.refresh_only }}
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: .cache/huggingface
@@ -42,7 +48,9 @@ jobs:
 
       - name: Check required secrets
         run: |
-          test -n "$INBRIEF_LLM_API_KEY" || (echo "Missing GEMINI_API_KEY" && exit 1)
+          if [ "${{ inputs.refresh_only }}" != "true" ]; then
+            test -n "$INBRIEF_LLM_API_KEY" || (echo "Missing GEMINI_API_KEY" && exit 1)
+          fi
           test -n "$INBRIEF_SUPABASE_DB_URL" || (echo "Missing INBRIEF_SUPABASE_DB_URL" && exit 1)
 
       - name: Install collector
@@ -51,17 +59,25 @@ jobs:
       - name: Validate official-source adapters
         run: python -m unittest discover -s tests -v
 
+      - name: Validate reader state and public API
+        run: node --test tests/*.test.mjs
+
       - name: Seed free sources
+        if: ${{ !inputs.refresh_only }}
         run: python scripts/bootstrap_sources.py
 
       - name: Collect and curate
+        if: ${{ !inputs.refresh_only }}
         run: python scripts/run_once.py
 
       - name: Export public feed
-        run: python scripts/export_public_feed.py --output web/public/data/latest.json --limit 60 --discover-images 60 --max-open-source 2 --max-academia 2 --min-academia-importance 70 --min-academia-confidence 65 --max-age-hours 48
+        run: python scripts/export_public_feed.py --output web/public/data/latest.json --limit 60 --discover-images 60 --max-open-source 2 --max-academia 2 --min-importance 65 --min-academia-importance 70 --min-academia-confidence 65 --max-age-hours 48
 
       - name: Export permanent archive and RSS
         run: python scripts/export_archive.py --output web/public
+
+      - name: Export evidence-linked field observations
+        run: python scripts/export_observations.py --output web/public/data/observations.json --input web/public/data/articles.json
 
       - name: Export emerging-field SEO pages
         run: python scripts/export_domain_pages.py --output web/public
@@ -70,7 +86,7 @@ jobs:
         run: |
           git config user.name "polyemergence-bot"
           git config user.email "polyemergence-bot@users.noreply.github.com"
-          git add web/public/data/latest.json web/public/data/articles.json web/public/sitemap.xml web/public/archive-sitemap.xml web/public/news-sitemap.xml web/public/field-sitemap.xml web/public/feed-en.xml web/public/feed-zh.xml web/public/en/index.html web/public/zh/index.html web/public/en/archive web/public/zh/archive web/public/en/daily-ai-news web/public/zh/ai-news-daily web/public/en/topics web/public/zh/topics web/public/en/fields web/public/zh/fields
+          git add web/public/data/latest.json web/public/data/articles.json web/public/data/observations.json web/public/sitemap.xml web/public/archive-sitemap.xml web/public/news-sitemap.xml web/public/field-sitemap.xml web/public/feed-en.xml web/public/feed-zh.xml web/public/en/index.html web/public/zh/index.html web/public/en/archive web/public/zh/archive web/public/en/daily-ai-news web/public/zh/ai-news-daily web/public/en/topics web/public/zh/topics web/public/en/fields web/public/zh/fields
           if git diff --cached --quiet; then
             echo "No feed changes"
           else

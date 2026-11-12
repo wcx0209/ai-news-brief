@@ -6,6 +6,7 @@ import json
 import time
 import concurrent.futures
 from datetime import datetime, timedelta, timezone
+from urllib.parse import urlparse
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '.'))
 from config_loader import ConfigLoader
@@ -147,10 +148,38 @@ def _fetch_github_readme(owner: str, repo: str, timeout: int = 30) -> str:
         logging.warning(f"[GitHub] Failed to fetch README for {owner}/{repo}: {e}")
         return ''
 
+
+def _trending_fetched_today(value, now=None):
+    """Use collector metadata, never an article's publication timestamp."""
+    try:
+        fetched = value if isinstance(value, datetime) else datetime.fromisoformat(str(value or '').replace('Z', '+00:00'))
+        if fetched.tzinfo is None:
+            fetched = fetched.replace(tzinfo=timezone.utc)
+        now = now or datetime.now(timezone.utc)
+        return fetched.astimezone(timezone.utc).date() == now.astimezone(timezone.utc).date()
+    except (TypeError, ValueError):
+        return False
+
+
+def is_github_trending_source(source):
+    """Identify only our virtual list source, never normal GitHub release feeds."""
+    try:
+        parsed = urlparse(str(source.get('url') or ''))
+        return (
+            str(source.get('name') or '').strip().casefold() == 'github trending'
+            and parsed.scheme in {'http', 'https'}
+            and parsed.hostname in {'github.com', 'www.github.com'}
+            and not parsed.username and not parsed.password
+            and parsed.path.rstrip('/') == '/trending'
+        )
+    except ValueError:
+        return False
+
+
 def fetch_github_trending(user_db, ai_engine, vector_store, fetch_stats: 'FetchStats' = None) -> int:
     """
     从 GitHub Trending 抓取热门开源项目，筛选 AI 相关项目，生成摘要后入库。
-    每天执行一次，全量替换 category='opensource' 的文章。
+    每天执行一次；历史仓库永久保留，上榜刷新只改变热度与星数摘要。
     
     Returns:
         Number of projects processed
@@ -165,12 +194,6 @@ def fetch_github_trending(user_db, ai_engine, vector_store, fetch_stats: 'FetchS
         logging.info("[GitHub] GitHub Trending fetching is disabled in config")
         return 0
     
-    # 今日是否已采集：检查 opensource 文章中 published_at 落在今日的数量。
-    # 命中复用会刷新 published_at，所以即使没有新增行也能反映"今天跑过"。
-    if user_db.get_articles_count_by_category_published_today('open_source') > 0:
-        logging.info("[GitHub] Already fetched GitHub Trending today, skipping")
-        return 0
-
     max_repos = gh_config.get('max_repos', 25)
     since = gh_config.get('since', 'weekly')
     fetching_config = config.get('fetching', {})
@@ -194,6 +217,11 @@ def fetch_github_trending(user_db, ai_engine, vector_store, fetch_stats: 'FetchS
     
     if not gh_source_id:
         logging.error("[GitHub] Failed to create/get GitHub Trending RSS source record")
+        return 0
+
+    source = user_db.get_rss_source_by_id(gh_source_id) or {}
+    if _trending_fetched_today(source.get('last_fetch_at')):
+        logging.info("[GitHub] Already fetched GitHub Trending today, skipping")
         return 0
     
     # === Step 1: 抓取 Trending 页面 ===
@@ -243,7 +271,6 @@ def fetch_github_trending(user_db, ai_engine, vector_store, fetch_stats: 'FetchS
         # never editorial importance.
         existing = user_db.get_article_by_url(repo_url)
         if existing and existing.get('category') == 'open_source':
-            importance_score = int(existing.get('importance_score') or 0)
             momentum_score = max(1, 101 - rank)
             base_en = _star_prefix_re.sub('', existing.get('summary_en') or '')
             base_zh = _star_prefix_re.sub('', existing.get('summary_zh') or '')
@@ -251,14 +278,17 @@ def fetch_github_trending(user_db, ai_engine, vector_store, fetch_stats: 'FetchS
             new_summary_zh = f"⭐ {stars:,} | {base_zh}" if base_zh else ''
             user_db.update_article_refresh(
                 article_id=existing['id'],
-                published_at=datetime.now(timezone.utc).isoformat(),
-                importance_score=importance_score,
                 summary_en=new_summary_en,
                 summary_zh=new_summary_zh,
                 momentum_score=momentum_score,
             )
             refreshed += 1
             logging.info(f"[GitHub] ↻ Refreshed: {owner}/{repo_name} (rank={rank}, ⭐{stars:,})")
+            continue
+        if existing:
+            # An existing dated release/report should not be re-summarized as
+            # a new item just because its repository enters a popularity list.
+            logging.info(f"[GitHub] Existing article retained: {owner}/{repo_name}")
             continue
 
         # 获取 README
@@ -378,15 +408,11 @@ def fetch_github_trending(user_db, ai_engine, vector_store, fetch_stats: 'FetchS
         # 适当延迟避免 GitHub API 限流
         time.sleep(1)
     
-    # === Step 3: 清理掉榜项目（不在本次榜单中的旧 opensource 文章） ===
-    current_urls = [r['url'] for r in repos]
-    stale_ids = user_db.delete_articles_by_category_excluding_urls('open_source', current_urls)
-    if stale_ids:
-        vector_store.delete_articles(stale_ids)
-        logging.info(f"[GitHub] Cleared {len(stale_ids)} stale opensource articles + vectors")
+    # The list is a changing popularity snapshot, not an authoritative history.
+    # Never delete repositories that leave it (or other open-source releases).
+    user_db.update_rss_source_fetch_time(gh_source_id)
 
     logging.info(f"[GitHub] Pipeline finished. Processed={processed}, refreshed={refreshed}, "
-                 f"stale_cleared={len(stale_ids)}, "
                  f"non_ai_skipped={skipped_non_ai}, no_readme={skipped_no_readme}, "
                  f"llm_failed={skipped_llm_failed}")
     return processed + refreshed

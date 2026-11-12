@@ -21,7 +21,7 @@ from rss_fetcher import RSSFetcher
 from browser_utils import _create_browser, _close_browser, _is_playwright_domain, _fetch_article_via_playwright, _check_logins_needed, _ensure_browser_logins, LoginRequiredError
 from reddit_fetcher import _fetch_reddit_content, _scrape_reddit_search, _scrape_reddit_subreddit_hot, _is_reddit_keyword_source, _is_reddit_subreddit_source, _extract_subreddit_name
 from twitter_fetcher import fetch_twitter_posts
-from github_fetcher import fetch_github_trending
+from github_fetcher import fetch_github_trending, is_github_trending_source
 from hackernews_fetcher import _fetch_hackernews_content
 from youtube_fetcher import _fetch_youtube_content
 
@@ -999,6 +999,10 @@ def run_pipeline():
     rss_sources = []
     twitter_sources = []
     for s in all_sources:
+        if is_github_trending_source(s):
+            # The dedicated collector owns this popularity list and its run
+            # marker. Treating its HTML as RSS races last_fetch_at updates.
+            continue
         url = s.get('url', '')
         desc_original = s.get('description', '').strip()
         desc = desc_original.lower()

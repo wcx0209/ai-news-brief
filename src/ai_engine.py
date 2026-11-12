@@ -139,6 +139,13 @@ Score the item with five separate integer fields from 0 to 100:
 Set importance_score to round(signal_score * 0.35 + structure_score * 0.35 + consequence_score * 0.30).
 Company fame, source prestige, follower counts, likes, comments, stars, and trending rank MUST NOT directly raise signal_score, structure_score, consequence_score, or importance_score. They may affect confidence_score or momentum_score only. Preserve the editorial relevance rule: at least one registered Polyemergence domain must be a core subject; unrelated content must receive importance_score 0.
 Include all five component fields plus importance_score in the JSON output.
+
+# Evidence boundaries and attribution (required for both languages)
+- Attribute first-party announcements and performance claims to the company, institution, agency or authors (for example, "IBM reports..." / "据 IBM 称..."). Do not rewrite their claims as independently established facts.
+- A university newsroom is not a peer-reviewed paper. A preprint is not proof of peer review, and first-party publication is not independent validation. State the actual document type and limitations visible in the supplied text.
+- Clearly separate reported facts from interpretation. Describe potential effects conditionally and identify what is not yet tested; never invent corroboration, outcomes, adoption, commercial deployment, or longitudinal evidence.
+- Do not add marketing superlatives such as "the strongest", "game-changing", "彻底颠覆", "最强", "硬刚", or "全面碾压". If a source uses them, replace them with the specific measured claim and its attribution, baseline and conditions when supplied.
+- The structure and consequence scores are an editorial assessment based on this one supplied document, not proof of a historical trend or evidence that a predicted impact has happened. Source prestige alone cannot establish accuracy or replication.
 """ + taxonomy_prompt()
         
         # 文章内容作为 user 消息，末尾追加格式提醒以利用结尾高注意力

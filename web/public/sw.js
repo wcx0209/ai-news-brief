@@ -1,5 +1,4 @@
-const CACHE_NAME = "polyemergence-v10";
-const DATA_CACHE_KEY = "/data/latest.json";
+const CACHE_NAME = "polyemergence-v11";
 const APP_SHELL = [
   "/",
   "/en/",
@@ -31,7 +30,7 @@ self.addEventListener("activate", event => {
 async function networkFirst(request, fallbackUrl) {
   const cache = await caches.open(CACHE_NAME);
   try {
-    const response = await fetch(request);
+    const response = await fetch(new Request(request, { cache: "no-cache" }));
     if (response.ok) cache.put(request, response.clone());
     return response;
   } catch {
@@ -41,15 +40,19 @@ async function networkFirst(request, fallbackUrl) {
 
 async function freshDataFirst(request) {
   const cache = await caches.open(CACHE_NAME);
+  // Each JSON resource needs its own offline entry. Taxonomy/observations must
+  // never overwrite the latest-news cache, and refresh query strings should
+  // still resolve to the same last successful document when offline.
+  const dataCacheKey = new URL(request.url).pathname;
   try {
     // Bypass both the browser HTTP cache and the CDN's stale response path.
     const response = await fetch(new Request(request, { cache: "no-store" }));
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    await cache.put(DATA_CACHE_KEY, response.clone());
+    await cache.put(dataCacheKey, response.clone());
     return response;
   } catch {
     // The last successful payload remains available when the app is offline.
-    return (await cache.match(DATA_CACHE_KEY)) || Response.error();
+    return (await cache.match(dataCacheKey)) || Response.error();
   }
 }
 
