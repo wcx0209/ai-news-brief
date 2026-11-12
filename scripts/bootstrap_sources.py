@@ -188,7 +188,7 @@ SOURCES = [
     ("https://www.braingate.org/feed/", "BrainGate", "[FIRST_PARTY] Official brain-computer interface research, assistive communication, speech restoration, neural recording, and clinical trial updates", "neurotechnology", 92),
     ("https://www.nature.com/subjects/brain-machine-interface.rss", "Nature Brain-Machine Interfaces", "Peer-reviewed brain-computer interfaces, neural decoding, neuroprosthetics, neural implants, and communication-restoration research", "neurotechnology", 92),
     ("https://neurosciencenews.com/neuroscience-topics/neurotech/feed/", "Neuroscience News Neurotech", "Neurotechnology reporting on brain interfaces, neural sensing, neurostimulation, prosthetics, and neuroscience tools", "neurotechnology", 80),
-    ("https://theneurotechnewsletter.substack.com/feed", "Neurotech Newsletter", "Specialist industry reporting on neurotechnology companies, investment, clinical trials, product launches, and regulation", "neurotechnology", 78),
+    ("https://www.thetransmitter.org/feed/", "The Transmitter", "Editorially independent neuroscience journalism funded by the Simons Foundation, covering brain-computer interfaces, neural engineering, neurotechnology, research tools, and neurodata policy", "neurotechnology", 84),
 
     ("https://news.mit.edu/rss/topic/climate-change-and-sustainability", "MIT Climate", "[FIRST_PARTY] Climate engineering, carbon removal, industrial decarbonisation, and resilient systems", "climate_water_environment", 90),
     ("https://www.carbonbrief.org/feed/", "Carbon Brief", "Evidence-led climate science, technology, policy, carbon removal, and industrial transition reporting", "climate_water_environment", 84),

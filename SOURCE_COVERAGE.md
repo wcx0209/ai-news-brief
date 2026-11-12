@@ -12,7 +12,7 @@ of publishers or a promise of daily articles from every source.
 | Quantum technology | IBM Quantum; Nature Quantum Information; AWS Quantum Technologies; D-Wave News; The Quantum Insider; Quantum Computing Report |
 | Space economy | NASA News; NASA JPL; SpaceNews; Spaceflight Now; European Spaceflight; JAXA Press Releases |
 | Advanced materials | Nature Materials; MIT Materials; AZoM Materials News; Advanced Science News; Phys.org Nanotechnology; NIMS Materials News |
-| Neurotechnology | MIT Neuroscience; Nature Biomedical Engineering; BrainGate; Nature Brain-Machine Interfaces; Neuroscience News Neurotech; Neurotech Newsletter |
+| Neurotechnology | MIT Neuroscience; Nature Biomedical Engineering; BrainGate; Nature Brain-Machine Interfaces; Neuroscience News Neurotech; The Transmitter |
 | Climate, water & environment | MIT Climate; Carbon Brief; Nature Water; International Water Management Institute; Yale Environment 360; Environmental Protection |
 | Agriculture & food technology | MIT Food & Water; AgFunderNews; Future Farming; FoodNavigator; Green Queen; Good Food Institute APAC |
 | Advanced manufacturing | NIST Manufacturing; MIT Advanced Manufacturing; Siemens Blog; Fraunhofer IFF; 3D Printing Industry; TCT Magazine |
@@ -32,6 +32,10 @@ of publishers or a promise of daily articles from every source.
 - Low-cadence official sources (including BrainGate, NIMS, JAXA, Fraunhofer IFF
   and AWS Quantum) remain valuable for original announcements. A valid feed
   without a recent item does not imply a failed collector.
+- The initial Neurotech Newsletter feed passed local verification but returned
+  403 from GitHub Actions. The Transmitter replaces it in the core catalog;
+  the old URL is excluded by the free deployment profile without deleting its
+  source record or historical articles.
 - Broader publications pass a title-level relevance gate before the source item
   cap and LLM summarisation. This excludes generic oil-market, dining, wildlife
   and retail-security stories while retaining registered technology fields.

@@ -991,6 +991,10 @@ def run_pipeline():
     
     # 2. Get all RSS sources (no longer filtered by user association)
     all_sources = user_db.get_all_rss_sources()
+    # Keep retired feed records and their article history intact while avoiding
+    # repeated requests to sources disabled in the active deployment profile.
+    excluded_urls = set(config.get('fetching', {}).get('excluded_source_urls', []))
+    all_sources = [source for source in all_sources if source.get('url') not in excluded_urls]
     
     rss_sources = []
     twitter_sources = []

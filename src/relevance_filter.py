@@ -43,7 +43,7 @@ TITLE_GATED_SOURCES = {
     "Advanced Science News",
     "NIMS Materials News",
     "Neuroscience News Neurotech",
-    "Neurotech Newsletter",
+    "The Transmitter",
     "International Water Management Institute",
     "Yale Environment 360",
     "Environmental Protection",
@@ -70,7 +70,7 @@ EDITORIAL_TITLE_PATTERN = re.compile(
     r"advanced materials?|materials science|nanotechnology|two.dimensional materials?|self.healing materials?|metamaterials?|"
     r"\b(?:nanomaterials?|nanoelectronics|nanodevices?|bioelectronics|composites?|polymers?)\b|"
     r"neurotechnology|brain.computer interface|brain.machine interface|neural interface|neurostimulation|neural implant|"
-    r"\b(?:neurotech|BCI|EEG|neuroprosthetics?|neuromodulation|neural decoding|neural recording|brain implants?)\b|"
+    r"\b(?:neurotech|neuroengineering|neurodata|BCI|EEG|neuroprosthetics?|neuromodulation|neural decoding|neural recording|brain implants?|brain stimulation)\b|"
     r"carbon removal|direct air capture|desalination|water technology|green steel|climate engineering|"
     r"carbon capture|water treatment|wastewater|PFAS|pollution control|remediation|smart irrigation|water monitoring|recycling technolog|"
     r"agritech|foodtech|precision fermentation|cultivated meat|gene.edited crops?|agricultural robots?|alternative proteins?|"

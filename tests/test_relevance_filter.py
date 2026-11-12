@@ -47,7 +47,7 @@ class RelevanceFilterTests(unittest.TestCase):
             ("Utility Dive", "Utilities test virtual power plants and new batteries"),
             ("FoodNavigator", "Precision fermentation platform reaches commercial scale"),
             ("Environmental Protection", "New PFAS remediation technology enters water treatment trials"),
-            ("Neurotech Newsletter", "BCI startup advances clinical trials"),
+            ("The Transmitter", "BCI startup advances clinical trials"),
             ("Siemens Blog", "Factory automation and digital twins cut production time"),
         )
         for source, title in examples:

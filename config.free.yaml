@@ -21,6 +21,9 @@ fetching:
   max_entries_per_source: 1
   max_entries_per_source_by_category:
     biotech: 3
+  # Retain historical records, but use a cloud-accessible specialist replacement.
+  excluded_source_urls:
+    - "https://theneurotechnewsletter.substack.com/feed"
   llm_min_interval_seconds: 15
   article_max_age_days: 2
   # Official vendor newsrooms can publish less frequently than media feeds.
