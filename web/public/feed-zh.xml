@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>多重涌现</title><link>https://polyemergence.com/zh/archive/</link><description>按新加坡发布日期整理的多重涌现人工智能与新兴科技情报永久记录。</description><language>zh-Hans</language><lastBuildDate>Thu, 12 Nov 2026 14:54:09 +0000</lastBuildDate><atom:link href="https://polyemergence.com/feed-zh.xml" rel="self" type="application/rss+xml" /><item><title>美国国家标准与技术研究院将举办第二届半导体可追溯性与来源研讨会</title><link>https://polyemergence.com/zh/archive/2026/12/08/c4ba7bc3-4a3f-4409-acbc-fe905881cb77/</link><guid isPermaLink="true">https://polyemergence.com/zh/archive/2026/12/08/c4ba7bc3-4a3f-4409-acbc-fe905881cb77/</guid><pubDate>Tue, 08 Dec 2026 13:30:00 +0000</pubDate><category>政策</category><category>新制造与产业基础设施</category><description>据NIST Manufacturing发布的信息：
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>多重涌现</title><link>https://polyemergence.com/zh/archive/</link><description>按新加坡发布日期整理的多重涌现人工智能与新兴科技情报永久记录。</description><language>zh-Hans</language><lastBuildDate>Thu, 12 Nov 2026 15:00:35 +0000</lastBuildDate><atom:link href="https://polyemergence.com/feed-zh.xml" rel="self" type="application/rss+xml" /><item><title>美国国家标准与技术研究院将举办第二届半导体可追溯性与来源研讨会</title><link>https://polyemergence.com/zh/archive/2026/12/08/c4ba7bc3-4a3f-4409-acbc-fe905881cb77/</link><guid isPermaLink="true">https://polyemergence.com/zh/archive/2026/12/08/c4ba7bc3-4a3f-4409-acbc-fe905881cb77/</guid><pubDate>Tue, 08 Dec 2026 13:30:00 +0000</pubDate><category>政策</category><category>新制造与产业基础设施</category><description>据NIST Manufacturing发布的信息：
 
 半导体供应链极其复杂，横跨全球的设计、制造、封装与部署等多个环节。为了确保芯片产品的真实性与安全性，美国国家标准与技术研究院正与行业领袖、政府机构及学术界紧密合作，建立用于追踪芯片的标准化框架。
 
@@ -29,6 +29,7 @@ AI 企业 Cohere 宣布任命行业资深专家 Jaya Baloo 为公司首位首席
 在播客节目《Denatured》的这期内容中，BioSpace洞察总监詹妮弗与Antheia首席执行官克里斯蒂娜以及Cencora数据与AI产品负责人凯尔共同探讨了日益严重的药物短缺威胁。
 探讨的方向与方案
 访谈深入分析了药品短缺情况不断恶化的背后原因。嘉宾们探讨了潜在的应对方案，重点关注如何利用预测性分析来预判供应链中断，以及如何通过灵活的分布式制造来增强基本药物的供应韧性，从而改善患者的用药可及性。</description><source url="https://www.biospace.com/drug-development/can-we-finally-get-ahead-of-drug-shortages">BioSpace Drug Development</source></item><item><title>Meta 签署清洁制造协议以推进数据中心供应链低碳化</title><link>https://polyemergence.com/zh/archive/2026/11/12/2f53cf8a-2f7d-4d40-a894-92e83a04fd2a/</link><guid isPermaLink="true">https://polyemergence.com/zh/archive/2026/11/12/2f53cf8a-2f7d-4d40-a894-92e83a04fd2a/</guid><pubDate>Thu, 12 Nov 2026 12:00:07 +0000</pubDate><category>商业</category><category>人工智能</category><description>据Meta Newsroom AI发布的信息：
+
 背景
 Meta 表示正在采取行动，通过把目标对准上游制造环节，来推进其数据中心供应链的绿色转型。
 细节
@@ -77,6 +78,7 @@ H3-Image支持高达16张参考图输入，保障了角色一致性与分镜连�
 作者使用了包含 188 件鞋类物体的 Google 斯堪尼斯对象数据集子集。为了在避免遗忘原有能力的同时高效适配模型，他们将 LoRA 适配器专门应用到了稀疏结构流 DiT 和形状流 DiT 组件中，同时冻结了纹理生成阶段。整个训练过程通过 Hugging Face Jobs 在 A100 GPU 上运行，或通过 Docker 在本地执行。
 实验结果
 在测试集上的量化评估显示出显著改进。微调后的模型平均 F 分数从基础模型的 0.276 提升到了 0.803，倒角距离（Chamfer distance）从 0.174 降至 0.033，法线一致性也有所提高，证明了有针对性的微调能够成功让通用 3D 模型适应特定的物体类别。</description><source url="https://huggingface.co/blog/3d-lora-finetuning">Hugging Face</source></item><item><title>ParseBench-2：引入错误严重程度评估的文档解析基准</title><link>https://polyemergence.com/zh/archive/2026/11/12/c4a2bdc8-8d18-4658-8e05-53aad1e46f50/</link><guid isPermaLink="true">https://polyemergence.com/zh/archive/2026/11/12/c4a2bdc8-8d18-4658-8e05-53aad1e46f50/</guid><pubDate>Thu, 12 Nov 2026 00:00:00 +0000</pubDate><category>模型</category><category>人工智能</category><description>据LlamaIndex Blog发布的信息：
+
 背景与改进
 传统的文档解析基准往往采用脆弱的评估指标，会对无害的格式变化过度惩罚，却对关键数据错误（如数字颠倒）惩罚不足。ParseBench-2 引入了基于专家定义的 330 种错误类型的严重程度评分机制，涵盖文本、格式、表格、图表、布局和表单六个维度。该基准的文档语料库从 2.1k 扩大到 4.3k 个真实企业文档，包含 1,025 个图表以及来自 30 个国家的 500 页表单。
 性能洞察与 OCRia-1.5
@@ -274,6 +276,7 @@ LangChain 的内部销售代理通过自动化生成建议书、账户计划等�
 这一突破标志着辅助技术向前迈出了重要一步，证明了内部默念的语音能够被稳定且准确地转化为实际的操作指令。这项进展不仅大大提升了严重运动障碍患者的隐私保护，也让真正自主、便捷的无障碍智能家居控制离现实更近了一步。</description><source url="https://www.nature.com/articles/s42003-026-10477-5">Nature Brain-Machine Interfaces</source></item><item><title>新技术让自旋信号在室温下传得更远</title><link>https://polyemergence.com/zh/archive/2026/11/11/4fa30647-9802-46df-b941-cde38c050966/</link><guid isPermaLink="true">https://polyemergence.com/zh/archive/2026/11/11/4fa30647-9802-46df-b941-cde38c050966/</guid><pubDate>Wed, 11 Nov 2026 00:00:00 +0000</pubDate><category>研究</category><category>新材料与纳米技术</category><description>在自旋电子学里，利用粒子的自旋来传递信息是个好主意，但这些信号往往只能传很短的一段距离就消失了。另一方面，光子虽然能跑得很远，却缺乏做逻辑门计算所必需的非线性相互作用。
 
 为了解决这个难题，研究人员把目光投向了光与物质结合的混合产物——极化激元。通过用过渡金属硫化物搭建特殊的波导结构，他们在室温环境下实现了长达100微米的自旋信号传输。更厉害的是，这个系统还保留了很强的非线性特性，为未来不需要极端低温的光学计算和高速信息处理设备铺平了道路。</description><source url="https://www.nature.com/articles/s41563-026-02802-4">Nature Materials</source></item><item><title>LlamaParse 是如何针对大模型安全漏洞进行渗透测试的？</title><link>https://polyemergence.com/zh/archive/2026/11/11/c895fdcf-276f-4604-8bed-791938155ac8/</link><guid isPermaLink="true">https://polyemergence.com/zh/archive/2026/11/11/c895fdcf-276f-4604-8bed-791938155ac8/</guid><pubDate>Wed, 11 Nov 2026 00:00:00 +0000</pubDate><category>公司</category><category>人工智能</category><description>据LlamaIndex Blog发布的信息：
+
 背景与测试方法
 传统的安全测试适合常规网页应用，但在面对需要阅读客户文档的 AI 模型时往往束手无策。为了确保安全性，LlamaParse 采用基于 AI 代理的动态应用安全测试。这些代理花四天时间自主阅读文档、编写代码、生成测试文件，并针对 OWASP 大模型十大风险对生产环境发起了全方位的自动化攻击。
 核心发现与反思
