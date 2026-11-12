@@ -242,6 +242,97 @@ class ArchiveDomainTests(unittest.TestCase):
         record["source"] = "Official Releases"
         self.assertEqual(archive.article_path("en", day, record), "/en/archive/2026/11/12/own-id/")
 
+    def test_article_prose_has_real_headings_paragraphs_and_lists_in_original_order(self):
+        text = """Overview
+First paragraph preserves the reported result.
+
+How It Works
+The method runs in two stages.
+
+### Technical limits
+- First limitation.
+- Second limitation.
+
+Installation and Usage
+1. Clone the project.
+2. Run the supplied tools.
+
+Final paragraph preserves the uncertainty."""
+        prose = archive.archive_prose(text)
+        self.assertIn('<div class="archive-prose">', prose)
+        self.assertIn('<h2>Overview</h2><p>First paragraph', prose)
+        self.assertIn('<h2>How It Works</h2>', prose)
+        self.assertIn('<h3>Technical limits</h3>', prose)
+        self.assertIn('<ul><li>First limitation.</li><li>Second limitation.</li></ul>', prose)
+        self.assertIn('<ol><li value="1">Clone the project.</li><li value="2">Run the supplied tools.</li></ol>', prose)
+        self.assertLess(prose.index("First paragraph"), prose.index("How It Works"))
+        self.assertLess(prose.index("Second limitation"), prose.index("Clone the project"))
+        self.assertTrue(prose.endswith('<p>Final paragraph preserves the uncertainty.</p></div>'))
+
+    def test_chinese_plain_headings_are_recognised_without_guessing_sentences(self):
+        prose = archive.archive_prose("系统架构\n系统由三个组件构成。\n\n安装与使用\n• 下载工具。\n• 阅读文档。\n\n这是一句普通的短句。\n下一句保留原有内容。")
+        self.assertIn('<h2>系统架构</h2>', prose)
+        self.assertIn('<h2>安装与使用</h2>', prose)
+        self.assertIn('<ul><li>下载工具。</li><li>阅读文档。</li></ul>', prose)
+        self.assertNotIn('<h2>这是一句', prose)
+        self.assertIn('下一句保留原有内容。', prose)
+
+    def test_prose_xss_and_markdown_links_are_inert_and_code_survives(self):
+        text = '''## <img src=x onerror="alert(1)">
+[Safe label](https://example.org/read) and [Unsafe label](javascript:alert(2))
+
+<script>alert(3)</script>
+
+```html
+<img src=x onerror="alert(4)">
+```
+
+The last sentence is still here.'''
+        prose = archive.archive_prose(text)
+        self.assertNotIn('<img', prose)
+        self.assertNotIn('<script', prose)
+        self.assertNotIn('<a ', prose)
+        self.assertNotIn('href=', prose)
+        self.assertIn('&lt;img src=x onerror=&quot;alert(1)&quot;&gt;', prose)
+        self.assertIn('Safe label', prose)
+        self.assertIn('Unsafe label', prose)
+        self.assertIn('<pre><code>&lt;img src=x onerror=&quot;alert(4)&quot;&gt;</code></pre>', prose)
+        self.assertIn('The last sentence is still here.', prose)
+
+    def test_detail_retains_entire_long_summary_but_archive_list_uses_short_preview(self):
+        record = fixture("long-detail", "ai", "A detailed reported result")
+        paragraphs = [f"Paragraph {index}: measured result {index}, with uncertainty retained." for index in range(100)]
+        record["en"]["full"] = "## Overview\n\n" + "\n\n".join(paragraphs)
+        record["en"]["summary"] = "A concise overview of the reported result."
+        record["reading_context"] = {"en": "Generic editorial reading guidance."}
+        detailed = archive.story_html(record, "en", detail=True)
+        preview = archive.story_html(record, "en")
+        self.assertIn('<h1>A detailed reported result</h1>', detailed)
+        self.assertIn('<div class="archive-prose"><h2>Overview</h2>', detailed)
+        for paragraph in paragraphs:
+            self.assertIn(paragraph, detailed)
+        self.assertNotIn("Paragraph 99:", preview)
+        self.assertIn('<p class="archive-summary">A concise overview', preview)
+        self.assertIn('Read full summary', preview)
+        self.assertLess(detailed.index('<details class="screening-details">'), detailed.index('Generic editorial reading guidance.'))
+        self.assertLess(preview.index('<details class="screening-details">'), preview.index('Generic editorial reading guidance.'))
+
+    def test_missing_short_summary_is_bounded_in_list_not_detail(self):
+        record = fixture("missing-short", "ai", "A long report")
+        record["en"]["summary"] = ""
+        record["en"]["full"] = "An original result with disclosed limitations. " * 100 + "Unique final caveat."
+        self.assertLessEqual(len(archive.archive_excerpt(record["en"], "en")), 521)
+        self.assertNotIn("Unique final caveat.", archive.story_html(record, "en"))
+        self.assertIn("Unique final caveat.", archive.story_html(record, "en", detail=True))
+
+    def test_article_shell_uses_scoped_reading_layout_and_versioned_archive_styles(self):
+        page = archive.page_shell("en", "Title", "Description", "https://polyemergence.com/en/archive/2026/11/12/id/", "https://polyemergence.com/zh/archive/2026/11/12/id/", "Body", og_type="article")
+        self.assertIn('<body class="archive-detail">', page)
+        self.assertIn('/archive.css?v=6', page)
+        styles = (ROOT / "web/public/archive.css").read_text()
+        self.assertRegex(styles, r'\.archive-prose\s*\{[^}]*max-width:\s*760px')
+        self.assertRegex(styles, r'\.archive-prose\s*\{[^}]*font-size:\s*16px;\s*line-height:\s*1\.78')
+
 
 if __name__ == "__main__":
     unittest.main()

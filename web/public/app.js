@@ -7,7 +7,7 @@ const COPY = {
     eyebrow: "EMERGING TECHNOLOGY · DAILY BRIEF", tagline: "Tech moves fast.<br>Know what matters.",
     promise: "Essential developments across AI, biotech, energy and more—selected, sourced and explained.",
     loading: "Loading today’s brief…", updated: "Updated", story: "story", stories: "stories", dailyBrief: "Emerging Intelligence",
-    refreshFeed: "Refresh", refreshingFeed: "Refreshing…", pendingFeed: "New content available — update", selectedCount: "Selected", screening: "Selection rationale", screeningNote: "Editorial scores guide selection; they are not independent verification. Source claims remain attributed to their authors.", readingContext: "What to watch · editorial perspective", evidenceUnknown: "Source type not yet identified", stageUnknown: "Stage not specified",
+    refreshFeed: "Refresh", refreshingFeed: "Refreshing…", pendingFeed: "New content available — update", selectedCount: "Selected", todaySelection: "Today’s selection", screening: "Selection rationale", screeningNote: "Editorial scores guide selection; they are not independent verification. Source claims remain attributed to their authors.", readingContext: "What to watch · editorial perspective", evidenceUnknown: "Source type not yet identified", stageUnknown: "Stage not specified",
     domainGroup: "Fields", angleGroup: "Story angle", allAngles: "All angles",
     chooseField: "Choose your field", fieldsTitle: "Start with a field.", fieldsIntro: "Choose a field to read its latest news. Each briefing covers the past 48 hours.",
     fieldStep: "CHOOSE A FIELD", newsStep: "READ YOUR BRIEF", changeField: "Change field", past48: "PAST 48 HOURS", noCurrentStories: "No current stories", fieldNews: "news",
@@ -49,7 +49,7 @@ const COPY = {
     eyebrow: "前沿科技 · 每日精选", tagline: "科技在变。<br>看清重点。",
     promise: "每天精选 AI、生命科技、能源等前沿领域的重要进展，附上原始来源与影响摘要。",
     loading: "正在载入今日简报…", updated: "更新于", stories: "条内容", dailyBrief: "涌现情报",
-    refreshFeed: "刷新", refreshingFeed: "正在刷新…", pendingFeed: "有新内容，点击更新", selectedCount: "已精选", screening: "筛选依据", screeningNote: "编辑评分用于筛选，不代表独立验证。来源中的主张仍归属于原作者。", readingContext: "观察重点 · 编辑视角", evidenceUnknown: "来源类型待识别", stageUnknown: "阶段未说明",
+    refreshFeed: "刷新", refreshingFeed: "正在刷新…", pendingFeed: "有新内容，点击更新", selectedCount: "已精选", todaySelection: "今日精选", screening: "筛选依据", screeningNote: "编辑评分用于筛选，不代表独立验证。来源中的主张仍归属于原作者。", readingContext: "观察重点 · 编辑视角", evidenceUnknown: "来源类型待识别", stageUnknown: "阶段未说明",
     domainGroup: "领域", angleGroup: "报道分类", allAngles: "全部分类",
     chooseField: "选择关注领域", fieldsTitle: "先选领域，再读新闻。", fieldsIntro: "选择你关注的领域，阅读最近 48 小时的重要进展。",
     fieldStep: "选择领域", newsStep: "阅读领域简报", changeField: "更换领域", past48: "最近 48 小时", noCurrentStories: "暂无最新内容", fieldNews: "新闻",
@@ -162,7 +162,7 @@ function captureReadingState() {
     state.reading[id] = {
       ...previous,
       draft: textarea?.value ?? previous.draft ?? "",
-      summaryOpen: root.querySelector('[data-summary-toggle]')?.getAttribute('aria-expanded') === 'true',
+      summaryOpen: root.querySelector('[data-summary-toggle]')?.getAttribute('aria-expanded') === 'true' || Boolean(root.querySelector('[data-summary-details]')?.open),
       screeningOpen: root.querySelector('.screening-details')?.open || false,
       commentsOpen: state.openComments.has(id)
     };
@@ -346,8 +346,9 @@ function textFor(item) {
 
 function summaryMarkup(text, item = {}) {
   const shortText = String(text.summary || "").trim();
-  const fullText = String(text.fullSummary || "").trim();
-  const expandable = fullText && plainText(fullText) !== plainText(shortText);
+  const fullText = String(text.fullSummary || shortText).trim();
+  // Even a source with only one summary needs an escape from the four-line preview.
+  const expandable = Boolean(fullText);
   const expanded = Boolean(expandable && state.reading[item.id]?.summaryOpen);
   return `<div class="story-summary">
     <p data-summary-short ${expanded ? "hidden" : ""}>${inlineMarkup(shortText)}</p>
@@ -388,7 +389,7 @@ function matchesFilter(item, filter) {
   return categoryFor(item) === filter;
 }
 
-function evidenceMarkup(item) {
+function evidenceMarkup(item, includeUnknownStage = false) {
   const evidence = item.evidence || {};
   const labels = state.locale === "zh" ? {
     official_release: "官方发布", preprint: "预印本", research_paper: "研究论文", media_report: "媒体报道", interview: "访谈", open_source: "开源项目",
@@ -397,7 +398,8 @@ function evidenceMarkup(item) {
     official_release: "Official release", preprint: "Preprint", research_paper: "Research paper", media_report: "Media report", interview: "Interview", open_source: "Open-source project",
     laboratory: "Laboratory result", demonstration: "Demonstration", pilot: "Pilot / trial", deployment: "Reported deployment"
   };
-  return `<div class="story-evidence"><span>${escapeHtml(labels[evidence.type] || COPY[state.locale].evidenceUnknown)}</span><span>${escapeHtml(labels[evidence.stage] || COPY[state.locale].stageUnknown)}</span></div>`;
+  const stage = labels[evidence.stage] || (includeUnknownStage ? COPY[state.locale].stageUnknown : "");
+  return `<div class="story-evidence"><span>${escapeHtml(labels[evidence.type] || COPY[state.locale].evidenceUnknown)}</span>${stage ? `<span>${escapeHtml(stage)}</span>` : ""}</div>`;
 }
 
 function relatedMarkup(item) {
@@ -415,7 +417,8 @@ function readingContextMarkup(item) {
 }
 
 function screeningMarkup(item) {
-  return `<details class="screening-details" ${state.reading[item.id]?.screeningOpen ? "open" : ""}><summary>${escapeHtml(COPY[state.locale].screening)}</summary><p class="screening-importance">${escapeHtml(COPY[state.locale].importance)} ${Number(item.importance || 0)}</p>${scoreBreakdown(item)}<p class="screening-note">${escapeHtml(COPY[state.locale].screeningNote)} <a href="/${state.locale}/standards/">${escapeHtml(COPY[state.locale].trustStandards)} →</a></p></details>`;
+  const tags = (item.tags || []).slice(0, 4).map(tag => `<span class="tag">${escapeHtml(tag)}</span>`).join("");
+  return `<details class="screening-details" ${state.reading[item.id]?.screeningOpen ? "open" : ""}><summary>${escapeHtml(COPY[state.locale].screening)}</summary><p class="screening-importance">${escapeHtml(COPY[state.locale].importance)} ${Number(item.importance || 0)}</p>${scoreBreakdown(item)}${evidenceMarkup(item, true)}${readingContextMarkup(item)}${tags ? `<div class="tags">${tags}</div>` : ""}<p class="screening-note">${escapeHtml(COPY[state.locale].screeningNote)} <a href="/${state.locale}/standards/">${escapeHtml(COPY[state.locale].trustStandards)} →</a></p></details>`;
 }
 
 function imageFit(item) {
@@ -641,32 +644,29 @@ function renderLead(item) {
   $("#lead-story").dataset.storyId = item.id;
   $("#lead-story").innerHTML = `
     <div class="lead-copy">
-      <h3><a href="${escapeHtml(safeUrl(item.url))}" target="_blank" rel="noopener noreferrer">${escapeHtml(text.title)}</a></h3>
-      <div class="story-kicker"><span>${escapeHtml(item.source)} · ${COPY[state.locale].filters[categoryFor(item)]}</span></div>
-      ${publishedTimeMarkup(item)}
-      ${evidenceMarkup(item)}${relatedMarkup(item)}${summaryMarkup(text, item)}${readingContextMarkup(item)}
-      ${screeningMarkup(item)}
-      <div class="story-actions"><a class="read-link" href="${escapeHtml(safeUrl(item.url))}" target="_blank" rel="noopener noreferrer">${COPY[state.locale].read} ↗</a>${shareButton(item, text)}</div>${interactionMarkup(item)}
-    </div>
-    <div class="story-visual">${imageMarkup(item, true)}</div>`;
+      ${storyHeadingMarkup(item, text)}
+      <div class="story-visual">${imageMarkup(item, true)}</div>
+      ${storyBodyMarkup(item, text)}
+    </div>`;
 }
 
 function renderCard(item) {
   const text = textFor(item);
-  const tags = (item.tags || []).slice(0, 4).map(tag => `<span class="tag">${escapeHtml(tag)}</span>`).join("");
   return `<article class="story-card" data-story-id="${escapeHtml(item.id)}">
     <div class="card-copy">
-    <h3><a href="${escapeHtml(safeUrl(item.url))}" target="_blank" rel="noopener noreferrer">${escapeHtml(text.title)}</a></h3>
-    <div class="story-kicker"><span>${escapeHtml(item.source)} · ${COPY[state.locale].filters[categoryFor(item)]}</span></div>
-    ${publishedTimeMarkup(item)}
-    ${evidenceMarkup(item)}${relatedMarkup(item)}${summaryMarkup(text, item)}${readingContextMarkup(item)}
-    ${screeningMarkup(item)}
-    <div class="story-actions"><a class="read-link" href="${escapeHtml(safeUrl(item.url))}" target="_blank" rel="noopener noreferrer">${COPY[state.locale].read} ↗</a>${shareButton(item, text)}</div>
-    ${interactionMarkup(item)}
-    <div class="tags">${tags}</div>
+      ${storyHeadingMarkup(item, text)}
+      <div class="card-visual">${imageMarkup(item)}</div>
+      ${storyBodyMarkup(item, text)}
     </div>
-    <div class="card-visual">${imageMarkup(item)}<span class="card-plane" aria-hidden="true"></span></div>
   </article>`;
+}
+
+function storyHeadingMarkup(item, text) {
+  return `<div class="story-heading"><h3><a href="${escapeHtml(safeUrl(item.url))}" target="_blank" rel="noopener noreferrer">${escapeHtml(text.title)}</a></h3><div class="story-meta"><span class="story-source">${escapeHtml(item.source)} · ${escapeHtml(COPY[state.locale].filters[categoryFor(item)] || "")}</span>${publishedTimeMarkup(item)}</div>${evidenceMarkup(item)}${relatedMarkup(item)}</div>`;
+}
+
+function storyBodyMarkup(item, text) {
+  return `<div class="story-body">${summaryMarkup(text, item)}${screeningMarkup(item)}<div class="story-toolbar"><div class="story-actions"><a class="read-link" href="${escapeHtml(safeUrl(item.url))}" target="_blank" rel="noopener noreferrer">${COPY[state.locale].read} ↗</a>${shareButton(item, text)}</div>${interactionMarkup(item)}</div></div>`;
 }
 
 const DAILY_BRIEF_WINDOW_MS = 48 * 60 * 60 * 1000;
@@ -775,8 +775,7 @@ function renderFeed() {
     const promise = $('.hero-copy [data-copy="promise"]');
     if (promise) promise.textContent = field.description?.[state.locale] || "";
   }
-  const label = field.short_label?.[state.locale] || field.label[state.locale];
-  $("#brief-title").textContent = `${label}${state.locale === "zh" ? "" : " "}${COPY[state.locale].fieldNews}`;
+  $("#brief-title").textContent = COPY[state.locale].todaySelection;
   $("#selected-field-label").textContent = field.label[state.locale];
   $("#field-description").textContent = field.description?.[state.locale] || "";
   const filtered = items.filter(item => matchesDomain(item, state.domain) && matchesFilter(item, state.category));
@@ -1070,6 +1069,10 @@ function showPendingUpdate() {
 
 function applyFeed(next) {
   if (readingHydrated) captureReadingState();
+  else $$('[data-summary-details][open]').forEach(summary => {
+    const id = summary.closest('[data-story-id]')?.dataset.storyId;
+    if (id) state.reading[id] = { ...state.reading[id], summaryOpen: true };
+  });
   state.feed = applyBriefWindow(next);
   state.pendingFeed = null;
   showPendingUpdate();

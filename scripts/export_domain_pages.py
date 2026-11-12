@@ -234,7 +234,7 @@ def evidence_labels(item, locale):
         "interview": ("Interview", "访谈"), "open_source": ("Open source", "开源项目"), "unknown": ("Source type unconfirmed", "信源类型待确认"),
         "laboratory": ("Laboratory result", "实验室结果"), "demonstration": ("Demonstration", "演示"),
         "pilot": ("Pilot / trial", "试点／试验"), "deployment": ("Reported deployment", "报道已部署"),
-        "unspecified": ("Stage not established", "阶段未明确"),
+        "unspecified": ("Stage not specified", "阶段未说明"),
     }
     return [labels.get((item.get("evidence") or {}).get(key), ("", ""))[0 if locale == "en" else 1] for key in ("type", "stage")]
 
@@ -252,7 +252,9 @@ def story_markup(item, locale, corpus, public, lead=False, domains=None):
     if summary_url:
         actions += f'<a class="read-link" href="{esc(summary_url)}">{summary_label} →</a>'
     evidence_parts = evidence_labels(item, locale)
-    evidence_markup = (f'<div class="story-evidence">' + "".join(f'<span>{esc(part)}</span>' for part in evidence_parts if part) + '</div>') if any(evidence_parts) else ""
+    heading_evidence = [part for key, part in zip(("type", "stage"), evidence_parts)
+                        if part and (key != "stage" or (item.get("evidence") or {}).get(key) not in {None, "unknown", "unspecified"})]
+    evidence_markup = '<div class="story-evidence">' + "".join(f'<span>{esc(part)}</span>' for part in heading_evidence) + '</div>' if heading_evidence else ""
     related = []
     labels = {domain["id"]: localized(domain.get("short_label") or domain.get("label"), locale, domain["id"]) for domain in (domains or [])}
     for domain in (item.get("related_domains") or [])[:2]:
@@ -261,17 +263,29 @@ def story_markup(item, locale, corpus, public, lead=False, domains=None):
     related_markup = '<div class="story-related">' + " × ".join(related) + '</div>' if related else ""
     context = localized_insight(item.get("reading_context"), locale)
     context_markup = f'<aside class="story-context"><strong>{"Observation focus (editorial lens)" if locale == "en" else "观察重点（编辑视角）"}</strong><p>{esc(context)}</p></aside>' if context else ""
+    tags = "".join(f'<span class="tag">{esc(tag)}</span>' for tag in (item.get("tags") or [])[:4])
+    tags_markup = f'<div class="tags">{tags}</div>' if tags else ""
+    evidence_details = '<div class="screening-metadata">' + "".join(f'<span>{esc(part)}</span>' for part in evidence_parts if part) + '</div>'
     score_labels = {"signal": ("Signal", "信号"), "structure": ("Structure", "结构"), "consequence": ("Consequence", "影响"), "confidence": ("Confidence", "可信度"), "momentum": ("Momentum", "热度")}
     score_values = "".join(f'<span><small>{labels[0 if locale == "en" else 1]}</small><strong>{esc((item.get("scores") or {}).get(key, 0))}</strong></span>' for key, labels in score_labels.items())
     screening = (f'<details class="screening-details"><summary>{"View selection rationale" if locale == "en" else "查看筛选依据"}</summary><p class="screening-importance">{"Importance" if locale == "en" else "重要性"} {esc(item.get("importance"))}/100</p><div class="score-breakdown">{score_values}</div>'
-                 f'<p class="screening-note">{"Editorial assessments, not independent verification." if locale == "en" else "评分属于编辑评估，不代表独立核验。"} <a href="/{locale}/standards/">{"Editorial standards" if locale == "en" else "编辑标准"} →</a></p></details>')
-    copy = (f'<h3><a href="{esc(original)}" target="_blank" rel="noopener noreferrer">{esc(title)}</a></h3>'
-            f'<div class="story-kicker"><span>{esc(item.get("source"))}</span></div>'
-            f'<div class="story-published"><time datetime="{published.isoformat().replace("+00:00", "Z")}">{published_label} {date_label}</time></div>'
-            f'{evidence_markup}{related_markup}<p>{esc(summary)}</p>{context_markup}{screening}<div class="story-actions">{actions}</div>')
+                 f'{evidence_details}{context_markup}{tags_markup}<p class="screening-note">{"Editorial assessments, not independent verification." if locale == "en" else "评分属于编辑评估，不代表独立核验。"} <a href="/{locale}/standards/">{"Editorial standards" if locale == "en" else "编辑标准"} →</a></p></details>')
+    heading = (f'<div class="story-heading"><h3><a href="{esc(original)}" target="_blank" rel="noopener noreferrer">{esc(title)}</a></h3>'
+               f'<div class="story-meta"><span class="story-source">{esc(item.get("source"))}</span>'
+               f'<div class="story-published"><time datetime="{published.isoformat().replace("+00:00", "Z")}">{published_label} {date_label}</time></div></div>'
+               f'{evidence_markup}{related_markup}</div>')
+    text = item.get(locale) or item.get("en") or item.get("zh") or {}
+    # A CSS preview clamp must never be the only copy of the summary. Native
+    # disclosure remains usable before hydration and when JavaScript is absent.
+    full_summary = clean_text(text.get("full_summary") or text.get("long_summary") or summary)
+    full_markup = (f'<details class="summary-details" data-summary-details><summary>{"Expand summary" if locale == "en" else "展开摘要"}</summary>'
+                   f'<div class="summary-full" data-summary-full>{esc(full_summary)}</div></details>') if full_summary else ""
+    body = (f'<div class="story-body"><div class="story-summary"><p class="summary-preview" data-summary-short>{esc(summary)}</p>{full_markup}</div>'
+            f'{screening}<div class="story-actions">{actions}</div></div>')
     image_url = safe_url(item.get("image_url"))
     if image_url:
-        visual = f'<img class="media-contain" src="{esc(image_url)}" alt="{esc(title)}" loading="lazy" decoding="async" referrerpolicy="no-referrer">'
+        loading = 'fetchpriority="high"' if lead else 'loading="lazy"'
+        visual = f'<img class="media-contain" src="{esc(image_url)}" alt="{esc(title)}" {loading} decoding="async" referrerpolicy="no-referrer">'
     else:
         visual = ('<div class="brand-cover" role="img" aria-label="Polyemergence">'
                   '<svg class="cover-art cover-art-landscape" viewBox="0 0 1200 675" aria-hidden="true">'
@@ -281,8 +295,8 @@ def story_markup(item, locale, corpus, public, lead=False, domains=None):
                   '<path class="cover-stroke" d="M250 340l350-175 350 175-350 175zM250 230L600 55l350 175-350 175z"/>'
                   '</svg></div>')
     if lead:
-        return f'<div class="lead-copy">{copy}</div><div class="story-visual">{visual}</div>'
-    return f'<article class="story-card" data-story-id="{esc(item.get("id"))}"><div class="card-copy">{copy}</div><div class="card-visual">{visual}</div></article>'
+        return f'<div class="lead-copy">{heading}<div class="story-visual">{visual}</div>{body}</div>'
+    return f'<article class="story-card" data-story-id="{esc(item.get("id"))}"><div class="card-copy">{heading}<div class="card-visual">{visual}</div>{body}</div></article>'
 
 
 def replace_content(page, tag, element_id, content):
@@ -401,7 +415,7 @@ def render_field_page(shell, domain, locale, domains, feed, sources, corpus, pub
     page = set_hidden(page, "section", "fields", True)
     page = set_hidden(page, "section", "brief", False)
     page = replace_content(page, "span", "selected-field-label", esc(localized(domain.get("label"), locale)))
-    page = replace_content(page, "h2", "brief-title", esc(copy["heading"]) + (" · Past 48 hours" if locale == "en" else " · 最近 48 小时"))
+    page = replace_content(page, "h2", "brief-title", "Today’s selection" if locale == "en" else "今日精选")
     page = replace_content(page, "p", "field-description", esc(localized(domain.get("description"), locale)))
     page = replace_content(page, "div", "lead-story", story_markup(items[0], locale, corpus, public, True, domains) if items else "")
     if items:

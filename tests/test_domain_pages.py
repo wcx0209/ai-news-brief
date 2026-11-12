@@ -140,11 +140,52 @@ class DomainPagesTests(unittest.TestCase):
         self.assertNotIn('Current biology academic-2', result)
         self.assertIn('data-story-id="academic-0"', result)
         card = re.search(r'<article class="story-card".*?</article>', result, re.S)[0]
-        self.assertLess(card.index('<h3>'), card.index('story-kicker'))
+        self.assertLess(card.index('<h3>'), card.index('story-meta'))
         self.assertLess(card.index('card-copy'), card.index('card-visual'))
+        self.assertLess(card.index('story-heading'), card.index('card-visual'))
+        self.assertLess(card.index('card-visual'), card.index('story-body'))
+        self.assertLess(card.index('story-body'), card.index('story-summary'))
         self.assertIn('story-evidence', card)
         self.assertIn('story-context', card)
         self.assertIn('details class="screening-details"', card)
+        self.assertIn('<h2 id="brief-title">Today’s selection</h2>', result)
+        lead = re.search(r'<div id="lead-story"[^>]*>(.*?)<div id="story-grid"', result, re.S)[1]
+        self.assertLess(lead.index('story-heading'), lead.index('story-visual'))
+        self.assertLess(lead.index('story-visual'), lead.index('story-body'))
+
+    def test_details_keep_context_tags_and_unknown_stage_out_of_heading(self):
+        item = self.item(en={"title": "A complete title", "summary": "Short readable preview.", "full_summary": "A longer summary with full detail."},
+                         tags=['<script>alert(1)</script>', "biology"])
+        with tempfile.TemporaryDirectory() as folder:
+            for lead in (False, True):
+                rendered = pages.story_markup(pages.enrich_item(item), "en", {}, Path(folder), lead=lead, domains=self.domains)
+                heading, body = rendered.split('class="story-body"', 1)
+                self.assertNotIn("Stage not specified", heading)
+                self.assertNotIn("story-context", heading)
+                self.assertNotIn('class="tags"', heading)
+                self.assertIn('<span class="story-source">Research Lab</span>', heading)
+                self.assertIn('class="story-published"><time', heading)
+                self.assertIn('<details class="summary-details" data-summary-details>', body)
+                self.assertIn('<div class="summary-full" data-summary-full>A longer summary with full detail.</div>', body)
+                screening = re.search(r'<details class="screening-details">(.*?)</details>', body, re.S)[1]
+                self.assertIn("Stage not specified", screening)
+                self.assertIn("story-context", screening)
+                self.assertIn('class="tags"', screening)
+                self.assertIn("not independent verification", screening)
+                self.assertNotIn('<script>alert(1)</script>', rendered)
+                self.assertIn('&lt;script&gt;alert(1)&lt;/script&gt;', rendered)
+                self.assertNotIn('class="screening-details" open', rendered)
+
+    def test_native_summary_expansion_keeps_full_text_when_only_short_summary_exists(self):
+        summary = "A full original summary that must remain readable. " * 12
+        item = self.item(en={"title": "Long summary", "summary": summary})
+        with tempfile.TemporaryDirectory() as folder:
+            rendered = pages.story_markup(item, "en", {}, Path(folder))
+        full = re.search(r'<div class="summary-full" data-summary-full>(.*?)</div>', rendered, re.S)[1]
+        self.assertEqual(full, pages.esc(pages.clean_text(summary)))
+        self.assertIn('<p class="summary-preview" data-summary-short>', rendered)
+        self.assertIn('<summary>Expand summary</summary>', rendered)
+        self.assertNotIn('class="summary-details" open', rendered)
 
     def test_github_rankings_cannot_become_daily_news_but_releases_can(self):
         ranked = self.item("ranked", source="GitHub Trending", source_published_at=self.now.isoformat())

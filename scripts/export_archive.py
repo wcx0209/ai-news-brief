@@ -98,6 +98,138 @@ def clean_text(value):
     return re.sub(r"\n{3,}", "\n\n", text).strip()
 
 
+PROSE_HEADINGS = {
+    "overview", "introduction", "background", "keyfeatures", "detailedfeatures",
+    "features", "howitworks", "technicaldetails", "technologyoverview",
+    "systemarchitecture", "technicalarchitecture", "architecture", "installation",
+    "installationandusage", "installationanduse", "usage", "gettingstarted",
+    "applications", "practicalapplications", "results", "findings", "keyfindings",
+    "researchmethod", "methodology", "limitations", "availability", "pricing",
+    "whatchanged", "whatitmeans", "nextsteps", "futureimpact", "futureoutlook",
+    "概述", "简介", "背景", "核心特点", "核心功能", "主要功能", "详细功能",
+    "工作原理", "实现原理", "技术细节", "技术概述", "系统架构", "技术架构",
+    "安装", "使用方法", "安装与使用", "快速开始", "应用场景", "实际应用",
+    "研究方法", "研究结果", "主要发现", "局限", "限制", "局限性",
+    "可用性", "定价", "未来影响", "行业实际影响", "未来展望", "下一步",
+}
+
+
+def prose_text(value):
+    """Keep lightweight inline Markdown as inert text; never trust raw HTML."""
+    text = str(value or "")
+    # Plain link labels are sufficient for this summary; the authoritative
+    # source URL stays in the separately validated Read original control.
+    text = re.sub(r"!?\[([^\]]*)\]\([^\n)]*\)", r"\1", text)
+    return re.sub(r"\*\*|__|`", "", text).strip()
+
+
+def prose_heading(line):
+    """Recognise explicit Markdown and a narrow set of legacy plain headings."""
+    explicit = re.match(r"^\s{0,3}(#{1,6})\s+(.+?)\s*#*\s*$", line)
+    if explicit:
+        # The page already has an article h1; summary sections begin at h2.
+        return (2 if len(explicit[1]) <= 2 else 3), prose_text(explicit[2])
+    text = prose_text(line).rstrip(":：").strip()
+    normalized = re.sub(r"\s+", "", text).casefold()
+    if len(text) <= 80 and normalized in PROSE_HEADINGS:
+        return 2, text
+    return None
+
+
+def archive_prose(value):
+    """Render paragraphs/headings/lists safely, retaining order and all prose.
+
+    This is deliberately not a general Markdown/HTML interpreter. Unknown
+    syntax remains escaped text; fenced snippets remain escaped code blocks.
+    """
+    lines = str(value or "").replace("\r\n", "\n").replace("\r", "\n").split("\n")
+    output, paragraph, entries, code = [], [], [], []
+    list_kind, fence = None, None
+
+    def flush_paragraph():
+        if paragraph:
+            output.append("<p>" + esc(prose_text(" ".join(paragraph))) + "</p>")
+            paragraph.clear()
+
+    def flush_list():
+        nonlocal list_kind
+        if entries:
+            tag = list_kind
+            output.append(f"<{tag}>" + "".join(
+                (f'<li value="{number}">' if tag == "ol" else "<li>") + esc(prose_text(text)) + "</li>"
+                for number, text in entries
+            ) + f"</{tag}>")
+            entries.clear()
+        list_kind = None
+
+    def flush_code():
+        output.append("<pre><code>" + esc("\n".join(code)) + "</code></pre>")
+        code.clear()
+
+    for line in lines:
+        stripped = line.strip()
+        marker = re.match(r"^\s*(`{3,}|~{3,})([^`]*)$", line)
+        if fence:
+            if stripped.startswith(fence):
+                flush_code()
+                fence = None
+            else:
+                code.append(line)
+            continue
+        if marker:
+            flush_paragraph()
+            flush_list()
+            fence = marker[1]
+            continue
+        if not stripped:
+            flush_paragraph()
+            # Blank lines between bullet items do not create separate lists.
+            continue
+        heading = prose_heading(line)
+        if heading:
+            flush_paragraph()
+            flush_list()
+            level, text = heading
+            output.append(f"<h{level}>" + esc(text) + f"</h{level}>")
+            continue
+        unordered = re.match(r"^\s*[-*+•]\s+(.+)$", line)
+        ordered = re.match(r"^\s*(\d{1,3})[.)]\s+(.+)$", line)
+        if unordered or ordered:
+            flush_paragraph()
+            kind = "ol" if ordered else "ul"
+            if list_kind and list_kind != kind:
+                flush_list()
+            list_kind = kind
+            entries.append((int(ordered[1]) if ordered else None, ordered[2] if ordered else unordered[1]))
+            continue
+        if entries and re.match(r"^\s{2,}\S", line):
+            number, text = entries[-1]
+            entries[-1] = number, text + " " + stripped
+            continue
+        flush_list()
+        paragraph.append(stripped)
+    flush_paragraph()
+    flush_list()
+    if fence:
+        flush_code()
+    return '<div class="archive-prose">' + "".join(output) + "</div>"
+
+
+def archive_excerpt(text, locale):
+    """List pages preview the summary, never duplicate an entire long brief."""
+    value = re.sub(r"\s+", " ", clean_text(text.get("summary") or text.get("full"))).strip()
+    maximum = 520 if locale == "en" else 260
+    if len(value) <= maximum:
+        return value
+    excerpt = value[:maximum]
+    stops = [match.end() for match in re.finditer(r"[.!?。！？](?:\s|$)", excerpt)]
+    if stops and stops[-1] >= maximum * .55:
+        excerpt = excerpt[:stops[-1]].rstrip()
+    elif locale == "en" and " " in excerpt:
+        excerpt = excerpt.rsplit(" ", 1)[0]
+    return excerpt.rstrip() + "…"
+
+
 def safe_url(value):
     value = str(value or "")
     if re.search(r"[\x00-\x20\\]", value):
@@ -492,6 +624,7 @@ def page_shell(locale, title, description, canonical, alternate, body, structure
     current_path = urlparse(canonical).path
     fields_current = ' aria-current="page"' if f"/{locale}/fields/" in current_path else ""
     archive_current = ' aria-current="page"' if f"/{locale}/archive/" in current_path else ""
+    body_class = ' class="archive-detail"' if og_type == "article" else ""
     return f'''<!doctype html>
 <html lang="{c['lang']}" data-locale="{locale}"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
@@ -502,8 +635,8 @@ def page_shell(locale, title, description, canonical, alternate, body, structure
 <link rel="alternate" type="application/rss+xml" title="{esc(c['brand'])} RSS" href="/feed-{locale}.xml">
 <meta property="og:type" content="{esc(og_type)}"><meta property="og:site_name" content="{esc(c['brand'])}"><meta property="og:title" content="{esc(title)}"><meta property="og:description" content="{esc(description)}"><meta property="og:url" content="{esc(canonical)}"><meta property="og:image" content="{SITE}/assets/social-preview.png">
 <meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="{esc(title)}"><meta name="twitter:description" content="{esc(description)}"><meta name="twitter:image" content="{SITE}/assets/social-preview.png">
-<link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="/styles.css?v=20261112-26"><link rel="stylesheet" href="/archive.css?v=5">{structured_html}</head>
-<body><header class="site-header"><a class="brand" href="/{locale}/" aria-label="{esc(c['brand'])}"><img src="/assets/{logo}" alt="{esc(c['brand'])}" width="420" height="70"></a>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="/styles.css?v=20261112-28"><link rel="stylesheet" href="/archive.css?v=6">{structured_html}</head>
+<body{body_class}><header class="site-header"><a class="brand" href="/{locale}/" aria-label="{esc(c['brand'])}"><img src="/assets/{logo}" alt="{esc(c['brand'])}" width="420" height="70"></a>
 <nav class="desktop-nav" aria-label="{'Primary' if locale == 'en' else '主导航'}"><a href="/{locale}/#fields"{fields_current}>{esc(c['fields'])}</a><a href="/{locale}/archive/"{archive_current}>{esc(c['archive'])}</a><a href="/{locale}/#about">{esc(c['method'])}</a></nav>
 <div class="header-tools"><span class="edition">{esc(c['edition'])}</span><div class="language-switch"><a href="{esc(alternate)}" hreflang="{COPY[other]['lang']}">{'中' if other == 'zh' else 'EN'}</a><span>|</span><a href="{esc(canonical)}" aria-current="page">{'中' if locale == 'zh' else 'EN'}</a></div></div></header>
 <main class="archive-main">{body}</main><footer><div class="footer-brand"><img src="/assets/{logo}" alt="{esc(c['brand'])}" width="360"></div><div class="footer-copy"><p>{esc(c['footer'])}</p><p class="company-note">{esc(c['company'])}</p><p class="footer-meta">{esc(c['fields'])}</p><nav class="footer-topics" aria-label="{esc(c['fields'])}">{field_links}</nav><p class="footer-meta">{esc(c['angles'])}</p><nav class="footer-topics" aria-label="{esc(c['angles'])}">{topic_links}</nav><p class="footer-meta"><a href="/{locale}/standards/">{esc(c['standards'])}</a> · <a href="/{locale}/corrections/">{esc(c['corrections'])}</a> · <a href="/feed-{locale}.xml">{esc(c['feed'])}</a> · <a href="/developers/">API / MCP</a></p></div></footer></body></html>'''
@@ -590,13 +723,18 @@ def story_html(record, locale, detail=False):
     related = " × ".join(f'<a href="{field_path(locale, domain_id)}">{esc(DOMAIN_REGISTRY[domain_id]["label"][locale])}</a>' for domain_id in (record.get("related_domains") or [])[:2] if domain_id in DOMAIN_REGISTRY)
     context = (record.get("reading_context") or {}).get(locale)
     context_html = f'<p class="story-context"><strong>{"Observation focus (editorial lens)" if locale == "en" else "观察重点（编辑视角）"}</strong> {esc(context)}</p>' if context else ""
+    if detail:
+        summary_html = archive_prose(text["full"] or text["summary"])
+    else:
+        summary_label = "Read full summary" if locale == "en" else "阅读完整摘要"
+        summary_html = f'<p class="archive-summary">{esc(archive_excerpt(text, locale))}</p><a class="archive-summary-link" href="{article_path(locale, day, record)}">{summary_label} →</a>'
     screening = "View selection rationale" if locale == "en" else "查看筛选依据"
     share_button = f'''<button class="share-button" type="button" data-share-button data-share-id="{esc(record['id'])}" data-share-locale="{locale}" data-share-title="{esc(clean_text(text['title']))}" data-share-summary="{esc(share_summary)}" data-share-url="{share_url}" aria-label="{esc(c['share'])}: {esc(clean_text(text['title']))}"><svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="18" cy="5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="19" r="2.5"/><path d="m8.2 10.8 7.6-4.5M8.2 13.2l7.6 4.5"/></svg><span>{esc(c['share'])}</span></button>'''
     return f'''<article class="archive-story" id="{anchor_for(record)}" data-story-id="{esc(record['id'])}">
 <{heading}>{title_html}</{heading}>
 <div class="archive-story-meta"><span>{esc(record['source'])}</span><a href="{field_path(locale, domain)}">{esc(field_label)}</a><span>{esc(CATEGORY_LABELS[locale][record['category']])}</span><span>{esc(date_label)}</span>{date_markup}</div>
-<div class="story-evidence">{evidence}</div><div class="story-related">{related}</div><p>{esc(clean_text(text['full'] or text['summary']))}</p>{context_html}
-<details class="screening-details"><summary>{screening}</summary><p>{esc(c['importance'])} {record['importance']}/100</p><div class="archive-scores" aria-label="Polyemergence Method scores">{score_html}</div>{editorial_analysis_html(record, locale)}</details>{trust_box(record, locale)}<div class="archive-story-footer"><div class="archive-tags">{tags}</div><div class="archive-actions">{share_button}<a class="archive-original" href="{esc(record['url'])}" target="_blank" rel="noopener noreferrer">{esc(c['original'])} ↗</a></div></div></article>'''
+<div class="story-evidence">{evidence}</div><div class="story-related">{related}</div>{summary_html}
+<details class="screening-details"><summary>{screening}</summary>{context_html}<p>{esc(c['importance'])} {record['importance']}/100</p><div class="archive-scores" aria-label="Polyemergence Method scores">{score_html}</div>{editorial_analysis_html(record, locale)}</details>{trust_box(record, locale)}<div class="archive-story-footer"><div class="archive-tags">{tags}</div><div class="archive-actions">{share_button}<a class="archive-original" href="{esc(record['url'])}" target="_blank" rel="noopener noreferrer">{esc(c['original'])} ↗</a></div></div></article>'''
 
 
 def render_daily(output, locale, day, items, ordered_days):

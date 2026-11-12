@@ -1,4 +1,4 @@
-const CACHE_NAME = "polyemergence-v11";
+const CACHE_NAME = "polyemergence-v12";
 const APP_SHELL = [
   "/",
   "/en/",
