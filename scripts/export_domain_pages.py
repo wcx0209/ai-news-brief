@@ -98,7 +98,7 @@ def parse_datetime(value):
 
 
 def field_path(locale, domain_id):
-    if not re.fullmatch(r"[a-z][a-z0-9_]*", domain_id):
+    if not isinstance(domain_id, str) or not re.fullmatch(r"[a-z][a-z0-9_]*", domain_id):
         raise ValueError(f"Invalid field id: {domain_id!r}")
     return f"/{locale}/fields/{domain_id}/"
 
@@ -257,7 +257,29 @@ def json_script(value):
 
 
 def render_domain_links(locale, domains):
-    return "".join(f'<a href="{field_path(locale, d["id"])}">{esc(localized(d.get("label"), locale, d["id"]))}</a>' for d in domains)
+    return "".join(
+        f'<a href="{field_path(locale, d["id"])}">'
+        f'{esc(localized(d.get("short_label"), locale) or localized(d.get("label"), locale, d["id"]))}</a>'
+        for d in domains
+    )
+
+
+def sync_home_navigation(shell, locale, domains):
+    """Keep crawlable homepage links in step with the data-driven field registry."""
+    cards = "".join(
+        f'<a class="field-card" href="{field_path(locale, d["id"])}#brief">'
+        f'<span class="field-card-top"><span class="field-number">{index:02d}</span>'
+        '<span class="field-arrow" aria-hidden="true">↗</span></span>'
+        f'<strong>{esc(localized(d.get("label"), locale, d["id"]))}</strong>'
+        f'<span class="field-card-description">{esc(localized(d.get("description"), locale))}</span></a>'
+        for index, d in enumerate(domains, 1)
+    )
+    shell = replace_content(shell, "div", "field-grid", cards)
+    pattern = r'(<nav\b(?=[^>]*\bclass="[^"]*\bfooter-topics\b)[^>]*>).*?(</nav>)'
+    shell, count = re.subn(pattern, lambda m: m[1] + render_domain_links(locale, domains) + m[2], shell, count=1, flags=re.S)
+    if not count:
+        raise ValueError("Home shell is missing .footer-topics")
+    return shell
 
 
 def render_field_page(shell, domain, locale, domains, feed, sources, corpus, public, now):
@@ -332,6 +354,9 @@ def export(public, registry_path, feed_path, sources_path, articles_path=None, n
     now = now or datetime.now(timezone.utc)
     registry = json.loads(Path(registry_path).read_text(encoding="utf-8"))
     domains = sorted(registry["domains"], key=lambda d: d.get("order", 999))
+    # Reject unsafe paths before changing either homepage or any generated page.
+    for domain in domains:
+        field_path("en", domain["id"])
     feed = json.loads(Path(feed_path).read_text(encoding="utf-8"))
     sources = load_sources(sources_path)
     corpus = {}
@@ -339,7 +364,9 @@ def export(public, registry_path, feed_path, sources_path, articles_path=None, n
         corpus = {str(item.get("id")): item for item in json.loads(Path(articles_path).read_text(encoding="utf-8")).get("items", [])}
     urls = []
     for locale in ("en", "zh"):
-        shell = (public / locale / "index.html").read_text(encoding="utf-8")
+        home = public / locale / "index.html"
+        shell = sync_home_navigation(home.read_text(encoding="utf-8"), locale, domains)
+        home.write_text(shell, encoding="utf-8")
         for domain in domains:
             path = field_path(locale, domain["id"])
             destination = public / path.lstrip("/") / "index.html"

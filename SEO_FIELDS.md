@@ -30,6 +30,13 @@ they are never filled with old or unrelated stories. The generator reads the
 registry rather than a fixed page count, with editable bilingual SEO copy and a
 fallback for newly registered fields.
 
+Every field-page export first synchronises both homepages' static field cards
+and footer field links from the same registry. Adding a field therefore updates
+the crawlable entry links, both language pages and the field sitemap together,
+without requiring JavaScript or manual navigation edits. Registry text is
+HTML-escaped, field IDs are validated before any output is changed, and the
+cloud workflow commits the refreshed homepages alongside the generated pages.
+
 `sitemap.xml` includes the current 22 locale URLs; `field-sitemap.xml` is generated
 from the registry every cloud run and declared in `robots.txt`. The existing
 main sitemap is already registered successfully in Google Search Console.
