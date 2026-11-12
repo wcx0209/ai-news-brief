@@ -4,6 +4,7 @@ import re
 import sys
 import tempfile
 import unittest
+from unittest.mock import patch
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -33,6 +34,13 @@ def structured_data(page):
 
 
 class ArchiveDomainTests(unittest.TestCase):
+    def test_new_registered_domain_uses_safe_reading_guidance_fallback(self):
+        record = fixture("new-field", "new_field", "New field research")
+        with patch.dict(archive.DOMAIN_REGISTRY, {"new_field": {"label": {"en": "New Field", "zh": "新领域"}}}):
+            context, _, evidence = archive.editorial_analysis(record, "en")
+        self.assertIn("New Field", context)
+        self.assertIn("original evidence", evidence)
+
     def test_daily_ai_page_excludes_other_fields_but_archive_keeps_them(self):
         ai = fixture("ai-result", "ai", "AI fixture title")
         quantum = fixture("quantum-result", "quantum_technology", "Quantum fixture title", 95)

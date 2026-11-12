@@ -441,7 +441,10 @@ def editorial_analysis(record, locale):
         "climate_water_environment": ("Check system boundaries, lifecycle measurements, energy and water inputs, and performance at the reported scale.", "核查系统边界、全生命周期测量、能源与水投入，以及所述规模下的表现。"),
         "agrifood_technology": ("Check the trial or production setting, yields, input requirements, safety evidence and regulatory status.", "核查试验或生产条件、产量、投入要求、安全证据与监管状态。"),
         "advanced_manufacturing": ("Check throughput, defect rates, integration requirements, unit costs and evidence beyond a demonstration line.", "核查产能、缺陷率、集成要求、单位成本与示范线之外的应用证据。"),
-    }[domain][0 if locale == "en" else 1]
+    }.get(domain, (
+        "Check the original evidence, test conditions, stated limitations and independent confirmation.",
+        "核查原始证据、测试条件、所述限制与独立验证情况。",
+    ))[0 if locale == "en" else 1]
     return why, signal, watch
 
 
