@@ -120,3 +120,9 @@ proves that parsing works; it does not imply that a feed is current. A failed
 probe does not lower quality thresholds or trigger a browser/paywall bypass.
 The health command explicitly refuses local execution and makes no database
 or LLM calls; the optional, separate seeding step activates the checked catalog.
+
+On 2026-11-14 the [full cloud check](https://github.com/wcx0209/ai-news-brief/actions/runs/43599257994)
+passed all 30 sources, reading dated article bodies over HTTPS. Its following
+seed step upserted all 205 configured sources, including every Chinese addition,
+into the existing Postgres database. This is a point-in-time accessibility and
+parsing result, not a promise of daily output or permanent network availability.
