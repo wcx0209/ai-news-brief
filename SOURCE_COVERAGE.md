@@ -63,7 +63,7 @@ brief alone does not.
 
 ## Chinese specialist coverage
 
-The additions total 30 configured sources (17 research institutions, eight
+The additions total 30 configured sources (18 research institutions, seven
 company channels and five specialist media), taking the complete catalog to
 205. Each of the ten non-AI fields has three Chinese additions alongside its
 six international core sources. Counts refer to configured channels, not unique
@@ -75,7 +75,7 @@ parent institutions or guaranteed daily articles.
 | Energy & storage | Gotion High-Tech; CAS Institute of Plasma Physics; China Energy Network storage |
 | Robotics & autonomy | SIASUN; DOBOT; Leaderobot |
 | Quantum technology | CAS Quantum Innovation Institute; Beijing Academy of Quantum Information Sciences; CNQT |
-| Space economy | LandSpace; Galactic Energy; CASC |
+| Space economy | LandSpace; Galactic Energy; CAS Innovation Academy for Microsatellites |
 | Advanced materials | CAS Institute of Metal Research; CAS Ningbo Institute of Materials Technology and Engineering; CAS Shanghai Institute of Ceramics |
 | Neurotechnology | NeuroXess; CAS Center for Excellence in Brain Science and Intelligence Technology; CAS SIAT Brain Cognition and Brain Diseases Institute |
 | Climate, water & environment | CAS Institute of Urban Environment; Agro-Environmental Protection Institute; H2O China |
@@ -99,6 +99,14 @@ and retain at most three dated, readable articles; the existing downstream
 per-source caps and broad-source relevance gates still apply. Generic company
 awards, institutional events and unrelated announcements are not guaranteed a
 place in the feed merely because the publisher is Chinese.
+
+The first cloud probe parsed 29 of the initial 30 candidates. CASC's group
+newsroom reset the GitHub Actions connection despite being readable from the
+verification network, so the active manifest uses the CAS Innovation Academy
+for Microsatellites' research/mission list instead. No TLS verification was
+disabled and no mirror or browser bypass was introduced. The food-science
+institute can respond slowly; health checks use the deployed collector's
+60-second timeout rather than rejecting it with a shorter local timeout.
 
 Do not synthesize a publication timestamp from the crawl time. A date-only
 publication is represented as midnight in the publisher's timezone. A known

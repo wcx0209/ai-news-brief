@@ -106,6 +106,11 @@ class ChineseHtmlAdapterTests(unittest.TestCase):
         urls = RSSFetcher._discover_official_article_urls(soup, "https://space.example/news.html", ("/news-detail.html",), keep_query_keys=("itemid",))
         self.assertEqual(urls, ["https://space.example/news-detail.html?itemid=78"])
 
+    def test_legacy_same_host_http_links_use_the_verified_https_origin(self):
+        soup = BeautifulSoup('<a href="http://lab.example/news/one.html">技术新闻</a>', "html.parser")
+        self.assertEqual(RSSFetcher._discover_official_article_urls(soup, "https://lab.example/news/", ("/news/",)),
+                         ["https://lab.example/news/one.html"])
+
     def test_list_date_is_bound_to_its_own_article_not_an_adjacent_card(self):
         soup = BeautifulSoup('''<div class="card"><a href="/news/one.html">One</a><time>2026-11-14</time></div>
             <div class="card"><a href="/news/two.html">Two</a><time>2026-11-12</time></div>
@@ -147,6 +152,20 @@ class ChineseHtmlAdapterTests(unittest.TestCase):
         for source, title in examples:
             with self.subTest(title=title):
                 self.assertTrue(passes_source_ai_filter(source, title))
+
+    def test_cloud_verified_technical_vocabulary_is_kept_without_admitting_generic_pr(self):
+        examples = (
+            ("CAS Institute of Urban Environment 城市环境研究所", "城市环境研究所在重金属修复重塑土壤碳循环取得进展"),
+            ("Beijing Academy of Quantum Information Sciences", "我院与合作单位量子编译成果在国际顶会MICRO 2026上获奖"),
+            ("CNQT 量科网", "香港科技大学与金管局推出后量子密码学工具包"),
+            ("Farsoon Technologies 华曙高科", "Farsoon introduces FS4X built around the demands of series production"),
+            ("Nanjixiong 南极熊3D打印", "罗切斯特大学用450美元DIY生物打印机，打印超100层复杂活体结构"),
+        )
+        for source, title in examples:
+            with self.subTest(title=title):
+                self.assertTrue(passes_source_ai_filter(source, title))
+        self.assertFalse(passes_source_ai_filter("Gotion High-Tech 国轩高科", "连获两项一等奖，企业创新奖揭晓"))
+        self.assertFalse(passes_source_ai_filter("SIASUN 新松机器人", "预告：我司即将参加亚洲国际物流展"))
 
 
 if __name__ == "__main__":

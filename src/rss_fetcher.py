@@ -518,7 +518,8 @@ class RSSFetcher:
                 if key in keep_query_keys
             ])
             path = parsed.path.rstrip('/') or '/'
-            return urlunparse((parsed.scheme, parsed.netloc, path, '', kept_query, ''))
+            scheme = 'https' if parsed_index.scheme == 'https' and parsed.netloc.lower() == source_host else parsed.scheme
+            return urlunparse((scheme, parsed.netloc, path, '', kept_query, ''))
 
         index_normalized = normalize(index_url)
         article_urls = []

@@ -78,16 +78,16 @@ EDITORIAL_TITLE_PATTERN = re.compile(
     r"agritech|foodtech|precision fermentation|cultivated meat|gene.edited crops?|agricultural robots?|alternative proteins?|"
     r"food technolog|food science|cell.cultured|plant.based|precision agriculture|crop sensing|autonomous tractors?|fermentation|"
     r"advanced manufacturing|additive manufacturing|3d print(?:ing|er)|digital twin|advanced packaging|smart factory|"
-    r"industrial automation|smart factories|factory automation|digital fabrication|"
-    r"生物技术|合成生物|基因编辑|基因组|细胞治疗|蛋白质设计|生物制造|可编程生命|"
-    r"储能|电池|光伏|太阳能电池|风电|氢能|智能电网|虚拟电厂|固态电池|钠离子|地热|小型核反应堆|核聚变|托卡马克|仿星器|\bEAST\b|"
-    r"量子计算|量子传感|量子通信|量子网络|量子比特|量子科技|量子纠错|量子芯片|量子处理器|"
+    r"industrial automation|smart factories|factory automation|digital fabrication|series production|directed energy deposition|laser sintering|"
+    r"生物技术|合成生物|生物合成|一步发酵|基因编辑|基因组|细胞治疗|蛋白质设计|生物制造|可编程生命|"
+    r"储能|电池|电芯|光伏|太阳能.{0,6}组件|太阳能电池|风电|氢能|智能电网|虚拟电厂|固态电池|钠离子|地热|小型核反应堆|核聚变|托卡马克|仿星器|\bEAST\b|"
+    r"量子计算|量子传感|量子通信|量子网络|量子比特|量子科技|量子纠错|量子芯片|量子处理器|量子编译|量子密钥|量子点|后量子密码|光纤传感|"
     r"太空经济|商业航天|航天器|火箭|卫星|空间站|可重复使用火箭|卫星互联网|地球观测|在轨|运载火箭|"
     r"新材料|材料科学|纳米技术|纳米材料|二维.{0,8}材料|自修复材料|超材料|复合材料|高分子|晶格动力学|超导临界温度|生物基.{0,20}中试|合金|功能陶瓷|电催化|光催化|"
-    r"神经科技|脑机接口|神经刺激|神经植入|感觉恢复|"
-    r"碳移除|碳捕集|二氧化碳捕集|直接空气捕集|海水淡化|水技术|水处理|污水|污染修复|环境工程|工业脱碳|绿色钢铁|气候工程|"
-    r"农业科技|食品科技|智慧农业|精准农业|分子育种|生物育种|作物基因|农业表型|食品加工|精准施药|合成生物|精准发酵|培养肉|基因编辑作物|农业机器人|替代蛋白|"
-    r"新制造|先进制造|增材制造|3d打印|3D 打印|三维打印|数字孪生|先进封装|工业自动化|智能制造|精密制造|光学制造|激光加工|自动化实验室|智能工厂)",
+    r"神经科技|脑机接口|神经刺激|神经植入|感觉恢复|空间转录组|连接组.{0,8}分析|计算神经行为学|"
+    r"碳移除|碳捕集|二氧化碳捕集|直接空气捕集|海水淡化|水技术|水处理|污水|污染修复|重金属修复|土壤修复|大气氧化|污染防治|环境工程|工业脱碳|绿色钢铁|气候工程|"
+    r"农业科技|食品科技|智慧农业|精准农业|分子育种|生物育种|作物基因|农业表型|高光谱表型|食品加工|精准施药|合成生物|精准发酵|培养肉|基因编辑作物|农业机器人|替代蛋白|"
+    r"新制造|先进制造|增材制造|生物打印|3d打印|3D 打印|三维打印|数字孪生|先进封装|工业自动化|智能制造|精密制造|光学制造|激光加工|激光直写|纳米修形|感存算|集成器件|自动化实验室|智能工厂)",
 )
 
 # Compatibility for existing imports and tests.

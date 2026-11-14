@@ -93,20 +93,21 @@
       }
     },
     {
-      "url": "https://www.spacechina.com/n25/n2014789/n2014804/index.html",
-      "name": "CASC Official Space News",
-      "description": "[FIRST_PARTY] China Aerospace Science and Technology Corporation announcements on launch vehicles, satellites, spacecraft, mission operations and space infrastructure. Exclude party meetings, personnel notices and general institutional activities without a substantive technology or industry development.",
+      "url": "https://www.microsate.ac.cn/xwzx/kyjz/",
+      "name": "CAS Innovation Academy for Microsatellites",
+      "description": "[FIRST_PARTY] Official research and mission updates on small satellites, commercial satellite constellations, satellite internet, spacecraft payloads, cargo spacecraft and satellite manufacturing. Follow only the institute's curated research-progress list; exclude awards, meetings and institutional activities without a substantive technology or operational milestone.",
       "category": "space_economy",
       "importance_score": 92,
       "region": "CN",
-      "kind": "company",
+      "kind": "research",
       "verified_on": "2026-11-14",
       "html": {
-        "path_prefixes": ["/n25/n2014789/n2014804/"],
-        "article_url_pattern": "^https://www\\.spacechina\\.com/n25/n2014789/n2014804/c\\d+/content\\.html$",
-        "title_selector": ".article_title",
-        "content_selector": "#zoom",
-        "date_selector": ".article_attr",
+        "path_prefixes": ["/xwzx/kyjz/", "/xwzx/yw/"],
+        "article_selector": "#content li a[href]",
+        "article_url_pattern": "^https://www\\.microsate\\.ac\\.cn/xwzx/(?:kyjz|yw)/20\\d{4}/t20\\d{6}_\\d+\\.html$",
+        "title_selector": "h1.title-s",
+        "content_selector": ".TRS_UEDITOR",
+        "date_selector": ".detail-top .date-s",
         "timezone": "Asia/Shanghai"
       }
     },
