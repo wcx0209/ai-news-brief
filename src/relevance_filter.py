@@ -7,6 +7,7 @@ signal in the headline before an item reaches the LLM or a public export.
 
 import re
 
+from source_catalog import china_title_gated_names
 
 TITLE_GATED_SOURCES = {
     "SCMP China Tech",
@@ -52,13 +53,14 @@ TITLE_GATED_SOURCES = {
     "Green Queen",
     "Siemens Blog",
 }
+TITLE_GATED_SOURCES.update(china_title_gated_names())
 
 EDITORIAL_TITLE_PATTERN = re.compile(
     r"(?i)(?:\b(?:ai|a\.i\.|artificial intelligence|machine learning|deep learning|"
     r"generative|llm|large language model|foundation model|agent(?:s|ic)?|chatbot|copilot|"
     r"robot(?:ics)?|robotaxi(?:s)?|autonomous driving|self-driving|gpu|npu|hbm|ai accelerator|semiconductor|chip|openai|coreai|anthropic|claude|gemini|deepseek|qwen|mistral|grok|xai|"
     r"hugging face|nvidia|sora|midjourney|stable diffusion)\b|"
-    r"人工智能|大模型|机器学习|深度学习|生成式|智能体|机器人|人形机器人|算力|芯片|半导体|加速器|存储|自动驾驶|无人驾驶|智能驾驶|具身智能|"
+    r"人工智能|大模型|机器学习|深度学习|生成式|智能体|机器人|机械臂|无人机|无人飞机|人形机器人|算力|芯片|半导体|加速器|存储|自动驾驶|无人驾驶|智能驾驶|具身智能|"
     r"AI时代|AI 时代|Claude Code|Codex|AGI|模型训练|推理模型|数据中心|"
     r"深度求索|通义千问|豆包|文心一言|混元|盘古|百川|智谱|"
     r"biotech(?:nology)?|synthetic biology|gene edit(?:ing)?|crispr|genomics?|"
@@ -78,14 +80,14 @@ EDITORIAL_TITLE_PATTERN = re.compile(
     r"advanced manufacturing|additive manufacturing|3d print(?:ing|er)|digital twin|advanced packaging|smart factory|"
     r"industrial automation|smart factories|factory automation|digital fabrication|"
     r"生物技术|合成生物|基因编辑|基因组|细胞治疗|蛋白质设计|生物制造|可编程生命|"
-    r"储能|固态电池|钠离子|地热|小型核反应堆|核聚变|"
-    r"量子计算|量子传感|量子通信|量子网络|量子比特|"
-    r"太空经济|可重复使用火箭|卫星互联网|地球观测|在轨|运载火箭|"
-    r"新材料|材料科学|纳米技术|二维材料|自修复材料|超材料|"
+    r"储能|电池|光伏|太阳能电池|风电|氢能|智能电网|虚拟电厂|固态电池|钠离子|地热|小型核反应堆|核聚变|托卡马克|仿星器|\bEAST\b|"
+    r"量子计算|量子传感|量子通信|量子网络|量子比特|量子科技|量子纠错|量子芯片|量子处理器|"
+    r"太空经济|商业航天|航天器|火箭|卫星|空间站|可重复使用火箭|卫星互联网|地球观测|在轨|运载火箭|"
+    r"新材料|材料科学|纳米技术|纳米材料|二维.{0,8}材料|自修复材料|超材料|复合材料|高分子|晶格动力学|超导临界温度|生物基.{0,20}中试|合金|功能陶瓷|电催化|光催化|"
     r"神经科技|脑机接口|神经刺激|神经植入|感觉恢复|"
-    r"碳移除|直接空气捕集|海水淡化|水技术|工业脱碳|绿色钢铁|气候工程|"
-    r"农业科技|食品科技|精准发酵|培养肉|基因编辑作物|农业机器人|替代蛋白|"
-    r"新制造|先进制造|增材制造|3d打印|数字孪生|先进封装|自动化实验室|智能工厂)",
+    r"碳移除|碳捕集|二氧化碳捕集|直接空气捕集|海水淡化|水技术|水处理|污水|污染修复|环境工程|工业脱碳|绿色钢铁|气候工程|"
+    r"农业科技|食品科技|智慧农业|精准农业|分子育种|生物育种|作物基因|农业表型|食品加工|精准施药|合成生物|精准发酵|培养肉|基因编辑作物|农业机器人|替代蛋白|"
+    r"新制造|先进制造|增材制造|3d打印|3D 打印|三维打印|数字孪生|先进封装|工业自动化|智能制造|精密制造|光学制造|激光加工|自动化实验室|智能工厂)",
 )
 
 # Compatibility for existing imports and tests.

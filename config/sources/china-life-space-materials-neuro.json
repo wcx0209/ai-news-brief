@@ -1,0 +1,223 @@
+{
+  "sources": [
+    {
+      "url": "https://tib.cas.cn/xwdt/kyjz/",
+      "name": "CAS Tianjin Institute of Industrial Biotechnology",
+      "description": "[FIRST_PARTY] Official research updates on synthetic biology, engineered microbial chassis, enzyme engineering, cell factories and biomanufacturing. Research announcements are institutional claims, not independent clinical or commercial validation.",
+      "category": "programmable_life",
+      "importance_score": 93,
+      "region": "CN",
+      "kind": "research",
+      "verified_on": "2026-11-14",
+      "html": {
+        "path_prefixes": ["/xwdt/kyjz/"],
+        "article_selector": "li.t3d.tj a[href]",
+        "article_url_pattern": "^https://tib\\.cas\\.cn/xwdt/kyjz/20\\d{4}/t20\\d{6}_\\d+\\.html$",
+        "title_selector": "p.wztitle",
+        "content_selector": "#zoom",
+        "date_selector": ".time_ly .left",
+        "timezone": "Asia/Shanghai"
+      }
+    },
+    {
+      "url": "https://maic.siat.ac.cn/siat/isb/kyjz/index.html",
+      "name": "CAS SIAT Institute of Synthetic Biology",
+      "description": "[FIRST_PARTY] Official research from SIAT's Institute of Synthetic Biology, covering artificial biological components, gene circuits, synthetic genomes, engineered enzymes and cell systems. Exclude institutional meetings without a concrete technology result.",
+      "category": "programmable_life",
+      "importance_score": 93,
+      "region": "CN",
+      "kind": "research",
+      "verified_on": "2026-11-14",
+      "html": {
+        "path_prefixes": ["/siat/isb/kyjz/"],
+        "article_url_pattern": "^https://maic\\.siat\\.ac\\.cn/siat/isb/kyjz/20\\d{17}/index\\.html$",
+        "title_selector": "meta[name='ArticleTitle']",
+        "content_selector": "#zoom",
+        "date_selector": "meta[name='PubDate']",
+        "timezone": "Asia/Shanghai"
+      }
+    },
+    {
+      "url": "https://im.cas.cn/xwtz/kyjz/",
+      "name": "CAS Institute of Microbiology Research",
+      "description": "[FIRST_PARTY] Official microbiology research with relevant work in microbial engineering, biosynthesis, engineered vaccines and therapeutic biological tools. Require a concrete biotechnology, engineering or enabling-method connection; do not treat all basic microbiology as programmable life.",
+      "category": "programmable_life",
+      "importance_score": 88,
+      "region": "CN",
+      "kind": "research",
+      "verified_on": "2026-11-14",
+      "html": {
+        "path_prefixes": ["/xwtz/kyjz/"],
+        "article_url_pattern": "^https://im\\.cas\\.cn/xwtz/kyjz/20\\d{4}/t20\\d{6}_\\d+\\.html$",
+        "title_selector": ".details-page h1.title-s",
+        "content_selector": ".details-page .TRS_UEDITOR",
+        "date_selector": ".details-page .other-info",
+        "timezone": "Asia/Shanghai"
+      }
+    },
+    {
+      "url": "https://www.landspace.com/news.html",
+      "name": "LandSpace Official News",
+      "description": "[FIRST_PARTY] Official Chinese commercial launch company updates on methane launch vehicles, reusable rockets, propulsion tests, launch services and satellite infrastructure. Attribute performance and commercial-readiness claims to the company.",
+      "category": "space_economy",
+      "importance_score": 90,
+      "region": "CN",
+      "kind": "company",
+      "verified_on": "2026-11-14",
+      "html": {
+        "path_prefixes": ["/news-detail.html"],
+        "article_url_pattern": "^https://www\\.landspace\\.com/news-detail\\.html\\?itemid=\\d+$",
+        "keep_query_keys": ["itemid"],
+        "title_selector": ".page-news-detail h3.title",
+        "content_selector": ".page-news-detail .article",
+        "date_selector": ".page-news-detail .times span:first-child",
+        "timezone": "Asia/Shanghai"
+      }
+    },
+    {
+      "url": "https://www.galactic-energy.cn/index.php/List/cid/11",
+      "name": "Galactic Energy Official News",
+      "description": "[FIRST_PARTY] Official Chinese commercial space company updates on Ceres and Pallas launch vehicles, rocket engines, reusable propulsion, launch operations and financing tied to its space business.",
+      "category": "space_economy",
+      "importance_score": 88,
+      "region": "CN",
+      "kind": "company",
+      "verified_on": "2026-11-14",
+      "html": {
+        "path_prefixes": ["/index.php/Show/cid/11/aid/"],
+        "article_url_pattern": "^https://www\\.galactic-energy\\.cn/index\\.php/Show/cid/11/aid/\\d+$",
+        "title_selector": ".news_content h1",
+        "content_selector": ".news_content",
+        "date_selector": ".news_content h3",
+        "timezone": "Asia/Shanghai"
+      }
+    },
+    {
+      "url": "https://www.spacechina.com/n25/n2014789/n2014804/index.html",
+      "name": "CASC Official Space News",
+      "description": "[FIRST_PARTY] China Aerospace Science and Technology Corporation announcements on launch vehicles, satellites, spacecraft, mission operations and space infrastructure. Exclude party meetings, personnel notices and general institutional activities without a substantive technology or industry development.",
+      "category": "space_economy",
+      "importance_score": 92,
+      "region": "CN",
+      "kind": "company",
+      "verified_on": "2026-11-14",
+      "html": {
+        "path_prefixes": ["/n25/n2014789/n2014804/"],
+        "article_url_pattern": "^https://www\\.spacechina\\.com/n25/n2014789/n2014804/c\\d+/content\\.html$",
+        "title_selector": ".article_title",
+        "content_selector": "#zoom",
+        "date_selector": ".article_attr",
+        "timezone": "Asia/Shanghai"
+      }
+    },
+    {
+      "url": "https://imr.cas.cn/xwzx/kydt/",
+      "name": "CAS Institute of Metal Research",
+      "description": "[FIRST_PARTY] Official research developments in metals, alloys, structural and functional materials, corrosion, catalysis and material-enabled devices. Distinguish laboratory findings from demonstrated manufacturing or commercial deployment.",
+      "category": "advanced_materials",
+      "importance_score": 93,
+      "region": "CN",
+      "kind": "research",
+      "verified_on": "2026-11-14",
+      "html": {
+        "path_prefixes": ["/xwzx/kydt/"],
+        "article_url_pattern": "^https://imr\\.cas\\.cn/xwzx/kydt/20\\d{4}/t20\\d{6}_\\d+\\.html$",
+        "title_selector": ".neiye-info h4.detail-title",
+        "content_selector": "#detailsCont",
+        "date_selector": ".neiye-info .flex-boxs span:nth-of-type(2)",
+        "timezone": "Asia/Shanghai"
+      }
+    },
+    {
+      "url": "https://www.nimte.ac.cn/news/progress/",
+      "name": "CAS Ningbo Institute of Materials Technology and Engineering",
+      "description": "[FIRST_PARTY] Official advances in advanced polymers, composites, functional films, electronic materials, energy materials and materials-processing equipment, including pilot-scale work when explicitly documented.",
+      "category": "advanced_materials",
+      "importance_score": 92,
+      "region": "CN",
+      "kind": "research",
+      "verified_on": "2026-11-14",
+      "html": {
+        "path_prefixes": ["/news/progress/"],
+        "article_url_pattern": "^https://www\\.nimte\\.ac\\.cn/news/progress/20\\d{4}/t20\\d{6}_\\d+\\.html$",
+        "title_selector": "article h2",
+        "content_selector": "article .content",
+        "date_selector": "article .tags p",
+        "timezone": "Asia/Shanghai"
+      }
+    },
+    {
+      "url": "https://www.sic.cas.cn/xwzx/kydt/",
+      "name": "CAS Shanghai Institute of Ceramics",
+      "description": "[FIRST_PARTY] Official research on advanced ceramics, crystals, composites, functional and energy materials, biomaterials and related devices. Exclude conference-only notices, rankings and institutional awards without a substantive materials result.",
+      "category": "advanced_materials",
+      "importance_score": 90,
+      "region": "CN",
+      "kind": "research",
+      "verified_on": "2026-11-14",
+      "html": {
+        "path_prefixes": ["/xwzx/kydt/"],
+        "article_url_pattern": "^https://www\\.sic\\.cas\\.cn/xwzx/kydt/20\\d{4}/t20\\d{6}_\\d+\\.html$",
+        "title_selector": "h3.panel-title.bt",
+        "content_selector": "#zoom",
+        "date_selector": ".panel-head small",
+        "timezone": "Asia/Shanghai"
+      }
+    },
+    {
+      "url": "https://www.neuroxess.com/news/",
+      "name": "NeuroXess Official News",
+      "description": "[FIRST_PARTY] Official Chinese implantable brain-computer-interface company updates on flexible neural interfaces, neural decoding, registered clinical trials, regulatory milestones and commercialization. Preserve attribution and distinguish company-reported clinical progress from independent evidence.",
+      "category": "neurotechnology",
+      "importance_score": 88,
+      "region": "CN",
+      "kind": "company",
+      "verified_on": "2026-11-14",
+      "html": {
+        "path_prefixes": ["/news/"],
+        "article_url_pattern": "^https://www\\.neuroxess\\.com/news/(?!page/)[^/?#]+/?$",
+        "title_selector": "h1.article-detail__title",
+        "content_selector": "article",
+        "date_selector": "meta[property='article:published_time']",
+        "timezone": "Asia/Shanghai"
+      }
+    },
+    {
+      "url": "https://www.ion.ac.cn/xwen/kyjz/",
+      "name": "CAS Center for Excellence in Brain Science and Intelligence Technology",
+      "description": "[FIRST_PARTY] Official neuroscience research with relevant neural-interface, neurotechnology, brain-mapping and neural recording or modulation tools. Require a concrete enabling-technology or translational connection; not every basic neural-circuit finding is a neurotechnology advance.",
+      "category": "neurotechnology",
+      "importance_score": 92,
+      "region": "CN",
+      "kind": "research",
+      "verified_on": "2026-11-14",
+      "html": {
+        "index_url_template": "https://www.ion.ac.cn/xwen/kyjz/{year}/",
+        "path_prefixes": ["/xwen/kyjz/"],
+        "article_url_pattern": "^https://www\\.ion\\.ac\\.cn/xwen/kyjz/20\\d{2}/20\\d{4}/t20\\d{6}_\\d+\\.html$",
+        "title_selector": "h4.center.font24",
+        "content_selector": ".detail .TRS_UEDITOR",
+        "date_selector": ".detail p.center",
+        "timezone": "Asia/Shanghai"
+      }
+    },
+    {
+      "url": "https://bcbdi.siat.ac.cn/siat/ibcbd/kyjz/index.html",
+      "name": "CAS SIAT Brain Cognition and Brain Diseases Institute",
+      "description": "[FIRST_PARTY] Official research from SIAT's brain institute, including neural-interface platforms, optical neural manipulation, computational neuroethology, neural recording and brain-analysis tools. Exclude basic disease-mechanism findings without a material technology or translational advance.",
+      "category": "neurotechnology",
+      "importance_score": 91,
+      "region": "CN",
+      "kind": "research",
+      "verified_on": "2026-11-14",
+      "html": {
+        "path_prefixes": ["/siat/ibcbd/kyjz/"],
+        "article_url_pattern": "^https://bcbdi\\.siat\\.ac\\.cn/siat/ibcbd/kyjz/20\\d{17}/index\\.html$",
+        "title_selector": "meta[name='ArticleTitle']",
+        "content_selector": "#zoom",
+        "date_selector": "meta[name='PubDate']",
+        "timezone": "Asia/Shanghai"
+      }
+    }
+  ]
+}

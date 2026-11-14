@@ -5,7 +5,6 @@ the linked document, not a guarantee that its claims have been independently
 verified. Enrichment is safe to repeat and never mutates the input record.
 """
 
-import ast
 from copy import deepcopy
 from datetime import datetime, timezone
 from functools import lru_cache
@@ -15,6 +14,7 @@ import unicodedata
 from urllib.parse import urlparse
 
 from editorial_domains import domains, infer_domain
+from source_catalog import load_seed_catalog
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -58,13 +58,7 @@ def _on_host(host, expected):
 @lru_cache(maxsize=1)
 def _source_catalog():
     """Read the existing literal catalog without executing its seeding script."""
-    tree = ast.parse((ROOT / "scripts/bootstrap_sources.py").read_text(encoding="utf-8"))
-    for node in tree.body:
-        if isinstance(node, ast.Assign) and any(
-            isinstance(target, ast.Name) and target.id == "SOURCES" for target in node.targets
-        ):
-            return ast.literal_eval(node.value)
-    return []
+    return load_seed_catalog(ROOT / "scripts/bootstrap_sources.py")
 
 
 def _matches_source_url(url, feed_url):

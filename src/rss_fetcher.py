@@ -9,8 +9,10 @@ import json
 from datetime import datetime, timezone
 from calendar import timegm
 from urllib.parse import parse_qsl, urlencode, urljoin, urlparse, urlunparse
+from zoneinfo import ZoneInfo
 
 from config_loader import ConfigLoader
+from source_catalog import china_html_rules
 
 
 # Founder-led frontier labs often publish only an HTML news index, not RSS.
@@ -69,6 +71,7 @@ OFFICIAL_HTML_INDEX_RULES = {
     'https://ollama.com/blog': {'path_prefixes': ('/blog/',)},
     'https://www.ibm.com/quantum/blog': {'path_prefixes': ('/quantum/blog/',)},
 }
+OFFICIAL_HTML_INDEX_RULES.update(china_html_rules())
 
 
 class RSSFetcher:
@@ -392,17 +395,27 @@ class RSSFetcher:
             return {'entries': [], 'error': str(exc), 'feed_config': feed_config}
 
     @staticmethod
-    def _official_page_date(soup):
+    def _official_page_date(soup, default_timezone="UTC", date_selector=None):
         """Extract an official article's publication date without inventing one."""
         selectors = (
             'meta[property="article:published_time"]',
             'meta[itemprop="datePublished"]',
             'meta[name="datePublished"]',
             'meta[name="date"]',
+            'meta[name="PubDate"]',
+            'meta[name="pubdate"]',
+            'meta[name="publishdate"]',
+            'meta[name="DC.date.issued"]',
+            'meta[name="DCTERMS.issued"]',
+            'meta[name="Date"]',
             'time[datetime]',
         )
         raw_values = []
-        for selector in selectors:
+        if date_selector:
+            node = soup.select_one(date_selector)
+            if node:
+                raw_values.append(node.get('content') or node.get('datetime') or node.get_text(' ', strip=True))
+        for selector in (() if date_selector else selectors):
             node = soup.select_one(selector)
             if node:
                 raw_values.append((node.get('content') or node.get('datetime') or '').strip())
@@ -420,14 +433,16 @@ class RSSFetcher:
                 for child in value:
                     collect_json_dates(child)
 
-        for node in soup.select('script[type="application/ld+json"]'):
+        for node in ([] if date_selector else soup.select('script[type="application/ld+json"]')):
             try:
                 collect_json_dates(json.loads(node.string or node.get_text() or '{}'))
             except (TypeError, ValueError, json.JSONDecodeError):
                 continue
 
-        # Some modern sites expose the date only in visible page text.
-        page_text = soup.get_text(' ', strip=True)
+        # A configured publisher selector must fail closed: never borrow a
+        # conference date, image upload date or sidebar story when it changes.
+        # Existing unscoped adapters retain their visible-date fallback.
+        page_text = '' if date_selector else soup.get_text(' ', strip=True)
         match = re.search(
             r'\b(?:January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{1,2},\s+20\d{2}\b',
             page_text,
@@ -440,31 +455,47 @@ class RSSFetcher:
         )
         if short_match:
             raw_values.append(short_match.group(0).replace('Sept ', 'Sep ').replace('.', ''))
-        numeric_match = re.search(r'\b20\d{2}[/-]\d{1,2}[/-]\d{1,2}\b', page_text)
+        numeric_match = re.search(r'\b20\d{2}[./-]\d{1,2}[./-]\d{1,2}\b', page_text)
         if numeric_match:
-            raw_values.append(numeric_match.group(0).replace('/', '-'))
+            raw_values.append(re.sub(r'[./]', '-', numeric_match.group(0)))
+        chinese_match = re.search(r'20\d{2}\s*年\s*\d{1,2}\s*月\s*\d{1,2}\s*日', page_text)
+        if chinese_match:
+            raw_values.append(chinese_match.group(0))
 
         for raw in raw_values:
             if not raw:
                 continue
+            # TRS/CMS pages commonly use Chinese dates or a labelled local
+            # datetime. Preserve the time and apply the publisher's timezone;
+            # never replace a missing publication date with the fetch time.
+            raw = re.sub(r'\b(20\d{2})\s+(\d{1,2})[/-](\d{1,2})\b', r'\1-\2-\3', raw)
+            raw = re.sub(r'\b(20\d{2})\.(\d{1,2})\.(\d{1,2})\b', r'\1-\2-\3', raw)
+            raw = re.sub(r'\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec)\.', r'\1', raw)
+            raw = re.sub(r'\bSept\b', 'Sep', raw)
+            raw = re.sub(r'年|月', '-', raw).replace('日', '').replace('/', '-')
+            raw = re.sub(r'\s*-\s*', '-', raw).strip()
+            date_match = re.search(r'20\d{2}-\d{1,2}-\d{1,2}(?:[ T]\d{1,2}:\d{2}(?::\d{2}(?:\.\d+)?)?(?:Z|[+-]\d{2}:?\d{2})?)?', raw)
+            if date_match:
+                raw = date_match.group(0)
             try:
                 parsed = datetime.fromisoformat(raw.replace('Z', '+00:00'))
                 if parsed.tzinfo is None:
-                    parsed = parsed.replace(tzinfo=timezone.utc)
+                    parsed = parsed.replace(tzinfo=ZoneInfo(default_timezone))
                 return parsed.astimezone(timezone.utc).isoformat()
             except ValueError:
                 pass
-            for fmt in ('%B %d, %Y', '%b %d, %Y', '%b %d %Y', '%Y-%m-%d'):
+            for fmt in ('%B %d, %Y', '%b %d, %Y', '%b %d %Y', '%Y-%m-%d %H:%M:%S', '%Y-%m-%d %H:%M', '%Y-%m-%d'):
                 try:
-                    return datetime.strptime(raw, fmt).replace(tzinfo=timezone.utc).isoformat()
+                    return datetime.strptime(raw, fmt).replace(tzinfo=ZoneInfo(default_timezone)).astimezone(timezone.utc).isoformat()
                 except ValueError:
                     continue
         return None
 
     @staticmethod
-    def _official_page_text(soup):
+    def _official_page_text(soup, content_selector=None):
         """Extract readable first-party text already present in an article page."""
-        node = soup.select_one('article') or soup.select_one('main')
+        node = soup.select_one(content_selector) if content_selector else None
+        node = node or soup.select_one('article') or soup.select_one('main') or soup.select_one('.TRS_Editor, .TRS_UEDITOR')
         if not node:
             return ''
         for unwanted in node.select('script, style, noscript, svg, nav, footer'):
@@ -474,7 +505,8 @@ class RSSFetcher:
     @staticmethod
     def _discover_official_article_urls(soup, index_url, path_prefixes,
                                         keep_query_keys=(),
-                                        exclude_path_prefixes=(), limit=40):
+                                        exclude_path_prefixes=(), limit=40,
+                                        article_url_pattern=None, article_selector=None):
         """Return canonical, same-domain article URLs from an official index."""
         parsed_index = urlparse(index_url)
         source_host = parsed_index.netloc.lower()
@@ -491,17 +523,19 @@ class RSSFetcher:
         index_normalized = normalize(index_url)
         article_urls = []
         seen = set()
-        for anchor in soup.select('a[href]'):
+        for anchor in soup.select(article_selector or 'a[href]'):
             link = urljoin(index_url, (anchor.get('href') or '').strip())
             parsed = urlparse(link)
             normalized = normalize(link)
             if (
                 parsed.netloc.lower() != source_host
+                or parsed.scheme not in ('http', 'https')
                 or normalized == index_normalized
                 or not any(parsed.path.startswith(prefix) for prefix in path_prefixes)
                 or any(parsed.path.startswith(prefix) for prefix in exclude_path_prefixes)
                 or parsed.path.lower().endswith(('.xml', '.rss', '.atom'))
                 or re.search(r'/page/\d+/?$', parsed.path)
+                or (article_url_pattern and not re.search(article_url_pattern, normalized))
                 or normalized in seen
             ):
                 continue
@@ -511,6 +545,29 @@ class RSSFetcher:
                 break
         return article_urls
 
+    @classmethod
+    def _official_index_dates(cls, soup, index_url, rule):
+        """Use dates only from the same explicitly scoped article-list card."""
+        if not rule.get('index_item_selector') or not rule.get('index_date_selector'):
+            return {}
+        from bs4 import BeautifulSoup
+
+        dates = {}
+        for card in soup.select(rule['index_item_selector']):
+            published_at = cls._official_page_date(
+                BeautifulSoup(str(card.select_one(rule['index_date_selector']) or ''), 'html.parser'),
+                rule.get('timezone', 'UTC'),
+            )
+            if not published_at:
+                continue
+            for link in cls._discover_official_article_urls(
+                card, index_url, rule['path_prefixes'],
+                rule.get('keep_query_keys', ()), rule.get('exclude_path_prefixes', ()),
+                article_url_pattern=rule.get('article_url_pattern'),
+            ):
+                dates[link] = published_at
+        return dates
+
     def _fetch_official_html_index(self, feed_config, rule):
         """Build feed entries from a first-party HTML news or research index."""
         try:
@@ -518,24 +575,33 @@ class RSSFetcher:
             from curl_cffi import requests as cffi_requests
 
             index_url = feed_config['url']
+            if rule.get('index_url_template'):
+                templated_url = rule['index_url_template'].format(year=datetime.now(ZoneInfo(rule.get('timezone', 'UTC'))).year)
+                if urlparse(templated_url).netloc.lower() != urlparse(index_url).netloc.lower():
+                    raise ValueError('Index URL template must stay on the configured publisher host')
+                index_url = templated_url
             response = cffi_requests.get(
                 index_url, impersonate='chrome', timeout=self.timeout
             )
             response.raise_for_status()
             soup = BeautifulSoup(response.text, 'html.parser')
             resolved_index_url = str(getattr(response, 'url', '') or index_url)
+            index_dates = self._official_index_dates(soup, resolved_index_url, rule)
             article_urls = self._discover_official_article_urls(
                 soup,
                 resolved_index_url,
                 rule['path_prefixes'],
                 rule.get('keep_query_keys', ()),
                 rule.get('exclude_path_prefixes', ()),
+                limit=rule.get('max_index_links', 40),
+                article_url_pattern=rule.get('article_url_pattern'),
+                article_selector=rule.get('article_selector'),
             )
 
             # A few official sites render the article grid client-side. Keep
             # the cloud collector browserless by default, but reuse its shared
             # headless browser when static HTML contains no article links.
-            if not article_urls:
+            if not article_urls and rule.get('browser_fallback', True):
                 try:
                     with self._browser_lock:
                         browser = self._get_browser_unlocked()
@@ -551,6 +617,9 @@ class RSSFetcher:
                             rule['path_prefixes'],
                             rule.get('keep_query_keys', ()),
                             rule.get('exclude_path_prefixes', ()),
+                            limit=rule.get('max_index_links', 40),
+                            article_url_pattern=rule.get('article_url_pattern'),
+                            article_selector=rule.get('article_selector'),
                         )
                 except Exception as exc:
                     logging.debug(
@@ -567,7 +636,9 @@ class RSSFetcher:
                     article_response.raise_for_status()
                     article_soup = BeautifulSoup(article_response.text, 'html.parser')
                     title_node = (
-                        article_soup.select_one('meta[property="og:title"]')
+                        (article_soup.select_one(rule['title_selector']) if rule.get('title_selector') else None)
+                        or article_soup.select_one('meta[name="ArticleTitle"]')
+                        or article_soup.select_one('meta[property="og:title"]')
                         or article_soup.select_one('h1')
                     )
                     title = (
@@ -577,7 +648,11 @@ class RSSFetcher:
                     )
                     if title.strip() in rule.get('exclude_titles', ()):
                         continue
-                    published_at = self._official_page_date(article_soup)
+                    if rule.get('require_index_date'):
+                        published_at = index_dates.get(link)
+                    else:
+                        page_date = self._official_page_date(article_soup, rule.get('timezone', 'UTC'), rule.get('date_selector'))
+                        published_at = (index_dates.get(link) or page_date) if rule.get('prefer_index_date') else (page_date or index_dates.get(link))
                     if not title or not published_at:
                         logging.debug(
                             'Skipping official page without title/date: %s', link
@@ -588,7 +663,9 @@ class RSSFetcher:
                     ) or article_soup.select_one(
                         'meta[name="description"]'
                     )
-                    official_content = self._official_page_text(article_soup)
+                    official_content = self._official_page_text(article_soup, rule.get('content_selector'))
+                    if len(official_content) < rule.get('min_content_chars', 0):
+                        continue
                     entries.append({
                         'title': title.strip(),
                         'link': link,
@@ -600,7 +677,7 @@ class RSSFetcher:
                         'published_at': published_at,
                         'orig_entry': {'title': title.strip(), 'link': link},
                     })
-                    if len(entries) >= 8:
+                    if len(entries) >= rule.get('max_articles', 8):
                         break
                 except Exception as exc:
                     logging.debug('Official article fetch failed for %s: %s', link, exc)
@@ -610,7 +687,7 @@ class RSSFetcher:
                 'Fetched %d entries from %s official HTML index',
                 len(entries), feed_config['name']
             )
-            return {'entries': entries, 'error': None, 'feed_config': feed_config}
+            return {'entries': entries, 'error': None if entries else 'No dated articles found in publisher index', 'feed_config': feed_config}
         except Exception as exc:
             logging.warning('Official HTML index failed for %s: %s', feed_config['name'], exc)
             return {'entries': [], 'error': str(exc), 'feed_config': feed_config}

@@ -6,7 +6,6 @@ receive useful HTML without a duplicate, crawler-only list of news stories.
 """
 
 import argparse
-import ast
 import html
 import json
 import re
@@ -22,6 +21,7 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "src"))
 from editorial_insights import enrich_item, reading_guidance, article_reading_context
 from editorial_artwork import editorial_artwork_path, editorial_caption
+from source_catalog import load_seed_catalog
 SITE = "https://polyemergence.com"
 SGT = ZoneInfo("Asia/Singapore")
 WINDOW = timedelta(hours=48)
@@ -249,11 +249,7 @@ def current_items(feed, domain_id, domains, now):
 
 def load_sources(path):
     """Read the committed source catalog without importing database code."""
-    tree = ast.parse(Path(path).read_text(encoding="utf-8"))
-    for node in tree.body:
-        if isinstance(node, ast.Assign) and any(isinstance(t, ast.Name) and t.id == "SOURCES" for t in node.targets):
-            return ast.literal_eval(node.value)
-    return []
+    return load_seed_catalog(path)
 
 
 def source_home(url):

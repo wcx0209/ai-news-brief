@@ -97,10 +97,21 @@ Run **Polyemergence daily brief** manually once. A successful run will:
 4. export `web/public/data/latest.json`;
 5. commit the refreshed feed.
 
-The source catalog includes six core feeds for each of the nine additional
-emerging fields (54 feeds in those fields, 175 configured feeds overall).
+The source catalog includes international core feeds and dedicated Chinese
+specialist sources across all ten non-AI fields. Their regional manifests live
+in `config/sources/china-*.json`, shared by source seeding, HTML adapters,
+first-party provenance labels and field-page source lists.
 `SOURCE_COVERAGE.md` records their scope and verification notes. Seeding uses a
 single bulk upsert and retains existing source IDs and historical articles.
+
+The manual **China specialist source health** workflow reads public indexes
+and dated article bodies in GitHub Actions without ingesting news or calling an
+LLM. Its JSON artifact distinguishes inaccessible indexes, missing publication
+metadata and unreadable bodies from genuinely low publication cadence. Set
+`seed_sources=true` to seed the catalog into Postgres only after every probe
+passes. The normal 06:00 / 18:00 UTC workflow subsequently collects these sources
+with unchanged relevance, importance, per-source and 48-hour presentation rules.
+No local collector or always-on computer is required.
 
 After exporting the permanent archive, the workflow also runs
 `scripts/export_domain_pages.py`. This refreshes all bilingual field landing

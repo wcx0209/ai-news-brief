@@ -2,8 +2,8 @@
 
 This fork powers [PolyEmergence](https://polyemergence.com/), a bilingual
 emerging-technology publication covering 11 fields. Its free cloud profile
-configures 175 feeds, with six core sources for each of the nine recently added
-fields. Readers choose a field before seeing its latest 48-hour brief; every
+combines international feeds with a dedicated Chinese specialist source catalog
+for all ten non-AI fields. Readers choose a field before seeing its latest 48-hour brief; every
 field has a dedicated English and Chinese landing page for readers and search
 engines. Collection and publication run in GitHub Actions, with permanent
 PostgreSQL storage and a Cloudflare Pages frontend.

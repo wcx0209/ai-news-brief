@@ -1,8 +1,8 @@
 # Emerging-field source coverage
 
-Updated: 2026-11-12. The nine fields below each have six configured core sources
+Updated: 2026-11-14. The nine fields below each have six configured international core sources
 (54 total), alongside the existing AI and programmable-life sources. The complete
-seed catalog contains 175 feeds; this is a configured-source count, not a count
+original seed catalog contains 175 feeds before the Chinese additions below; this is a configured-source count, not a count
 of publishers or a promise of daily articles from every source.
 
 | Field | Core sources |
@@ -51,9 +51,64 @@ of publishers or a promise of daily articles from every source.
 
 ## Maintaining the catalog
 
-The canonical tuples are in `scripts/bootstrap_sources.py`. Source seeding uses
+The international tuples are in `scripts/bootstrap_sources.py`; Chinese specialist
+manifests are in `config/sources/china-*.json`. `src/source_catalog.py` joins them
+for both cloud seeding and read-only static export, without executing database
+code during page rendering. Source seeding uses
 one transactional bulk upsert, preserving existing source IDs and fetch times.
 Review the per-source `FETCH STATISTICS REPORT` in each cloud run for successful
 ingests, duplicates, age filtering, relevance rejection and network failures.
 Repeated access failures deserve a replacement; an absent article in today's
 brief alone does not.
+
+## Chinese specialist coverage
+
+The additions total 30 configured sources (17 research institutions, eight
+company channels and five specialist media), taking the complete catalog to
+205. Each of the ten non-AI fields has three Chinese additions alongside its
+six international core sources. Counts refer to configured channels, not unique
+parent institutions or guaranteed daily articles.
+
+| Field | Chinese additions |
+| --- | --- |
+| Programmable life | CAS Tianjin Institute of Industrial Biotechnology; CAS SIAT Institute of Synthetic Biology; CAS Institute of Microbiology |
+| Energy & storage | Gotion High-Tech; CAS Institute of Plasma Physics; China Energy Network storage |
+| Robotics & autonomy | SIASUN; DOBOT; Leaderobot |
+| Quantum technology | CAS Quantum Innovation Institute; Beijing Academy of Quantum Information Sciences; CNQT |
+| Space economy | LandSpace; Galactic Energy; CASC |
+| Advanced materials | CAS Institute of Metal Research; CAS Ningbo Institute of Materials Technology and Engineering; CAS Shanghai Institute of Ceramics |
+| Neurotechnology | NeuroXess; CAS Center for Excellence in Brain Science and Intelligence Technology; CAS SIAT Brain Cognition and Brain Diseases Institute |
+| Climate, water & environment | CAS Institute of Urban Environment; Agro-Environmental Protection Institute; H2O China |
+| Agriculture & food technology | CAAS Institute of Plant Protection; CAAS Institute of Food Science and Technology; CAAS Cotton Research Institute |
+| Advanced manufacturing | Farsoon Technologies global official news; Nanjixiong; CAS Changchun Institute of Optics |
+
+Every non-AI field now has a dedicated regional manifest rather than depending
+on incidental reporting by broad Chinese technology media. Manifests record the
+publisher, region (`CN`), source kind, editorial field, verification date and
+host-scoped HTML adapter. Research institute announcements are first-party
+releases, not automatically peer-reviewed research papers. Media reporting is
+not labelled as an official release. Configured sources are not guaranteed to
+publish daily or to have a story within the current 48-hour brief.
+
+The adapters are browserless and use only public publisher pages. Chinese CMS
+`ArticleTitle` / `PubDate`, explicit article selectors, Chinese or dotted dates,
+and `Asia/Shanghai` local publication time are supported. Per-index URL patterns
+exclude navigation, unrelated sections and known paid previews. Query-based
+article identifiers are preserved. The new adapters inspect at most eight links
+and retain at most three dated, readable articles; the existing downstream
+per-source caps and broad-source relevance gates still apply. Generic company
+awards, institutional events and unrelated announcements are not guaranteed a
+place in the feed merely because the publisher is Chinese.
+
+Do not synthesize a publication timestamp from the crawl time. A date-only
+publication is represented as midnight in the publisher's timezone. A known
+article-list publication date can be used only when it is scoped to that same
+article card, never borrowed from another story or a page footer.
+
+Run the **China specialist source health** GitHub Actions workflow for live
+verification from the cloud network. It saves a 30-day JSON artifact and a job
+summary with dated/readable counts and latest source dates. A dated older item
+proves that parsing works; it does not imply that a feed is current. A failed
+probe does not lower quality thresholds or trigger a browser/paywall bypass.
+The health command explicitly refuses local execution and makes no database
+or LLM calls; the optional, separate seeding step activates the checked catalog.

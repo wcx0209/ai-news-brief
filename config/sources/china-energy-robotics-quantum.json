@@ -1,0 +1,178 @@
+{
+  "sources": [
+    {
+      "url": "https://www.gotion.com.cn/news/",
+      "name": "Gotion High-Tech 国轩高科",
+      "description": "[FIRST_PARTY] Official Chinese battery, energy-storage system, safety, manufacturing and commercial deployment announcements",
+      "category": "energy_storage",
+      "importance_score": 90,
+      "region": "CN",
+      "kind": "company",
+      "verified_on": "2026-11-14",
+      "title_gate": true,
+      "html": {
+        "path_prefixes": ["/newsInfo/"],
+        "article_url_pattern": "/newsInfo/\\d+$",
+        "title_selector": "section.newsInfo1 .title .p1",
+        "date_selector": "section.newsInfo1 .title .time",
+        "content_selector": "section.newsInfo1 .content",
+        "timezone": "Asia/Shanghai"
+      }
+    },
+    {
+      "url": "https://ipp.cas.cn/xwdt/kydt/",
+      "name": "CAS Institute of Plasma Physics",
+      "description": "[FIRST_PARTY] Official Chinese fusion-energy research, EAST experiments, stellarator engineering, plasma control and fusion infrastructure updates",
+      "category": "energy_storage",
+      "importance_score": 94,
+      "region": "CN",
+      "kind": "research",
+      "verified_on": "2026-11-14",
+      "title_gate": true,
+      "html": {
+        "path_prefixes": ["/xwdt/kydt/20"],
+        "article_url_pattern": "/xwdt/kydt/20\\d{2}\\d{2}/t\\d{8}_\\d+\\.html$",
+        "title_selector": ".ipp2020-article .hd h1",
+        "date_selector": ".ipp2020-article .titBar",
+        "content_selector": ".ipp2020-article .trs_editor_view",
+        "timezone": "Asia/Shanghai"
+      }
+    },
+    {
+      "url": "https://www.china5e.com/new-energy/stored-energy/",
+      "name": "China Energy Network Storage 中国能源网",
+      "description": "Chinese energy-industry reporting on battery systems, long-duration storage, grid-forming technology, storage deployment and energy policy",
+      "category": "energy_storage",
+      "importance_score": 84,
+      "region": "CN",
+      "kind": "media",
+      "verified_on": "2026-11-14",
+      "title_gate": true,
+      "html": {
+        "path_prefixes": ["/news/news-"],
+        "article_url_pattern": "/news/news-\\d+-\\d+\\.html$",
+        "title_selector": ".showtitle h1",
+        "date_selector": ".showtitinfo",
+        "content_selector": ".showcontent",
+        "timezone": "Asia/Shanghai"
+      }
+    },
+    {
+      "url": "https://www.siasun.com/news.html",
+      "name": "SIASUN 新松机器人",
+      "description": "[FIRST_PARTY] Official Chinese industrial, mobile and service robotics, autonomous logistics, robot deployments and manufacturing automation announcements",
+      "category": "robotics_autonomy",
+      "importance_score": 90,
+      "region": "CN",
+      "kind": "company",
+      "verified_on": "2026-11-14",
+      "title_gate": true,
+      "html": {
+        "path_prefixes": ["/news-detail"],
+        "article_url_pattern": "/news-detail\\d+\\.html$",
+        "title_selector": ".news-detail .details > .title",
+        "date_selector": ".news-detail .details > .mid .item:first-child",
+        "content_selector": ".news-detail .details-container",
+        "timezone": "Asia/Shanghai"
+      }
+    },
+    {
+      "url": "https://www.dobot.cn/news/blog?type=9",
+      "name": "DOBOT 越疆机器人",
+      "description": "[FIRST_PARTY] Official Chinese collaborative and humanoid robotics, embodied intelligence, research, robot safety standards and deployment announcements",
+      "category": "robotics_autonomy",
+      "importance_score": 90,
+      "region": "CN",
+      "kind": "company",
+      "verified_on": "2026-11-14",
+      "title_gate": true,
+      "html": {
+        "path_prefixes": ["/news/blog/"],
+        "article_url_pattern": "/news/blog/\\d+\\.html$",
+        "title_selector": "h1.comm-title",
+        "date_selector": ".ndetail-date",
+        "content_selector": ".ndetail-article",
+        "timezone": "Asia/Shanghai"
+      }
+    },
+    {
+      "url": "https://www.leaderobot.com/news",
+      "name": "Leaderobot 机器人大讲堂",
+      "description": "Specialist Chinese robotics reporting on humanoids, components, autonomous systems, industrial deployments, robotics companies and embodied intelligence",
+      "category": "robotics_autonomy",
+      "importance_score": 84,
+      "region": "CN",
+      "kind": "media",
+      "verified_on": "2026-11-14",
+      "title_gate": true,
+      "html": {
+        "path_prefixes": ["/news/"],
+        "article_url_pattern": "/news/\\d+$",
+        "article_selector": "main div:has(> h3.lb-section-title:-soup-contains(\"最新资讯\")) + ul a[href]",
+        "title_selector": "main h2.text-2xl",
+        "date_selector": "main p.border-b > span:first-child",
+        "content_selector": "main section.mt-6",
+        "timezone": "Asia/Shanghai"
+      }
+    },
+    {
+      "url": "https://www.quantumcas.ac.cn/xwdt/list.htm",
+      "name": "CAS Quantum Innovation Institute",
+      "description": "[FIRST_PARTY] Official Chinese quantum computing, communications, quantum networks, error correction and quantum-information research results",
+      "category": "quantum_technology",
+      "importance_score": 94,
+      "region": "CN",
+      "kind": "research",
+      "verified_on": "2026-11-14",
+      "title_gate": true,
+      "html": {
+        "path_prefixes": ["/20"],
+        "article_url_pattern": "/20\\d{2}/\\d{4}/c20525a\\d+/page\\.htm$",
+        "article_selector": "#wp_news_w6 .news_title a[href]",
+        "title_selector": "h1.arti_title",
+        "date_selector": ".arti_update",
+        "content_selector": ".wp_articlecontent",
+        "timezone": "Asia/Shanghai"
+      }
+    },
+    {
+      "url": "https://qcloud.baqis.ac.cn/news/?mid=225",
+      "name": "Beijing Academy of Quantum Information Sciences",
+      "description": "[FIRST_PARTY] Official Beijing quantum-information research on quantum processors, error correction, compilation, sensing, photons and quantum communication",
+      "category": "quantum_technology",
+      "importance_score": 94,
+      "region": "CN",
+      "kind": "research",
+      "verified_on": "2026-11-14",
+      "title_gate": true,
+      "html": {
+        "path_prefixes": ["/news/detail"],
+        "article_url_pattern": "/news/detail/?\\?cid=\\d+$",
+        "keep_query_keys": ["cid"],
+        "title_selector": ".article_tit",
+        "date_selector": ".article_time",
+        "content_selector": ".article_con",
+        "timezone": "Asia/Shanghai"
+      }
+    },
+    {
+      "url": "https://www.qtc.com.cn/news/industry",
+      "name": "CNQT 量科网",
+      "description": "Specialist Chinese quantum-industry reporting on computing, communications, sensing, post-quantum security, research, companies and policy",
+      "category": "quantum_technology",
+      "importance_score": 84,
+      "region": "CN",
+      "kind": "media",
+      "verified_on": "2026-11-14",
+      "title_gate": true,
+      "html": {
+        "path_prefixes": ["/article/"],
+        "article_url_pattern": "/article/\\d+\\.html$",
+        "title_selector": "h1.page-header",
+        "date_selector": "time[datetime]",
+        "content_selector": "article",
+        "timezone": "Asia/Shanghai"
+      }
+    }
+  ]
+}

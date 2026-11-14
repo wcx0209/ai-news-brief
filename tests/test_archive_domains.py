@@ -114,6 +114,17 @@ class ArchiveDomainTests(unittest.TestCase):
         record["url"] = "https://openai.com.example.org/research"
         self.assertEqual(archive.source_type(record, "en"), "Publisher report")
 
+    def test_chinese_regional_source_labels_match_shared_evidence_catalog(self):
+        from source_catalog import china_sources
+        for source in china_sources():
+            with self.subTest(source=source["name"]):
+                record = {"url": source["url"], "source": source["name"]}
+                if source["kind"] == "media":
+                    self.assertEqual(archive.source_type(record, "en"), "Publisher report")
+                else:
+                    self.assertEqual(archive.source_type(record, "en"), "First-party / official source")
+                    self.assertEqual(archive.source_type(record, "zh"), "第一方／官方来源")
+
     def test_insights_survive_feed_archive_corpus_and_scores_stay_folded(self):
         item = {"id": "bci", "domain": "neurotechnology", "category": "research", "source": "BrainGate",
                 "url": "https://www.braingate.org/research/", "published_at": "2026-11-12T01:00:00Z", "importance": 85,

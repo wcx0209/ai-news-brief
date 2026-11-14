@@ -1,0 +1,174 @@
+{
+  "sources": [
+    {
+      "url": "https://iue.cas.cn/xwzx/kydt/",
+      "name": "CAS Institute of Urban Environment 城市环境研究所",
+      "description": "[FIRST_PARTY] Official Chinese environmental engineering, water-quality technology, pollution remediation, atmospheric chemistry and industrial decarbonisation research",
+      "category": "climate_water_environment",
+      "importance_score": 90,
+      "region": "CN",
+      "kind": "research",
+      "verified_on": "2026-11-14",
+      "title_gate": true,
+      "html": {
+        "path_prefixes": ["/xwzx/kydt/20"],
+        "article_url_pattern": "/xwzx/kydt/20\\d{4}/t20\\d{6}_\\d+\\.html$",
+        "title_selector": ".xlmain .wztitle",
+        "date_selector": ".basicinfo .qtinfo",
+        "content_selector": "#zoom",
+        "timezone": "Asia/Shanghai"
+      }
+    },
+    {
+      "url": "https://aepi.caas.cn/kxyj/kyjz/index.htm",
+      "name": "Agro-Environmental Protection Institute 农业农村部环保所",
+      "description": "[FIRST_PARTY] Official Chinese environmental technology research on wastewater treatment, pollution remediation, biochar, microbial engineering, resource recovery and environmental monitoring",
+      "category": "climate_water_environment",
+      "importance_score": 88,
+      "region": "CN",
+      "kind": "research",
+      "verified_on": "2026-11-14",
+      "title_gate": true,
+      "html": {
+        "path_prefixes": ["/xwzx/xwdt/"],
+        "article_url_pattern": "/xwzx/xwdt/[0-9a-f]{32}\\.htm$",
+        "title_selector": "meta[name='ArticleTitle']",
+        "content_selector": "article.subPage",
+        "timezone": "Asia/Shanghai"
+      }
+    },
+    {
+      "url": "https://www.h2o-china.com/news/",
+      "name": "H2O China 中国水网",
+      "description": "Chinese water-industry specialist reporting on wastewater treatment, membrane systems, water reuse, environmental engineering, industrial water technology and deployment",
+      "category": "climate_water_environment",
+      "importance_score": 84,
+      "region": "CN",
+      "kind": "media",
+      "verified_on": "2026-11-14",
+      "title_gate": true,
+      "html": {
+        "path_prefixes": ["/news/"],
+        "article_url_pattern": "/news/\\d+\\.html$",
+        "title_selector": ".newscontent_press h1",
+        "date_selector": ".newscontent_press_con p.fl",
+        "content_selector": "#txtedit",
+        "timezone": "Asia/Shanghai"
+      }
+    },
+    {
+      "url": "https://ipp.caas.cn/kyjz/index.htm",
+      "name": "CAAS Institute of Plant Protection 中国农科院植保所",
+      "description": "[FIRST_PARTY] Official Chinese crop-protection research on agricultural drones, precision spraying, engineered crop immunity, biopesticides and smart agricultural technology",
+      "category": "agrifood_technology",
+      "importance_score": 90,
+      "region": "CN",
+      "kind": "research",
+      "verified_on": "2026-11-14",
+      "title_gate": true,
+      "html": {
+        "path_prefixes": ["/kyjz/"],
+        "article_url_pattern": "/kyjz/[0-9a-f]{32}\\.htm$",
+        "title_selector": "meta[name='ArticleTitle']",
+        "content_selector": ".article",
+        "timezone": "Asia/Shanghai"
+      }
+    },
+    {
+      "url": "https://ifst.caas.cn/xwzx/kyjz/index.htm",
+      "name": "CAAS Institute of Food Science and Technology 中国农科院加工所",
+      "description": "[FIRST_PARTY] Official Chinese food-processing technology, plant protein engineering, fermentation, food-quality sensing, preservation and scalable food-production research",
+      "category": "agrifood_technology",
+      "importance_score": 90,
+      "region": "CN",
+      "kind": "research",
+      "verified_on": "2026-11-14",
+      "title_gate": true,
+      "html": {
+        "path_prefixes": ["/xwzx/kyjz/"],
+        "article_url_pattern": "/xwzx/kyjz/[0-9a-f]{32}\\.htm$",
+        "title_selector": "meta[name='ArticleTitle']",
+        "content_selector": ".article.art",
+        "timezone": "Asia/Shanghai"
+      }
+    },
+    {
+      "url": "https://cri.caas.cn/sylm/kyjz/index.htm",
+      "name": "CAAS Cotton Research Institute 中国农科院棉花所",
+      "description": "[FIRST_PARTY] Official Chinese crop-genomics tools, molecular breeding, phenotyping, climate-resilient crops and agricultural sensing research",
+      "category": "agrifood_technology",
+      "importance_score": 88,
+      "region": "CN",
+      "kind": "research",
+      "verified_on": "2026-11-14",
+      "title_gate": true,
+      "html": {
+        "path_prefixes": ["/sylm/kyjz/"],
+        "article_url_pattern": "/sylm/kyjz/[0-9a-f]{32}\\.htm$",
+        "title_selector": "meta[name='ArticleTitle']",
+        "content_selector": ".details-content.article",
+        "timezone": "Asia/Shanghai"
+      }
+    },
+    {
+      "url": "https://www.farsoon-gl.com/act/news/",
+      "name": "Farsoon Technologies 华曙高科",
+      "description": "[FIRST_PARTY] Official global English announcements from Chinese industrial additive-manufacturing company Farsoon, covering metal and polymer production systems, materials, process engineering and mass-production deployment",
+      "category": "advanced_manufacturing",
+      "importance_score": 90,
+      "region": "CN",
+      "kind": "company",
+      "verified_on": "2026-11-14",
+      "title_gate": true,
+      "html": {
+        "path_prefixes": ["/news/"],
+        "article_url_pattern": "/news/[^/?#]+/?$",
+        "title_selector": ".newinfotext h3",
+        "date_selector": ".newinfotext p",
+        "content_selector": ".newsinfo-left .newsinfomin",
+        "timezone": "Asia/Shanghai"
+      }
+    },
+    {
+      "url": "https://www.nanjixiong.com/",
+      "name": "Nanjixiong 南极熊3D打印",
+      "description": "Chinese specialist reporting on additive manufacturing, industrial 3D printing, production applications, advanced fabrication and manufacturing companies",
+      "category": "advanced_manufacturing",
+      "importance_score": 84,
+      "region": "CN",
+      "kind": "media",
+      "verified_on": "2026-11-14",
+      "title_gate": true,
+      "html": {
+        "path_prefixes": ["/thread-"],
+        "article_url_pattern": "/thread-\\d+-1-1\\.html$",
+        "article_selector": ".m-article-list a.item-title",
+        "title_selector": "#thread_subject",
+        "content_selector": "td[id^='postmessage_']",
+        "index_item_selector": ".m-article-list .article-item",
+        "index_date_selector": ".yide-sort-time",
+        "require_index_date": true,
+        "timezone": "Asia/Shanghai"
+      }
+    },
+    {
+      "url": "https://ciomp.cas.cn/kydt/",
+      "name": "CAS Changchun Institute of Optics 长春光机所",
+      "description": "[FIRST_PARTY] Official Chinese precision-manufacturing, optical fabrication, laser processing, semiconductor-device integration and additive-manufacturing research",
+      "category": "advanced_manufacturing",
+      "importance_score": 90,
+      "region": "CN",
+      "kind": "research",
+      "verified_on": "2026-11-14",
+      "title_gate": true,
+      "html": {
+        "path_prefixes": ["/kydt/20"],
+        "article_url_pattern": "/kydt/20\\d{4}/t20\\d{6}_\\d+\\.html$",
+        "title_selector": "h2.title",
+        "date_selector": ".detail .zuozhe",
+        "content_selector": "#detailsCont",
+        "timezone": "Asia/Shanghai"
+      }
+    }
+  ]
+}

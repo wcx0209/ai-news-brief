@@ -1,0 +1,46 @@
+name: China specialist source health
+
+on:
+  workflow_dispatch:
+    inputs:
+      seed_sources:
+        description: Activate the source catalog in Postgres after all checks pass (no LLM calls)
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: polyemergence-daily-brief
+  cancel-in-progress: false
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      INBRIEF_CONFIG_PATH: config.free.yaml
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0
+        with:
+          python-version: "3.11"
+      - name: Install source checker only
+        run: pip install beautifulsoup4 curl_cffi feedparser httpx pyyaml python-dotenv psycopg2-binary pgvector
+      - name: Validate regional catalog and date adapters offline
+        run: python -m unittest discover -s tests -p test_china_sources.py -v
+      - name: Probe public source indexes and dated articles
+        run: python scripts/check_china_sources.py --output output/china-source-health.json
+      - name: Seed checked sources into permanent cloud storage
+        if: ${{ inputs.seed_sources }}
+        env:
+          INBRIEF_SUPABASE_DB_URL: ${{ secrets.INBRIEF_SUPABASE_DB_URL }}
+        run: python scripts/bootstrap_sources.py
+      - name: Retain source health evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: china-source-health
+          path: output/china-source-health.json
+          retention-days: 30

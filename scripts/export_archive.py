@@ -21,7 +21,7 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "src"))
 from relevance_filter import passes_source_ai_filter
 from editorial_domains import categories, category_ids, category_labels, domains, infer_domain, match_category
-from editorial_insights import enrich_item, article_reading_context
+from editorial_insights import enrich_item, article_reading_context, evidence_type
 from archive_exploration import normalize_tag, topic_labels, related_articles
 from source_images import normalize_source_url
 from export_public_feed import image_fields, merge_image_fields
@@ -449,6 +449,8 @@ def content_type(record, locale):
 
 
 def source_type(record, locale):
+    if evidence_type(record) == "official_release":
+        return "First-party / official source" if locale == "en" else "第一方／官方来源"
     host = (urlparse(record["url"]).hostname or "").lower()
     def within(domain):
         return host == domain or host.endswith("." + domain)

@@ -7,6 +7,8 @@ import sys
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(ROOT, "src"))
 
+from source_catalog import china_source_tuples
+
 SOURCE_URL_UPDATES = {
     "https://www.nasa.gov/rss/dyn/breaking_news.rss": "https://www.nasa.gov/news-release/feed/",
 }
@@ -239,6 +241,10 @@ SOURCES = [
     ("https://www.youtube.com/feeds/videos.xml?channel_id=UCKuHAxZoh99t8uyPQhoDR3A", "Bessemer Venture Partners", "Official cloud, vertical AI, and startup market conversations", "interviews", 78),
     ("https://www.youtube.com/feeds/videos.xml?channel_id=UCeW5IMmy5uUzEv3f4ijV2cg", "IMDA Singapore", "Official Singapore AI adoption, governance, and digital policy updates", "news", 88),
 ]
+
+# Regional specialist coverage is kept together with its HTML adapter metadata
+# so an added source cannot silently fall back to parsing an HTML index as RSS.
+SOURCES.extend(china_source_tuples())
 
 
 def main():
