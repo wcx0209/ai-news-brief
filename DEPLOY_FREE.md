@@ -31,6 +31,20 @@ For a presentation or methodology change, a manual workflow run can set
 stored Postgres articles without new collection or LLM calls. Scheduled runs
 continue normal collection at 06:00 and 18:00 UTC.
 
+Historical archive discovery is field-first at `/en/archive/` and `/zh/archive/`.
+Each field has one bilingual static collection with keyword, tag and month
+filters (18 visible results per batch); all titles remain readable without JS.
+Tag query URLs reuse the same canonical field page rather than generating thin
+pages. Related reads are calculated from existing tags, dates and titles, never
+by new LLM calls. Matching is conservative, same-field and deduplicated; labels
+mean earlier/newer coverage or another source, not verified follow-ups.
+
+The exporter rejects future source/site dates from the corpus, feeds and indexes.
+Previously published URLs remain addressable. Retained unlisted articles receive
+the current reading template without returning to the curated feed. Future-dated
+URLs receive a noindex date-review notice with the complete original public HTML
+stored inertly in the page for safe recovery; no database history is deleted.
+
 Reader likes and comments are handled separately by a Cloudflare Pages Function and a free D1 database. The service stores a salted visitor hash for like deduplication and rate limiting. It never stores the full visitor IP; public comments show only `poly`, the approximate Cloudflare region, and the final three IP characters.
 
 ## 1. Gemini

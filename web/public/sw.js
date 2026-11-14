@@ -1,4 +1,4 @@
-const CACHE_NAME = "polyemergence-v14";
+const CACHE_NAME = "polyemergence-v15";
 const APP_SHELL = [
   "/",
   "/en/",
@@ -78,7 +78,7 @@ self.addEventListener("fetch", event => {
     return;
   }
 
-  if (["/app.js", "/share.js", "/styles.css", "/manifest.webmanifest"].includes(url.pathname)) {
+  if (["/app.js", "/share.js", "/styles.css", "/archive.css", "/archive-explore.js", "/archive-media.js", "/analytics.js", "/manifest.webmanifest"].includes(url.pathname)) {
     event.respondWith(networkFirst(request, url.pathname));
     return;
   }

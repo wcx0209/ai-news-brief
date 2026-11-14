@@ -8,10 +8,11 @@ import os
 import re
 import sys
 from collections import Counter, defaultdict
+from html.parser import HTMLParser
 from datetime import datetime, timedelta, timezone
 from email.utils import format_datetime
 from pathlib import Path
-from urllib.parse import urlparse
+from urllib.parse import urlencode, urlparse
 from xml.etree import ElementTree as ET
 from zoneinfo import ZoneInfo
 
@@ -21,6 +22,7 @@ sys.path.insert(0, str(ROOT / "src"))
 from relevance_filter import passes_source_ai_filter
 from editorial_domains import categories, category_ids, category_labels, domains, infer_domain, match_category
 from editorial_insights import enrich_item, article_reading_context
+from archive_exploration import normalize_tag, topic_labels, related_articles
 
 
 SITE = "https://polyemergence.com"
@@ -106,13 +108,14 @@ PROSE_HEADINGS = {
     "installationandusage", "installationanduse", "usage", "gettingstarted",
     "applications", "practicalapplications", "results", "findings", "keyfindings",
     "researchmethod", "methodology", "limitations", "availability", "pricing",
+    "datasetdetails", "industryimpact",
     "whatchanged", "whatitmeans", "nextsteps", "futureimpact", "futureoutlook",
     "概述", "简介", "背景", "核心特点", "核心功能", "主要功能", "详细功能",
     "工作原理", "实现原理", "技术细节", "技术概述", "系统架构", "技术架构",
     "安装", "使用方法", "安装与使用", "快速开始", "应用场景", "实际应用",
     "研究方法", "研究结果", "主要发现", "局限", "限制", "局限性",
     "可用性", "定价", "未来影响", "行业实际影响", "未来展望", "下一步",
-    "背景与定位", "核心能力与表现", "效率与行业影响",
+    "背景与定位", "核心能力与表现", "效率与行业影响", "性能与关键细节", "生态整合与应用",
 }
 
 
@@ -393,6 +396,25 @@ def field_path(locale, domain):
     return f"/{locale}/fields/{domain}/"
 
 
+def archive_field_path(locale, domain, tag=None):
+    path = f"/{locale}/archive/fields/{domain}/"
+    return path + ("?" + urlencode({"tag": normalize_tag(tag)}) if tag else "")
+
+
+def eligible_archive_record(record, now=None):
+    """Invalid/future source dates must never create public discovery entries."""
+    now = now or datetime.now(timezone.utc)
+    for key in ("published", "source_published", "site_published", "first_seen_at"):
+        value = record.get(key)
+        if value is not None:
+            try:
+                if parse_datetime(value) > now:
+                    return False
+            except (TypeError, ValueError):
+                return False
+    return bool(record.get("published"))
+
+
 def record_domain(record):
     domain = record.get("domain")
     if domain in DOMAIN_REGISTRY:
@@ -458,6 +480,9 @@ def trust_box(record, locale):
     date_label = ("First seen" if locale == "en" else "首次发现") if first_seen else c["published"]
     published_local = source_published.astimezone(LOCAL_TZ) if source_published else None
     date_markup = f'<time datetime="{source_published.isoformat()}">{published_local:%Y-%m-%d %H:%M} SGT</time>' if source_published else ("Unknown" if locale == "en" else "时间未知")
+    if record.get("date_basis") == "archive_date":
+        date_label = "Archive date" if locale == "en" else "归档日期"
+        date_markup = f'<time datetime="{published_local:%Y-%m-%d}">{published_local:%Y-%m-%d}</time>'
     process = (
         "AI-assisted discovery, translation, summarisation, classification and scoring; standards and corrections are maintained by the editorial desk."
         if locale == "en" else
@@ -585,9 +610,11 @@ def enrich_record(record):
     return record
 
 
-def select_daily(records):
+def select_daily(records, now=None):
     grouped = defaultdict(list)
     for record in records:
+        if not eligible_archive_record(record, now):
+            continue
         grouped[record["published"].astimezone(LOCAL_TZ).date()].append(record)
     selected = {}
     for day, items in grouped.items():
@@ -681,21 +708,21 @@ def page_shell(locale, title, description, canonical, alternate, body, structure
     fields_current = ' aria-current="page"' if f"/{locale}/fields/" in current_path else ""
     archive_current = ' aria-current="page"' if f"/{locale}/archive/" in current_path else ""
     body_class = ' class="archive-detail"' if og_type == "article" else ""
-    media_script = '<script defer src="/archive-media.js?v=1"></script>' if og_type == "article" else ""
+    media_script = '<script defer src="/archive-media.js?v=2"></script><script defer src="/archive-explore.js?v=1"></script>'
     return f'''<!doctype html>
 <html lang="{c['lang']}" data-locale="{locale}"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<script defer src="/analytics.js?v=2"></script><script defer src="/share.js?v=20261109-1"></script><title>{esc(title)}</title>
+<script defer src="/analytics.js?v=3"></script><script defer src="/share.js?v=20261109-1"></script><title>{esc(title)}</title>
 <meta name="description" content="{esc(description)}"><meta name="robots" content="index,follow,max-snippet:-1,max-image-preview:large">
 <link rel="canonical" href="{esc(canonical)}"><link rel="alternate" hreflang="{c['lang']}" href="{esc(canonical)}">
 <link rel="alternate" hreflang="{COPY[other]['lang']}" href="{esc(alternate)}"><link rel="alternate" hreflang="x-default" href="{esc(canonical if locale == 'en' else alternate)}">
 <link rel="alternate" type="application/rss+xml" title="{esc(c['brand'])} RSS" href="/feed-{locale}.xml">
 <meta property="og:type" content="{esc(og_type)}"><meta property="og:site_name" content="{esc(c['brand'])}"><meta property="og:title" content="{esc(title)}"><meta property="og:description" content="{esc(description)}"><meta property="og:url" content="{esc(canonical)}"><meta property="og:image" content="{SITE}/assets/social-preview.png">
 <meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="{esc(title)}"><meta name="twitter:description" content="{esc(description)}"><meta name="twitter:image" content="{SITE}/assets/social-preview.png">
-<link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="/styles.css?v=20261113-1"><link rel="stylesheet" href="/archive.css?v=8">{media_script}{structured_html}</head>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="/styles.css?v=20261113-1"><link rel="stylesheet" href="/archive.css?v=9">{media_script}{structured_html}</head>
 <body{body_class}><header class="site-header"><a class="brand" href="/{locale}/" aria-label="{esc(c['brand'])}"><img src="/assets/{logo}" alt="{esc(c['brand'])}" width="420" height="70"></a>
 <nav class="desktop-nav" aria-label="{'Primary' if locale == 'en' else '主导航'}"><a href="/{locale}/#fields"{fields_current}>{esc(c['fields'])}</a><a href="/{locale}/archive/"{archive_current}>{esc(c['archive'])}</a><a href="/{locale}/#about">{esc(c['method'])}</a></nav>
-<div class="header-tools"><span class="edition">{esc(c['edition'])}</span><div class="language-switch"><a href="{esc(alternate)}" hreflang="{COPY[other]['lang']}">{'中' if other == 'zh' else 'EN'}</a><span>|</span><a href="{esc(canonical)}" aria-current="page">{'中' if locale == 'zh' else 'EN'}</a></div></div></header>
+<div class="header-tools"><span class="edition">{esc(c['edition'])}</span><div class="language-switch"><a data-archive-locale href="{esc(alternate)}" hreflang="{COPY[other]['lang']}">{'中' if other == 'zh' else 'EN'}</a><span>|</span><a href="{esc(canonical)}" aria-current="page">{'中' if locale == 'zh' else 'EN'}</a></div></div></header>
 <main class="archive-main">{body}</main><footer><div class="footer-brand"><img src="/assets/{logo}" alt="{esc(c['brand'])}" width="360"></div><div class="footer-copy"><p>{esc(c['footer'])}</p><p class="company-note">{esc(c['company'])}</p><p class="footer-meta">{esc(c['fields'])}</p><nav class="footer-topics" aria-label="{esc(c['fields'])}">{field_links}</nav><p class="footer-meta">{esc(c['angles'])}</p><nav class="footer-topics" aria-label="{esc(c['angles'])}">{topic_links}</nav><p class="footer-meta"><a href="/{locale}/standards/">{esc(c['standards'])}</a> · <a href="/{locale}/corrections/">{esc(c['corrections'])}</a> · <a href="/feed-{locale}.xml">{esc(c['feed'])}</a> · <a href="/developers/">API / MCP</a></p></div></footer></body></html>'''
 
 
@@ -734,7 +761,10 @@ def story_html(record, locale, detail=False):
     date_label = ("First seen" if locale == "en" else "首次发现") if first_seen else c["published"]
     published_local = source_published.astimezone(LOCAL_TZ) if source_published else None
     date_markup = f'<time datetime="{source_published.isoformat()}">{published_local:%Y-%m-%d %H:%M} SGT</time>' if source_published else ("Unknown" if locale == "en" else "时间未知")
-    tags = "".join(f'<span>{esc(tag)}</span>' for tag in record["tags"])
+    if record.get("date_basis") == "archive_date":
+        date_label = "Archive date" if locale == "en" else "归档日期"
+        date_markup = f'<time datetime="{published_local:%Y-%m-%d}">{published_local:%Y-%m-%d}</time>'
+    tags = "".join(f'<a data-archive-tag href="{esc(archive_field_path(locale, record_domain(record), tag))}">{esc(tag)}</a>' for tag in record["tags"] if normalize_tag(tag))
     score_html = "".join(f'<span><small>{esc(c[key])}</small><strong>{scores[key]}</strong></span>' for key in ("signal", "structure", "consequence", "confidence", "momentum"))
     anchor = anchor_for(record)
     day = record["published"].astimezone(LOCAL_TZ).date()
@@ -769,11 +799,12 @@ def story_html(record, locale, detail=False):
         summary_html = f'<p class="archive-summary">{esc(archive_excerpt(text, locale))}</p><a class="archive-summary-link" href="{article_path(locale, day, record)}">{summary_label} →</a>'
     screening = "View selection rationale" if locale == "en" else "查看筛选依据"
     share_button = f'''<button class="share-button" type="button" data-share-button data-share-id="{esc(record['id'])}" data-share-locale="{locale}" data-share-title="{esc(clean_text(text['title']))}" data-share-summary="{esc(share_summary)}" data-share-url="{share_url}" aria-label="{esc(c['share'])}: {esc(clean_text(text['title']))}"><svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="18" cy="5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="19" r="2.5"/><path d="m8.2 10.8 7.6-4.5M8.2 13.2l7.6 4.5"/></svg><span>{esc(c['share'])}</span></button>'''
+    screening_html = f'<details class="screening-details"><summary>{screening}</summary><div class="story-evidence">{evidence}</div>{context_html}<p>{esc(c["importance"])} {record["importance"]}/100</p><div class="archive-scores" aria-label="Polyemergence Method scores">{score_html}</div>{editorial_analysis_html(record, locale)}</details>' if record.get("scores_available", True) else ""
     return f'''<article class="archive-story" id="{anchor_for(record)}" data-story-id="{esc(record['id'])}">
 <{heading}>{title_html}</{heading}>
 {dek_html}{provenance}
 <div class="story-related">{related}</div>{summary_html}
-<details class="screening-details"><summary>{screening}</summary><div class="story-evidence">{evidence}</div>{context_html}<p>{esc(c['importance'])} {record['importance']}/100</p><div class="archive-scores" aria-label="Polyemergence Method scores">{score_html}</div>{editorial_analysis_html(record, locale)}</details>{trust_box(record, locale)}<div class="archive-story-footer"><div class="archive-tags">{tags}</div><div class="archive-actions">{share_button}<a class="archive-original" href="{esc(record['url'])}" target="_blank" rel="noopener noreferrer">{esc(c['original'])} ↗</a></div></div></article>'''
+{screening_html}{trust_box(record, locale)}<div class="archive-story-footer"><div class="archive-tags">{tags}</div><div class="archive-actions">{share_button}<a class="archive-original" href="{esc(record['url'])}" target="_blank" rel="noopener noreferrer">{esc(c['original'])} ↗</a></div></div></article>'''
 
 
 def render_daily(output, locale, day, items, ordered_days):
@@ -846,7 +877,40 @@ def render_daily_brief(output, locale, day, items):
     path.write_text(page_shell(locale, title, description, canonical, alternate, body, structured), encoding="utf-8")
 
 
-def render_article(output, locale, record):
+def archive_thumbnail(record, css_class):
+    image = safe_url(record.get("image_url"))
+    if image == "#" or image == SITE + "/assets/social-preview.png":
+        return ""
+    return f'<figure class="{css_class}" data-archive-media><img src="{esc(image)}" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer"><p data-archive-media-fallback hidden></p></figure>'
+
+
+def continue_reading_html(record, records, locale):
+    recommendations = related_articles(record, records)
+    domain = record_domain(record)
+    label = DOMAIN_REGISTRY[domain]["label"][locale]
+    kinds = {
+        "en": {"background": "Earlier coverage", "recent": "More recent coverage", "perspective": "Another source"},
+        "zh": {"background": "了解背景", "recent": "较新相关报道", "perspective": "换个来源看"},
+    }
+    cards = []
+    for pos, match in enumerate(recommendations):
+        item = match["record"]
+        day = item["published"].astimezone(LOCAL_TZ).date()
+        date, first_seen = display_date(item)
+        date_text = date.astimezone(LOCAL_TZ).strftime("%Y-%m-%d") if date else ("Date unknown" if locale == "en" else "时间未知")
+        shared = " · ".join(match["shared_tags"][:2])
+        reason = ("Shared topic: " if locale == "en" else "共同主题：") + shared
+        cards.append(f'''<a class="archive-recommendation{' is-featured' if pos == 0 else ''}" href="{article_path(locale, day, item)}" data-related-kind="{esc(match['kind'])}" data-related-id="{esc(item['id'])}">{archive_thumbnail(item, 'archive-recommendation-image')}<div class="archive-recommendation-copy"><p class="archive-card-meta">{esc(kinds[locale][match['kind']])} · {esc(date_text)}</p><h3>{esc(clean_text(item[locale]['title']))}</h3><p class="archive-card-reason">{esc(reason)}</p><span class="archive-card-source">{esc(item['source'])} →</span></div></a>''')
+    title = "Keep exploring" if locale == "en" else "继续探索"
+    intro = "Follow the topic, not just the headline." if locale == "en" else "顺着这条线索，看看它从哪里来，又走到了哪里。"
+    browse = f"Explore the {label} archive" if locale == "en" else f"探索{label}历史报道"
+    grid = f'<div class="archive-recommendations">{"".join(cards)}</div>' if cards else ""
+    # Sparse archives still offer a useful domain-scoped route, without padding
+    # the recommendation set with unrelated or cross-field headlines.
+    return f'<section class="archive-continue" aria-labelledby="continue-reading"><div class="archive-continue-heading"><p class="section-index">POLYEMERGENCE / EXPLORE</p><h2 id="continue-reading">{title}</h2><p>{intro}</p></div>{grid}<a class="archive-summary-link" href="{archive_field_path(locale, domain)}">{esc(browse)} →</a></section>'
+
+
+def render_article(output, locale, record, records=None):
     c = COPY[locale]
     other = "zh" if locale == "en" else "en"
     day = record["published"].astimezone(LOCAL_TZ).date()
@@ -858,7 +922,11 @@ def render_article(output, locale, record):
     domain = record_domain(record)
     field_label = DOMAIN_REGISTRY[domain]["label"][locale]
     daily_link = f'<a href="{daily_brief_path(locale, day)}">{esc(SEO_COPY[locale]["daily"])}</a>' if domain == "ai" else ""
-    body = f'''<nav class="archive-period-nav" aria-label="{'Article navigation' if locale == 'en' else '文章导航'}"><a href="{archive_path(locale, day)}">← {day.isoformat()}</a><a href="{field_path(locale, domain)}">{esc(field_label)}</a>{daily_link}<a href="/{locale}/archive/">{esc(c['all'])}</a></nav><section class="archive-list archive-article-page">{story_html(record, locale, detail=True)}</section>'''
+    archive_label = "Historical brief" if locale == "en" else "历史简报"
+    legacy_note = ('This page is retained as a historical record and is not part of the current curated selection.' if locale == 'en' else '此页作为历史记录保留，不属于当前精选内容。') if record.get("legacy_only") else ""
+    note = f'<p class="archive-history-note">{archive_label} · {day.isoformat()}{" · " + esc(legacy_note) if legacy_note else ""}</p>'
+    back = archive_field_path(locale, domain) if record.get("legacy_only") else archive_path(locale, day)
+    body = f'''<nav class="archive-period-nav" aria-label="{'Article navigation' if locale == 'en' else '文章导航'}"><a href="{back}">← {day.isoformat() if not record.get("legacy_only") else esc(field_label)}</a><a href="{archive_field_path(locale, domain)}">{esc(field_label)}</a>{daily_link if not record.get("legacy_only") else ""}<a href="/{locale}/archive/">{esc(c['all'])}</a></nav>{note}<section class="archive-list archive-article-page">{story_html(record, locale, detail=True)}</section>{continue_reading_html(record, records or [], locale)}'''
     schema_image = record.get("image_url")
     if not schema_image or schema_image == "#":
         schema_image = SITE + "/assets/social-preview.png"
@@ -938,10 +1006,62 @@ def render_indexes(output, locale, grouped):
     canonical = f"{SITE}/{locale}/archive/"
     other = "zh" if locale == "en" else "en"
     alternate = f"{SITE}/{other}/archive/"
-    body = f'<section class="archive-hero archive-hero-root"><p class="section-index">POLYEMERGENCE</p><h1>{esc(c["title"])}</h1><p>{esc(c["intro"])}</p></section><section class="archive-months"><h2>{esc(c["months"])}</h2><div>{"".join(month_cards)}</div></section>'
+    records = [record for day in ordered_days for record in grouped[day]]
+    counts = Counter(record_domain(record) for record in records)
+    field_cards = []
+    for index, (domain, field) in enumerate(DOMAIN_REGISTRY.items(), 1):
+        count = counts[domain]
+        count_text = f"{count} stories" if locale == "en" else f"{count} 条历史报道"
+        if not count:
+            count_text = "Coverage coming soon" if locale == "en" else "等待首条报道"
+        field_cards.append(f'<a class="archive-field-card" data-archive-field="{esc(domain)}" href="{archive_field_path(locale, domain)}"><span class="archive-field-index">{index:02d} /</span><h2>{esc(field["label"][locale])}</h2><p>{esc(field["description"][locale])}</p><span class="archive-field-count">{esc(count_text)} →</span></a>')
+        render_archive_field(output, locale, domain, [record for record in records if record_domain(record) == domain])
+    headline = "How we got here." if locale == "en" else "科技如何走到今天。"
+    intro = "Choose a field. Follow a topic. Discover the stories behind the change." if locale == "en" else "先选一个领域，再顺着主题，找到变化的来路。"
+    choose = "Choose your field" if locale == "en" else "从你关心的领域开始"
+    by_date = "Browse by publication date" if locale == "en" else "按发布日期查找"
+    body = f'<section class="archive-hero archive-hero-root archive-explore-hero"><p class="section-index">{esc(c["title"])}</p><h1>{headline}</h1><p>{intro}</p></section><section aria-labelledby="choose-field"><div class="archive-explore-intro"><h2 id="choose-field">{choose}</h2><p>{len(records)} {esc(c["stories"])} · {len(DOMAIN_REGISTRY)} {"fields" if locale == "en" else "个领域"}</p></div><div class="archive-field-grid">{"".join(field_cards)}</div></section><details class="archive-date-browser"><summary>{by_date}</summary><section class="archive-months"><h2>{esc(c["months"])}</h2><div>{"".join(month_cards)}</div></section></details>'
     path = output / locale / "archive" / "index.html"
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(page_shell(locale, f"{c['title']} | {c['brand']}", c["intro"], canonical, alternate, body), encoding="utf-8")
+
+
+def render_archive_field(output, locale, domain, records):
+    """Small static field collections: no public-corpus download or tag pages."""
+    other = "zh" if locale == "en" else "en"
+    field = DOMAIN_REGISTRY[domain]
+    label = field["label"][locale]
+    ordered = sorted(records, key=lambda item: (display_date(item)[0] or item["published"], item["importance"], str(item["id"])), reverse=True)
+    canonical = SITE + archive_field_path(locale, domain)
+    alternate = SITE + archive_field_path(other, domain)
+    title = f"{label} Archive" if locale == "en" else f"{label}历史报道"
+    description = f"Explore {label} coverage by topic, keyword and publication date." if locale == "en" else f"按主题、关键词和发布时间探索{label}历史报道。"
+    chips = "".join(f'<a data-archive-tag href="{esc(archive_field_path(locale, domain, topic["tag"]))}">{esc(topic["label"])} <span>{topic["count"]}</span></a>' for topic in topic_labels(ordered))
+    months = sorted({(display_date(record)[0] or record["published"]).astimezone(LOCAL_TZ).strftime("%Y-%m") for record in ordered}, reverse=True)
+    options = "".join(f'<option value="{month}">{month}</option>' for month in months)
+    cards = []
+    for pos, record in enumerate(ordered):
+        day = record["published"].astimezone(LOCAL_TZ).date()
+        published, first_seen = display_date(record)
+        date = published.astimezone(LOCAL_TZ) if published else None
+        month = date.strftime("%Y-%m") if date else ""
+        excerpt = archive_excerpt(record[locale], locale)
+        excerpt = excerpt[:180 if locale == "en" else 95].rstrip() + ("…" if len(excerpt) > (180 if locale == "en" else 95) else "")
+        tags = [normalize_tag(tag) for tag in record["tags"] if normalize_tag(tag)]
+        search = " ".join([record[locale]["title"], record[locale]["summary"], record["source"], *record["tags"]])
+        date_text = date.strftime("%Y-%m-%d") if date else ("Date unknown" if locale == "en" else "时间未知")
+        date_text = (("First seen " if locale == "en" else "首次发现 ") if first_seen else "") + date_text
+        cards.append(f'''<article class="archive-explore-card{' is-featured' if pos == 0 else ''}" data-archive-entry data-search="{esc(search)}" data-tags="{esc(json.dumps(tags, ensure_ascii=False))}" data-month="{month}">{archive_thumbnail(record, 'archive-explore-image')}<div class="archive-explore-copy"><p class="archive-card-meta">{esc(date_text)} · {esc(record['source'])}</p><h2><a href="{article_path(locale, day, record)}">{esc(clean_text(record[locale]['title']))}</a></h2><p class="archive-card-excerpt">{esc(excerpt)}</p><a class="archive-summary-link" href="{article_path(locale, day, record)}">{'Read the brief' if locale == 'en' else '阅读简报'} →</a></div></article>''')
+    search_label = "Search this field" if locale == "en" else "在此领域内搜索"
+    month_label = "Publication month" if locale == "en" else "发布月份"
+    all_months = "All months" if locale == "en" else "全部月份"
+    reset = "Clear filters" if locale == "en" else "清除筛选"
+    all_fields = "Choose another field" if locale == "en" else "选择其他领域"
+    body = f'''<section class="archive-hero archive-explore-hero"><p class="section-index">{COPY[locale]['archive']}</p><h1>{esc(label)}</h1><p>{esc(description)}</p></section><nav class="archive-period-nav"><a href="/{locale}/archive/">← {all_fields}</a><a href="{field_path(locale, domain)}">{'Latest coverage' if locale == 'en' else '最新简报'} →</a></nav><section class="archive-browser" data-archive-browser><form class="archive-controls" data-archive-filters action="{archive_field_path(locale, domain)}" method="get"><label>{search_label}<input type="search" name="q" placeholder="{search_label}" maxlength="160" autocomplete="off"></label><label>{month_label}<select name="month"><option value="">{all_months}</option>{options}</select></label><input type="hidden" name="tag" value=""><button type="submit">{'Search' if locale == 'en' else '搜索'}</button><button type="button" data-archive-reset>{reset}</button></form><nav class="archive-topic-links" aria-label="{'Explore recurring topics' if locale == 'en' else '探索已有主题'}">{chips}</nav><p class="archive-results-count" data-archive-count aria-live="polite" aria-atomic="true">{len(ordered)} {'stories' if locale == 'en' else '条历史报道'}</p><p class="archive-filter-note">{'Topics link related coverage, not verified causal connections.' if locale == 'en' else '主题关联用于发现相关报道，不代表已证实的因果关系。'}</p><div class="archive-explore-list">{"".join(cards)}</div><p data-archive-empty {'hidden' if ordered else ''}>{'No matching stories yet. Clear filters or choose another field.' if locale == 'en' else '暂无符合条件的报道，可清除筛选或选择其他领域。'}</p><button type="button" class="archive-load-more" data-archive-more hidden>{'Show more stories' if locale == 'en' else '查看更多报道'}</button></section>'''
+    structured = {"@context": "https://schema.org", "@type": "CollectionPage", "name": title, "description": description, "url": canonical, "inLanguage": COPY[locale]["lang"], "mainEntity": {"@type": "ItemList", "numberOfItems": len(ordered), "itemListElement": [{"@type": "ListItem", "position": index, "url": SITE + article_path(locale, item["published"].astimezone(LOCAL_TZ).date(), item), "name": clean_text(item[locale]["title"])} for index, item in enumerate(ordered, 1)]}}
+    path = output / archive_field_path(locale, domain).lstrip("/") / "index.html"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(page_shell(locale, f"{title} | {COPY[locale]['brand']}", description, canonical, alternate, body, structured), encoding="utf-8")
 
 
 def render_rss(output, locale, grouped, limit=100):
@@ -1012,6 +1132,17 @@ def render_sitemap(output, grouped):
             ET.SubElement(node, f"{{{namespace}}}lastmod").text = latest_day.isoformat()
             for lang, locale in (("en", "en"), ("zh-Hans", "zh"), ("x-default", "en")):
                 ET.SubElement(node, f"{{{xhtml}}}link", {"rel": "alternate", "hreflang": lang, "href": SITE + topic_path(locale, category)})
+    for domain in DOMAIN_REGISTRY:
+        field_records = [record for items in grouped.values() for record in items if record_domain(record) == domain]
+        if not field_records:
+            continue  # Empty fields remain accessible, not indexed as thin pages.
+        lastmod = max(record["site_published"] for record in field_records).date().isoformat()
+        for current_locale in ("en", "zh"):
+            node = ET.SubElement(root, f"{{{namespace}}}url")
+            ET.SubElement(node, f"{{{namespace}}}loc").text = SITE + archive_field_path(current_locale, domain)
+            ET.SubElement(node, f"{{{namespace}}}lastmod").text = lastmod
+            for lang, locale in (("en", "en"), ("zh-Hans", "zh"), ("x-default", "en")):
+                ET.SubElement(node, f"{{{xhtml}}}link", {"rel": "alternate", "hreflang": lang, "href": SITE + archive_field_path(locale, domain)})
     for page in ("standards", "corrections"):
         for current_locale in ("en", "zh"):
             node = ET.SubElement(root, f"{{{namespace}}}url")
@@ -1022,15 +1153,16 @@ def render_sitemap(output, grouped):
     ET.ElementTree(root).write(output / "archive-sitemap.xml", encoding="utf-8", xml_declaration=True)
 
 
-def render_news_sitemap(output, grouped):
+def render_news_sitemap(output, grouped, now=None):
     namespace = "http://www.sitemaps.org/schemas/sitemap/0.9"
     news = "http://www.google.com/schemas/sitemap-news/0.9"
     ET.register_namespace("", namespace)
     ET.register_namespace("news", news)
     root = ET.Element(f"{{{namespace}}}urlset")
-    cutoff = datetime.now(timezone.utc) - timedelta(days=2)
+    now = now or datetime.now(timezone.utc)
+    cutoff = now - timedelta(days=2)
     recent = sorted(
-        (record for items in grouped.values() for record in items if record["site_published"] >= cutoff and not is_trending(record)),
+        (record for items in grouped.values() for record in items if cutoff <= record["site_published"] <= now and not is_trending(record) and eligible_archive_record(record, now)),
         key=lambda record: record["site_published"], reverse=True,
     )[:500]
     for record in recent:
@@ -1082,6 +1214,189 @@ def render_public_data(output, records):
     }, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
 
 
+class LegacyArticleReader(HTMLParser):
+    """Read only published prose/metadata; never execute or reuse old HTML."""
+
+    def __init__(self):
+        super().__init__(convert_charrefs=True)
+        self.stack = []
+        self.prose, self.paragraphs, self.dek, self.source = [], [], [], []
+        self.provenance_times, self.date_labels = [], []
+
+    def handle_starttag(self, tag, attrs):
+        attrs = dict(attrs)
+        classes = set(attrs.get("class", "").split())
+        in_article = any("archive-story" in node[1] for node in self.stack)
+        if in_article and tag == "time" and attrs.get("datetime") and any("archive-provenance" in node[1] for node in self.stack):
+            self.provenance_times.append(attrs["datetime"])
+        mode = None
+        if in_article:
+            if "archive-dek" in classes or any(node[2] == "dek" for node in self.stack):
+                mode = "dek"
+            elif "archive-prose" in classes or any(node[2] == "prose" for node in self.stack):
+                mode = "prose"
+            elif tag == "p" and self.stack[-1][0] == "article" and "archive-dek" not in classes:
+                mode = "paragraph"
+            elif any(node[2] == "paragraph" for node in self.stack):
+                mode = "paragraph"
+            elif "archive-source" in classes:
+                mode = "source"
+        if tag not in {"br", "img", "hr", "input", "meta", "link", "source", "wbr"}:
+            self.stack.append((tag, classes, mode))
+        if tag in {"p", "h2", "h3", "li", "br"}:
+            self._append("\n\n" if tag != "li" else "\n• ")
+
+    def handle_endtag(self, tag):
+        if tag in {"p", "h2", "h3", "li", "pre"}:
+            self._append("\n\n")
+        for index in range(len(self.stack) - 1, -1, -1):
+            if self.stack[index][0] == tag:
+                self.stack = self.stack[:index]
+                break
+
+    def _append(self, data):
+        modes = {node[2] for node in self.stack}
+        if "prose" in modes:
+            self.prose.append(data)
+        elif "dek" in modes:
+            self.dek.append(data)
+        elif "paragraph" in modes:
+            self.paragraphs.append(data)
+        elif "source" in modes:
+            self.source.append(data)
+
+    def handle_data(self, data):
+        if any("archive-date" in node[1] for node in self.stack):
+            self.date_labels.append(data)
+        self._append(data)
+
+
+def retained_snapshot(page):
+    snapshot = re.search(r'<script type="application/json" id="archive-retained-snapshot">(.*?)</script>', page, re.S)
+    if snapshot:
+        try:
+            value = json.loads(snapshot[1]).get("html")
+            if isinstance(value, str):
+                return value
+        except (ValueError, TypeError, AttributeError):
+            pass
+    return page
+
+
+def legacy_record(path, locale):
+    """Migrate retained URLs without resurrecting them into curated exports."""
+    page = retained_snapshot(path.read_text(encoding="utf-8"))
+    match = re.search(r'<script type="application/ld\+json">(.*?)</script>', page, re.S)
+    if not match:
+        return None
+    try:
+        schema = json.loads(match[1])
+        if schema.get("@type") != "NewsArticle":
+            return None
+        reader = LegacyArticleReader()
+        reader.feed(page)
+        # Resolve date from the already-public URL, not a fresh export date.
+        year, month, day, identifier = path.parts[-5:-1]
+        published = datetime(int(year), int(month), int(day), tzinfo=LOCAL_TZ).astimezone(timezone.utc)
+        site_published = parse_datetime(schema.get("datePublished") or published)
+        source_published = None
+        basis = "archive_date"
+        date_label = " ".join(reader.date_labels).casefold()
+        if reader.provenance_times and ("source published" in date_label or "原文发布时间" in date_label):
+            source_published = parse_datetime(reader.provenance_times[0])
+            basis = "source_published"
+        domain_url = (schema.get("about") or {}).get("url", "") if isinstance(schema.get("about"), dict) else ""
+        domain = domain_url.rstrip("/").rsplit("/", 1)[-1]
+        tags = parse_tags(schema.get("keywords"))
+        title = schema.get("headline") or ""
+        category = normalize_category(schema.get("articleSection"), title, "", tags)
+        if domain not in DOMAIN_REGISTRY:
+            domain = infer_domain(category, None, " ".join([title, *tags]))
+        lead = "".join(reader.dek).strip()
+        full = "".join(reader.prose or reader.paragraphs).strip()
+        # The displayed lede can contain the only copy of a short brief, or
+        # facts absent from the body. Never replace it with truncated SEO text.
+        if lead and not re.sub(r"\s+", " ", full).startswith(re.sub(r"\s+", " ", lead)):
+            full = lead + ("\n\n" + full if full else "")
+        full = full or schema.get("description", "")
+        source_url = safe_url(schema.get("isBasedOn"))
+        source = "".join(reader.source).replace("↗", "").strip() or (urlparse(source_url).hostname or "Original source")
+        image = schema.get("image", [])
+        image = image[0] if isinstance(image, list) and image else image if isinstance(image, str) else "#"
+        if image == SITE + "/assets/social-preview.png":
+            image = "#"
+        text = {"title": title, "summary": lead or schema.get("description") or full, "full": full}
+        return {"id": identifier, "url": source_url, "source": source, "category": category, "domain": domain,
+                "published": published, "source_published": source_published, "site_published": site_published, "date_basis": basis,
+                "image_url": safe_url(image), "importance": 0,
+                "scores": {key: 0 for key in ("signal", "structure", "consequence", "confidence", "momentum")},
+                "scores_available": False, "tags": tags, "en": dict(text), "zh": dict(text), "legacy_only": True}
+    except (ValueError, KeyError, TypeError, AttributeError):
+        return None
+
+
+def render_date_notice(output, locale, relative_path, now=None):
+    """Keep a suspect old URL accessible, but out of indexes and search results."""
+    canonical = SITE + "/" + relative_path.as_posix().removesuffix("index.html")
+    other = "zh" if locale == "en" else "en"
+    alternate = canonical.replace(f"/{locale}/", f"/{other}/", 1)
+    title = "Publication date under review" if locale == "en" else "发布时间待核对"
+    explanation = "This archived URL contained a future publication date. It has been removed from discovery while the date is checked; it is not a new report." if locale == "en" else "此归档链接的发布时间晚于当前时间，已暂时从归档列表与推荐中隐藏，等待日期核对；这不是一条新发布的报道。"
+    original = retained_snapshot((output / relative_path).read_text(encoding="utf-8"))
+    # Preserve the complete prior document inertly, including prose and source
+    # metadata. It can be migrated when the date is valid; never erase history.
+    snapshot = f'<script type="application/json" id="archive-retained-snapshot">{json_ld({"html": original})}</script>'
+    body = f'<section class="archive-hero archive-explore-hero"><p class="section-index">{COPY[locale]["archive"]}</p><h1>{title}</h1><p>{explanation}</p></section><a class="archive-summary-link" href="/{locale}/archive/">{COPY[locale]["all"]} →</a>{snapshot}'
+    page = page_shell(locale, title + " | Polyemergence", explanation, canonical, alternate, body)
+    page = page.replace('content="index,follow,max-snippet:-1,max-image-preview:large"', 'content="noindex,follow"')
+    (output / relative_path).write_text(page, encoding="utf-8")
+
+
+def refresh_retained_pages(output, records, now=None):
+    """Upgrade old retained prose without adding removed stories to any feed."""
+    now = now or datetime.now(timezone.utc)
+    current_paths = {article_path(locale, record["published"].astimezone(LOCAL_TZ).date(), record)
+                     for record in records for locale in ("en", "zh")}
+    upgraded = withheld = 0
+    for locale in ("en", "zh"):
+        for path in sorted((output / locale / "archive").glob("[0-9][0-9][0-9][0-9]/[0-9][0-9]/**/index.html")):
+            relative = path.relative_to(output)
+            parts = relative.parts
+            if len(parts) < 5:
+                continue
+            year, month = int(parts[2]), int(parts[3])
+            day = int(parts[4]) if len(parts) >= 6 else 1
+            try:
+                future_path = datetime(year, month, day, tzinfo=LOCAL_TZ) > now
+            except ValueError:
+                future_path = True
+            if future_path:
+                render_date_notice(output, locale, relative, now)
+                withheld += 1
+                continue
+            if len(parts) != 7 or "/" + relative.as_posix().removesuffix("index.html") in current_paths:
+                continue
+            record = legacy_record(path, locale)
+            if not record:
+                continue
+            if not eligible_archive_record(record, now):
+                render_date_notice(output, locale, relative, now)
+                withheld += 1
+                continue
+            render_article(output, locale, record, records)
+            upgraded += 1
+        daily_slug = "daily-ai-news" if locale == "en" else "ai-news-daily"
+        for path in sorted((output / locale / daily_slug).glob("*/index.html")):
+            try:
+                day = datetime.strptime(path.parent.name, "%Y-%m-%d").replace(tzinfo=LOCAL_TZ)
+            except ValueError:
+                continue
+            if day > now:
+                render_date_notice(output, locale, path.relative_to(output), now)
+                withheld += 1
+    return upgraded, withheld
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--output", default="web/public")
@@ -1098,14 +1413,14 @@ def main():
     if not grouped:
         raise SystemExit("No eligible archive records")
     ordered_days = sorted(grouped, reverse=True)
+    all_records = [record for day in ordered_days for record in grouped[day]]
     for locale in ("en", "zh"):
         render_indexes(output, locale, grouped)
         for day in ordered_days:
             render_daily(output, locale, day, grouped[day], ordered_days)
             render_daily_brief(output, locale, day, grouped[day])
             for record in grouped[day]:
-                render_article(output, locale, record)
-        all_records = [record for day in ordered_days for record in grouped[day]]
+                render_article(output, locale, record, all_records)
         for category in CATEGORY_ORDER:
             render_topic(output, locale, category, [
                 record for record in all_records
@@ -1115,7 +1430,9 @@ def main():
     render_public_data(output, [record for day in ordered_days for record in grouped[day]])
     render_sitemap(output, grouped)
     render_news_sitemap(output, grouped)
+    upgraded, withheld = refresh_retained_pages(output, all_records)
     print(f"Generated {len(grouped)} daily archives containing {sum(map(len, grouped.values()))} stories")
+    print(f"Updated {upgraded} retained article pages; withheld {withheld} future-dated URLs (no deletions)")
 
 
 if __name__ == "__main__":

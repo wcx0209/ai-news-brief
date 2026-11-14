@@ -23,9 +23,24 @@
   };
 
   window.gtag("js", new Date());
+  function privateArchiveLocation(value) {
+    try {
+      var url = new URL(value, window.location.href);
+      if (/^\/(?:en|zh)\/archive\/fields\//.test(url.pathname)) {
+        url.searchParams.delete("q");
+        url.searchParams.delete("tag");
+      }
+      return url.href;
+    } catch (_) { return ""; }
+  }
+  var archiveField = (path.match(/^\/(?:en|zh)\/archive\/fields\/([a-z][a-z0-9_]*)\/?$/) || [])[1] || "";
+  var safePageLocation = privateArchiveLocation(window.location.href);
+  if (archiveField) window.gtag("set", { page_location: safePageLocation });
   window.gtag("config", measurementId, {
     allow_google_signals: false,
-    allow_ad_personalization_signals: false
+    allow_ad_personalization_signals: false,
+    ...(archiveField ? { page_location: safePageLocation } : {}),
+    ...(document.referrer ? { page_referrer: privateArchiveLocation(document.referrer) } : {})
   });
 
   var script = document.createElement("script");
@@ -37,7 +52,8 @@
     return Object.assign({
       page_kind: pageKind,
       page_locale: locale,
-      article_id: articleId || undefined
+      article_id: articleId || undefined,
+      ...(archiveField ? { page_location: privateArchiveLocation(window.location.href) } : {})
     }, extra || {});
   }
 
@@ -105,6 +121,22 @@
     if (!target) return;
     var id = articleIdFor(target);
 
+    if (target.matches("[data-related-kind]")) {
+      var relatedKind = target.dataset.relatedKind || "";
+      var relatedId = target.dataset.relatedId || "";
+      track("related_article_click", {
+        related_kind: /^[a-z][a-z0-9_-]{0,40}$/.test(relatedKind) ? relatedKind : undefined,
+        related_article_id: /^[a-zA-Z0-9_-]{1,100}$/.test(relatedId) ? relatedId : undefined
+      });
+      markMeaningful("related_article_click", id);
+      return;
+    }
+
+    if (target.matches("[data-archive-tag]")) {
+      track("archive_tag_click", { archive_domain: archiveField || undefined });
+      return;
+    }
+
     if (target.matches("[data-summary-toggle]")) {
       window.setTimeout(function () {
         if (target.getAttribute("aria-expanded") === "true") {
@@ -140,6 +172,20 @@
         }
       }, 0);
     }
+  });
+
+  document.addEventListener("polyemergence:archive-filter", function (event) {
+    var detail = event.detail || {};
+    if (!archiveField || !["search", "month", "tag", "reset", "submit"].includes(detail.filter_type)) return;
+    window.gtag("set", { page_location: privateArchiveLocation(window.location.href) });
+    track("archive_filter", {
+      archive_domain: archiveField,
+      filter_type: detail.filter_type,
+      search_active: Boolean(detail.search_active),
+      tag_active: Boolean(detail.tag_active),
+      month_selected: /^\d{4}-(0[1-9]|1[0-2])$/.test(detail.month || "") ? detail.month : undefined,
+      result_count: Number.isInteger(detail.result_count) && detail.result_count >= 0 ? detail.result_count : undefined
+    });
   });
 
   document.addEventListener("submit", function (event) {
