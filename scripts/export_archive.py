@@ -23,6 +23,8 @@ from relevance_filter import passes_source_ai_filter
 from editorial_domains import categories, category_ids, category_labels, domains, infer_domain, match_category
 from editorial_insights import enrich_item, article_reading_context
 from archive_exploration import normalize_tag, topic_labels, related_articles
+from source_images import normalize_source_url
+from export_public_feed import image_fields, merge_image_fields
 
 
 SITE = "https://polyemergence.com"
@@ -273,7 +275,8 @@ def detail_dek(text, locale):
 
 def archive_figure(record, locale):
     """Caption only source provenance, not guessed photographers or rights."""
-    image = safe_url(record.get("image_url"))
+    media = image_fields(record)
+    image = safe_url(media["image_url"])
     if image == "#":
         return ""
     parts = urlparse(image)
@@ -285,18 +288,14 @@ def archive_figure(record, locale):
              or image_host == "ytimg.com" or image_host.endswith(".ytimg.com"))
     label = ("Video thumbnail" if locale == "en" else "视频缩略图") if video else ("Source image" if locale == "en" else "原文配图")
     unavailable = "Original image temporarily unavailable" if locale == "en" else "原文配图暂不可用"
-    return f'<figure class="archive-figure" data-archive-media><img src="{esc(image)}" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer"><figcaption>{label} · <a href="{esc(safe_url(record.get("url")))}" target="_blank" rel="noopener noreferrer">{esc(record.get("source"))}</a></figcaption><p class="archive-media-unavailable" data-archive-media-fallback role="status" hidden>{unavailable}</p></figure>'
+    retry = "Retry image" if locale == "en" else "重试图片"
+    candidates = esc(json.dumps(media["image_candidates"], ensure_ascii=False, separators=(",", ":")))
+    return f'<figure class="archive-figure" data-archive-media><img src="{esc(image)}" data-image-candidates="{candidates}" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer"><figcaption>{label} · <a href="{esc(safe_url(record.get("url")))}" target="_blank" rel="noopener noreferrer">{esc(record.get("source"))}</a></figcaption><p class="archive-media-unavailable" data-archive-media-fallback role="status" hidden>{unavailable}</p><button type="button" data-image-retry hidden>{retry}</button></figure>'
 
 
 def safe_url(value):
     value = str(value or "")
-    if re.search(r"[\x00-\x20\\]", value):
-        return "#"
-    try:
-        parsed = urlparse(value)
-        return value if parsed.scheme in {"http", "https"} and parsed.hostname and not parsed.username and not parsed.password else "#"
-    except ValueError:
-        return "#"
+    return value if normalize_source_url(value) else "#"
 
 
 def parse_datetime(value):
@@ -522,7 +521,7 @@ def record_from_feed(item):
         "category": normalize_category(item.get("category"), title, source, tags),
         "domain": item.get("domain") or infer_domain(item.get("category"), None, " ".join([title, source, " ".join(tags)])),
         "published": published, "source_published": source_published,
-        "site_published": site_published, "image_url": safe_url(item.get("image_url")),
+        "site_published": site_published, **image_fields(item),
         "importance": int(item.get("importance") or 0),
         "scores": {key: int(scores.get(key) or 0) for key in ("signal", "structure", "consequence", "confidence", "momentum")},
         "tags": tags,
@@ -607,6 +606,7 @@ def enrich_record(record):
     for locale in ("en", "zh"):
         record[locale]["summary"] = enriched[locale].get("summary") or record[locale]["summary"]
         record[locale]["full"] = enriched[locale].get("full_summary") or record[locale]["full"]
+    record.update(image_fields(record))
     return record
 
 
@@ -633,6 +633,28 @@ def select_daily(records, now=None):
     return selected
 
 
+def preserve_archive_images(records, corpus_path):
+    """Restore media only for existing ids bound to the same source article.
+
+    Never restore removed articles, prose, scores or publication dates. This
+    runs before the live feed merge, so newly verified candidates can replace
+    prior media without requiring old stories to remain in the 48-hour brief.
+    """
+    if not corpus_path.is_file():
+        return records
+    try:
+        payload = json.loads(corpus_path.read_text(encoding="utf-8"))
+    except (OSError, ValueError, TypeError):
+        return records
+    previous = {str(item.get("id")): item for item in payload.get("items", [])
+                if isinstance(item, dict) and item.get("id") is not None}
+    for record in records:
+        prior = previous.get(str(record.get("id")))
+        if prior is not None:
+            record.update(merge_image_fields(record, prior))
+    return records
+
+
 def merge_current_feed(records, feed_path):
     """Keep every currently published card addressable from its share link.
 
@@ -647,8 +669,8 @@ def merge_current_feed(records, feed_path):
     for record in current:
         existing = known.get(str(record["id"]))
         if existing:
-            if record.get("image_url") not in (None, "", "#"):
-                existing["image_url"] = record["image_url"]
+            if normalize_source_url(existing.get("url")) == normalize_source_url(record.get("url")):
+                existing.update(merge_image_fields(record, existing))
             continue
         records.append(record)
     return records
@@ -708,7 +730,7 @@ def page_shell(locale, title, description, canonical, alternate, body, structure
     fields_current = ' aria-current="page"' if f"/{locale}/fields/" in current_path else ""
     archive_current = ' aria-current="page"' if f"/{locale}/archive/" in current_path else ""
     body_class = ' class="archive-detail"' if og_type == "article" else ""
-    media_script = '<script defer src="/archive-media.js?v=2"></script><script defer src="/archive-explore.js?v=1"></script>'
+    media_script = '<script defer src="/archive-media.js?v=3"></script><script defer src="/archive-explore.js?v=1"></script>'
     return f'''<!doctype html>
 <html lang="{c['lang']}" data-locale="{locale}"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
@@ -719,7 +741,7 @@ def page_shell(locale, title, description, canonical, alternate, body, structure
 <link rel="alternate" type="application/rss+xml" title="{esc(c['brand'])} RSS" href="/feed-{locale}.xml">
 <meta property="og:type" content="{esc(og_type)}"><meta property="og:site_name" content="{esc(c['brand'])}"><meta property="og:title" content="{esc(title)}"><meta property="og:description" content="{esc(description)}"><meta property="og:url" content="{esc(canonical)}"><meta property="og:image" content="{SITE}/assets/social-preview.png">
 <meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="{esc(title)}"><meta name="twitter:description" content="{esc(description)}"><meta name="twitter:image" content="{SITE}/assets/social-preview.png">
-<link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="/styles.css?v=20261113-1"><link rel="stylesheet" href="/archive.css?v=9">{media_script}{structured_html}</head>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="/styles.css?v=20261114-1"><link rel="stylesheet" href="/archive.css?v=10">{media_script}{structured_html}</head>
 <body{body_class}><header class="site-header"><a class="brand" href="/{locale}/" aria-label="{esc(c['brand'])}"><img src="/assets/{logo}" alt="{esc(c['brand'])}" width="420" height="70"></a>
 <nav class="desktop-nav" aria-label="{'Primary' if locale == 'en' else '主导航'}"><a href="/{locale}/#fields"{fields_current}>{esc(c['fields'])}</a><a href="/{locale}/archive/"{archive_current}>{esc(c['archive'])}</a><a href="/{locale}/#about">{esc(c['method'])}</a></nav>
 <div class="header-tools"><span class="edition">{esc(c['edition'])}</span><div class="language-switch"><a data-archive-locale href="{esc(alternate)}" hreflang="{COPY[other]['lang']}">{'中' if other == 'zh' else 'EN'}</a><span>|</span><a href="{esc(canonical)}" aria-current="page">{'中' if locale == 'zh' else 'EN'}</a></div></div></header>
@@ -878,10 +900,13 @@ def render_daily_brief(output, locale, day, items):
 
 
 def archive_thumbnail(record, css_class):
-    image = safe_url(record.get("image_url"))
+    media = image_fields(record)
+    image = safe_url(media["image_url"])
     if image == "#" or image == SITE + "/assets/social-preview.png":
         return ""
-    return f'<figure class="{css_class}" data-archive-media><img src="{esc(image)}" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer"><p data-archive-media-fallback hidden></p></figure>'
+    candidates = esc(json.dumps(media["image_candidates"], ensure_ascii=False, separators=(",", ":")))
+    # Recommendation figures can be inside a link; no nested retry button.
+    return f'<figure class="{css_class}" data-archive-media><img src="{esc(image)}" data-image-candidates="{candidates}" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer"><p data-archive-media-fallback hidden></p></figure>'
 
 
 def continue_reading_html(record, records, locale):
@@ -1193,7 +1218,7 @@ def render_public_data(output, records):
             "source_published_at": None if is_trending(record) else record["source_published"].isoformat().replace("+00:00", "Z"),
             "first_seen_at": record.get("first_seen_at") if is_trending(record) and "first_seen_at" in record else record.get("first_seen_at") or record["site_published"].isoformat().replace("+00:00", "Z"),
             "date_basis": record.get("date_basis") or ("first_seen" if is_trending(record) else "source_published"),
-            "image_url": None if record.get("image_url") == "#" else record.get("image_url"),
+            **image_fields(record),
             "tags": record["tags"],
             "evidence": record.get("evidence") or {}, "related_domains": record.get("related_domains") or [],
             "reading_context": record.get("reading_context") or {},
@@ -1222,11 +1247,25 @@ class LegacyArticleReader(HTMLParser):
         self.stack = []
         self.prose, self.paragraphs, self.dek, self.source = [], [], [], []
         self.provenance_times, self.date_labels = [], []
+        self.image_candidates = []
 
     def handle_starttag(self, tag, attrs):
         attrs = dict(attrs)
         classes = set(attrs.get("class", "").split())
         in_article = any("archive-story" in node[1] for node in self.stack)
+        if in_article and tag == "img":
+            values = [attrs.get("src")]
+            try:
+                stored = json.loads(attrs.get("data-image-candidates", "[]"))
+                if isinstance(stored, list):
+                    values.extend(stored)
+            except (ValueError, TypeError):
+                pass
+            for value in values:
+                if normalize_source_url(value) and value not in self.image_candidates:
+                    self.image_candidates.append(value)
+                    if len(self.image_candidates) >= 3:
+                        break
         if in_article and tag == "time" and attrs.get("datetime") and any("archive-provenance" in node[1] for node in self.stack):
             self.provenance_times.append(attrs["datetime"])
         mode = None
@@ -1325,10 +1364,11 @@ def legacy_record(path, locale):
         image = image[0] if isinstance(image, list) and image else image if isinstance(image, str) else "#"
         if image == SITE + "/assets/social-preview.png":
             image = "#"
+        media = image_fields({"url": source_url, "image_url": image, "image_candidates": reader.image_candidates})
         text = {"title": title, "summary": lead or schema.get("description") or full, "full": full}
         return {"id": identifier, "url": source_url, "source": source, "category": category, "domain": domain,
                 "published": published, "source_published": source_published, "site_published": site_published, "date_basis": basis,
-                "image_url": safe_url(image), "importance": 0,
+                **media, "importance": 0,
                 "scores": {key: 0 for key in ("signal", "structure", "consequence", "confidence", "momentum")},
                 "scores_available": False, "tags": tags, "en": dict(text), "zh": dict(text), "legacy_only": True}
     except (ValueError, KeyError, TypeError, AttributeError):
@@ -1405,7 +1445,8 @@ def main():
     output = Path(args.output)
     output.mkdir(parents=True, exist_ok=True)
     records = merge_current_feed(
-        load_json(args.input_json) if args.input_json else load_database(),
+        preserve_archive_images(load_json(args.input_json) if args.input_json else load_database(),
+                                output / "data" / "articles.json"),
         output / "data" / "latest.json",
     )
     records = preserve_trending_history(records, output / "data" / "articles.json")

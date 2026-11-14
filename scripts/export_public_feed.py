@@ -16,19 +16,16 @@ sys.path.insert(0, str(ROOT / "src"))
 from relevance_filter import passes_source_ai_filter
 from editorial_domains import category_ids, infer_domain, match_category
 from editorial_insights import enrich_item, is_github_trending
+from source_images import discover_images, normalize_source_url
 
 
 TOPIC_CATEGORIES = set(category_ids())
 
 
 def safe_http_url(value):
-    if not value:
-        return None
-    try:
-        parsed = urlparse(value)
-        return value if parsed.scheme in {"http", "https"} and parsed.netloc else None
-    except ValueError:
-        return None
+    # Keep publication/provenance URLs byte-for-byte while applying the same
+    # public HTTP(S) URL guard used by cloud image discovery.
+    return value if isinstance(value, str) and normalize_source_url(value) else None
 
 
 def youtube_thumbnail(url):
@@ -37,9 +34,10 @@ def youtube_thumbnail(url):
         return None
     parsed = urlparse(url)
     video_id = None
-    if parsed.netloc.lower().endswith("youtu.be"):
+    host = (parsed.hostname or "").lower()
+    if host == "youtu.be":
         video_id = parsed.path.strip("/").split("/")[0]
-    elif "youtube.com" in parsed.netloc.lower():
+    elif host == "youtube.com" or host.endswith(".youtube.com"):
         if parsed.path == "/watch":
             video_id = parse_qs(parsed.query).get("v", [None])[0]
         elif parsed.path.startswith(("/shorts/", "/embed/")):
@@ -50,29 +48,116 @@ def youtube_thumbnail(url):
 
 
 def discover_image(url, timeout=8):
-    import requests
-    from bs4 import BeautifulSoup
+    """Backward-compatible single-image wrapper around validated candidates."""
+    candidates = discover_images(url, timeout=timeout, limit=3)
+    return candidates[0] if candidates else None
 
+
+def _image_date(value):
     try:
-        response = requests.get(
-            url,
-            timeout=timeout,
-            headers={"User-Agent": "Polyemergence/1.0 (+https://polyemergence.com)"},
-        )
-        response.raise_for_status()
-        soup = BeautifulSoup(response.text[:500000], "html.parser")
-        for attrs in (
-            {"property": "og:image"},
-            {"name": "twitter:image"},
-            {"property": "twitter:image"},
-        ):
-            node = soup.find("meta", attrs=attrs)
-            image = safe_http_url(node.get("content") if node else None)
-            if image:
-                return image
-    except Exception:
+        parsed = datetime.fromisoformat(str(value or "").replace("Z", "+00:00"))
+        if parsed.tzinfo is None:
+            parsed = parsed.replace(tzinfo=timezone.utc)
+        return parsed.astimezone(timezone.utc)
+    except (TypeError, ValueError, OverflowError):
         return None
-    return None
+
+
+def image_fields(item):
+    """Sanitize only media metadata, bound to this exact source article.
+
+    This is deliberately offline. A syntactically safe legacy image URL is
+    retained, but never promoted to ``verified`` without actual discovery.
+    """
+    source = normalize_source_url(item.get("url"))
+    bound = normalize_source_url(item.get("image_source_url") or item.get("url"))
+    result = {"image_url": None, "image_candidates": [], "image_source_url": source}
+    if not source or source != bound:
+        return result
+    values = [item.get("image_url")]
+    if isinstance(item.get("image_candidates"), list):
+        values.extend(item["image_candidates"])
+    seen = set()
+    for value in values:
+        normalized = normalize_source_url(value)
+        if normalized and normalized not in seen:
+            seen.add(normalized)
+            result["image_candidates"].append(value)
+            if len(result["image_candidates"]) >= 3:
+                break
+    if result["image_candidates"]:
+        result["image_url"] = result["image_candidates"][0]
+    checked = _image_date(item.get("image_checked_at"))
+    status = item.get("image_status")
+    if checked is not None and status in {"verified", "unavailable"}:
+        result["image_checked_at"] = checked.isoformat().replace("+00:00", "Z")
+        result["image_status"] = status if result["image_candidates"] else "unavailable"
+    return result
+
+
+def merge_image_fields(current, previous, now=None):
+    """Prefer new candidates; a transient miss must not erase earlier media."""
+    result = image_fields(current)
+    same_id = str(current.get("id") or "") == str(previous.get("id") or "")
+    same_source = (normalize_source_url(current.get("url"))
+                   == normalize_source_url(previous.get("url")))
+    if not same_id or not same_source:
+        return result
+    prior = image_fields(previous)
+    if not prior["image_candidates"]:
+        return result
+    checked = _image_date(result.get("image_checked_at"))
+    prior_checked = _image_date(prior.get("image_checked_at"))
+    # The archive repair runs after the live-feed export. Do not let that
+    # earlier snapshot overwrite a newer successful check during their merge.
+    if prior_checked and checked and checked < prior_checked <= (now or datetime.now(timezone.utc)):
+        return prior
+    if result["image_candidates"]:
+        if result.get("image_status") == "verified":
+            return result
+        if result.get("image_status") != "unavailable":
+            return prior if prior.get("image_status") == "verified" else result
+    # A failed new attempt is still recorded as unavailable, rather than
+    # falsely claiming the preserved older URL passed a fresh check.
+    return {**prior, **{key: result[key] for key in ("image_checked_at", "image_status") if key in result}}
+
+
+def collect_image_fields(rows, previous, discover_limit=60, now=None):
+    """Cloud-only, bounded discovery with a seven-day verified-media cache."""
+    now = now or datetime.now(timezone.utc)
+    known = {str(item.get("id")): item for item in previous}
+    output = []
+    pending = {}
+    for index, row in enumerate(rows):
+        current = {"id": row.get("id"), "url": safe_http_url(row.get("url"))}
+        prior = known.get(str(row.get("id"))) or {}
+        media = merge_image_fields(current, prior, now=now)
+        output.append(media)
+        checked = _image_date(media.get("image_checked_at"))
+        cached = (media.get("image_status") == "verified" and checked is not None
+                  and now - timedelta(days=7) <= checked <= now)
+        if not cached and index < max(0, discover_limit) and current["url"]:
+            pending[index] = (current, prior)
+    if pending:
+        with ThreadPoolExecutor(max_workers=min(6, len(pending))) as executor:
+            futures = {executor.submit(discover_images, item[0]["url"], timeout=8, limit=3): index
+                       for index, item in pending.items()}
+            for future in as_completed(futures):
+                index = futures[future]
+                current, prior = pending[index]
+                try:
+                    candidates = future.result()
+                except Exception:
+                    candidates = []
+                discovered = {
+                    **current, "image_candidates": candidates,
+                    "image_url": candidates[0] if candidates else None,
+                    "image_source_url": normalize_source_url(current["url"]),
+                    "image_checked_at": now.isoformat().replace("+00:00", "Z"),
+                    "image_status": "verified" if candidates else "unavailable",
+                }
+                output[index] = merge_image_fields(discovered, prior, now=now)
+    return output
 
 
 def parse_tags(value):
@@ -231,7 +316,10 @@ def merge_recent_items(current, previous, limit, max_github, max_academia,
         # both provenance versions of the same story.
         key = item.get("id") or item.get("url")
         if key:
-            deduped[key] = item  # Current items arrive last and win.
+            # Current editorial fields win; media alone survives a transient
+            # discovery failure when id and source article still match.
+            prior = deduped.get(key) or {}
+            deduped[key] = {**item, **merge_image_fields(item, prior)}
 
     def rank(item):
         published = str(item.get("source_published_at") or item.get("published_at") or "")
@@ -307,7 +395,7 @@ def main():
             # Preserve the actual collection time, not the re-render time.
             "generated_at": original_payload.get("generated_at"),
             "count": len(items),
-            "items": [enrich_item(item) for item in items],
+            "items": [enrich_item({**item, **image_fields(item)}) for item in items],
         }
         Path(args.output).parent.mkdir(parents=True, exist_ok=True)
         with open(args.output, "w", encoding="utf-8") as handle:
@@ -356,20 +444,7 @@ def main():
                 args.min_academia_confidence, args.min_importance,
             )
 
-    image_urls = [youtube_thumbnail(safe_http_url(row["url"])) for row in rows]
-    discoverable = {
-        index: safe_http_url(row["url"])
-        for index, row in enumerate(rows[:args.discover_images])
-        if not image_urls[index] and safe_http_url(row["url"])
-    }
-    if discoverable:
-        with ThreadPoolExecutor(max_workers=min(6, len(discoverable))) as executor:
-            futures = {
-                executor.submit(discover_image, url): index
-                for index, url in discoverable.items()
-            }
-            for future in as_completed(futures):
-                image_urls[futures[future]] = future.result()
+    media = collect_image_fields(rows, previous_items, args.discover_images)
 
     items = []
     for index, row in enumerate(rows):
@@ -398,7 +473,7 @@ def main():
             "source_published_at": iso(
                 row["source_published_at"] or row["published_at"] or row["created_at"]
             ),
-            "image_url": image_urls[index],
+            **media[index],
             "tags": parse_tags(row["tags"]),
             "en": {
                 "title": row["title_en"] or row["title"],

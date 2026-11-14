@@ -78,6 +78,16 @@ class DomainPagesTests(unittest.TestCase):
         graph = json.loads(re.search(r'<script type="application/ld\+json">(.*?)</script>', result, re.S)[1])["@graph"]
         self.assertEqual(graph[-1]["numberOfItems"], 2)
         self.assertNotIn("NewsArticle", [node["@type"] for node in graph])
+
+    def test_server_rendered_images_include_bounded_candidates_and_retry_without_cropping(self):
+        item = self.item(image_url="https://research.example/image.png", image_candidates=["https://research.example/image.png", "https://cdn.example/backup.png", "javascript:alert(1)"])
+        with tempfile.TemporaryDirectory() as folder:
+            result = self.render([item], Path(folder))
+        self.assertIn('data-image-candidates=', result)
+        self.assertIn('https://cdn.example/backup.png', result)
+        self.assertIn('data-image-retry hidden', result)
+        self.assertIn('media-contain', result)
+        self.assertNotIn('javascript:alert(1)', result)
         self.assertIn('<section id="brief">', result)
         self.assertIn('datetime="2026-11-12T11:00:00Z"', result)
 

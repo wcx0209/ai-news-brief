@@ -10,11 +10,15 @@ function fixture(savedState = null, completedImages = [], { pathname = "/en/fiel
   const nodes = new Map();
   const allNodes = new Map();
   const handlers = new Map();
+  const timers = new Map();
+  let timerId = 0;
   let roots = [];
   let nativeSummaries = [];
   const storage = new Map(savedState ? [["polyemergence-reading-v2", JSON.stringify(savedState)]] : []);
   const context = vm.createContext({
     URL, Date, Intl, Set, CSS: { escape: String }, innerHeight: 844, scrollX: 0, scrollY: 300,
+    setTimeout(callback) { timers.set(++timerId, callback); return timerId; },
+    clearTimeout(id) { timers.delete(id); },
     location: { pathname, href: `https://polyemergence.com${pathname}`, origin: "https://polyemergence.com", hash: "", reload() { context.reloadCount = (context.reloadCount || 0) + 1; } },
     navigator: { language: "en", userAgent: "test", platform: "test" },
     localStorage: { setItem() {} },
@@ -36,11 +40,27 @@ function fixture(savedState = null, completedImages = [], { pathname = "/en/fiel
   });
   context.window = { navigator: context.navigator, addEventListener() {}, setInterval() {}, matchMedia: () => ({ matches: false }), scrollTo() {}, scrollBy() {} };
   vm.runInContext(`${executable}\nglobalThis.ui = { state, applyBriefWindow, feedFingerprint, renderCard, renderLead, renderEditionSections, visualMarkup, activateImageFallback, inspectLoadedImages, editionNote, evidenceMarkup, plainText, inlineMarkup, fullSummaryMarkup, readingContextMarkup, renderFieldReadingGuidance, legacyTemplates: LEGACY_READING_CONTEXT, setRegistry: value => { domainRegistry = value; }, setLocale, renderFeed, renderFilters, updateFieldLinks, fieldFromUrl, captureReadingState, saveReadingState, summaryMarkup, interactionMarkup, loadFeed, applyFeed, publishedTimeMarkup, observationFreshness, updateObservationFreshness }; globalThis.renderCount = 0; setLocale = () => { renderCount += 1; };`, context);
-  return { context, ui: context.ui, nodes, storage, handlers, setAll: (selector, values) => allNodes.set(selector, values), setRoots(value) { roots = value; }, setNativeSummaries(value) { nativeSummaries = value; } };
+  return { context, ui: context.ui, nodes, storage, handlers, timers,
+    flushTimers() { const pending = [...timers.values()]; timers.clear(); pending.forEach(callback => callback()); },
+    setAll: (selector, values) => allNodes.set(selector, values), setRoots(value) { roots = value; }, setNativeSummaries(value) { nativeSummaries = value; } };
 }
 
 function article(id = "one", overrides = {}) {
   return { id, source: "Example", url: "https://example.com/story", domain: "ai", category: "company", importance: 80, source_published_at: new Date().toISOString(), scores: { confidence: 80 }, en: { title: "A complete readable headline", summary: "Short", full_summary: "Longer summary" }, ...overrides };
+}
+
+function mediaImage({ src = "https://images.example.com/original.jpg?signature=keep", candidates = [], width = 1_200, height = 675, complete = false } = {}) {
+  const classes = new Set(), articleClasses = new Set(), requests = [];
+  const note = { hidden: true }, caption = { textContent: "Source image · Example" }, captionBox = { hidden: false };
+  const retry = { hidden: true, closest: () => visual };
+  const visual = { dataset: { mediaSource: "Example" },
+    classList: { add: value => classes.add(value), remove: value => classes.delete(value) },
+    querySelector: selector => ({ "[data-image-unavailable-note]": note, ".media-caption a": caption, ".media-caption": captionBox, "[data-image-retry]": retry, "img[data-fallback-image]": image }[selector]),
+    closest: () => ({ classList: { add: value => articleClasses.add(value), remove: value => articleClasses.delete(value) } }) };
+  const image = { _src: src, hidden: false, naturalWidth: width, naturalHeight: height, complete, dataset: { imageCandidates: JSON.stringify(candidates) },
+    closest: () => visual, matches: selector => selector === "img[data-fallback-image]", getAttribute: name => name === "src" ? image._src : null,
+    get src() { return this._src; }, set src(value) { this._src = value; requests.push(value); this.complete = false; this.naturalWidth = 0; this.naturalHeight = 0; } };
+  return { image, visual, caption, captionBox, note, retry, classes, articleClasses, requests };
 }
 
 function contextMeta(id = "one") {
@@ -374,6 +394,80 @@ test("SSR images completed before the deferred app loads are checked once, while
   assert.match(failed.caption.textContent, /temporarily unavailable/);
   assert.equal(healthy.hidden, false);
   assert.equal(pending.hidden, false);
+});
+
+test("source images try at most three safe distinct candidates, then the unchanged original once, and restore after success", () => {
+  const page = fixture();
+  const original = "https://images.example.com/original.jpg?signature=keep";
+  const media = mediaImage({ candidates: [original, "javascript:alert(1)", "https://user:secret@example.com/a.jpg", "https://images.example.com/two.png", "https://images.example.com/three.png", "https://images.example.com/ignored.png"] });
+  const emit = type => page.handlers.get(type).forEach(handler => handler({ target: media.image }));
+  emit("error");
+  assert.deepEqual(media.requests, ["https://images.example.com/two.png"]);
+  assert.equal(media.image.loading, "eager");
+  assert.equal(media.image.hidden, false);
+  assert.equal(media.note.hidden, true);
+  assert.equal(media.captionBox.hidden, true, "do not claim a source picture is visible while replacement loads");
+  media.image.naturalWidth = 479; media.image.naturalHeight = 675;
+  emit("load");
+  assert.equal(media.requests.at(-1), "https://images.example.com/three.png");
+  emit("error");
+  emit("error");
+  assert.equal(page.timers.size, 1, "duplicate errors do not schedule extra retries");
+  page.flushTimers();
+  assert.equal(media.requests.at(-1), original, "signed parameters remain unchanged");
+  emit("error");
+  assert.equal(media.requests.length, 3, "two alternates and one original retry, no unbounded requests");
+  assert.equal(media.image.hidden, true);
+  assert.equal(media.note.hidden, false);
+  assert.equal(media.retry.hidden, false);
+  assert.ok(media.classes.has("is-text-visual"));
+  assert.ok(media.articleClasses.has("is-text-led"));
+  for (let i = 0; i < 5; i += 1) emit("error");
+  assert.equal(media.requests.length, 3);
+  media.image.naturalWidth = 480; media.image.naturalHeight = 270;
+  emit("load");
+  assert.equal(media.image.hidden, false);
+  assert.equal(media.note.hidden, true);
+  assert.equal(media.retry.hidden, true);
+  assert.equal(media.caption.textContent, "Source image · Example");
+  assert.equal(media.captionBox.hidden, false);
+  assert.equal(media.classes.has("is-text-visual"), false);
+  assert.equal(media.articleClasses.has("is-text-led"), false);
+});
+
+test("cached failed images retry once, pending lazy images do not, and a manual retry can recover", () => {
+  const failed = mediaImage({ width: 0, height: 0, complete: true });
+  const pending = mediaImage({ width: 0, height: 0, complete: false });
+  const page = fixture(null, [failed.image, pending.image]);
+  assert.equal(page.timers.size, 1);
+  assert.equal(pending.requests.length, 0);
+  page.ui.inspectLoadedImages();
+  assert.equal(page.timers.size, 1);
+  page.flushTimers();
+  page.handlers.get("error").forEach(handler => handler({ target: failed.image }));
+  assert.equal(failed.retry.hidden, false);
+  let prevented = false;
+  const target = { closest: selector => selector === "[data-image-retry]" ? failed.retry : null };
+  page.handlers.get("click").forEach(handler => handler({ target, preventDefault() { prevented = true; } }));
+  assert.equal(prevented, true);
+  assert.equal(failed.requests.length, 2);
+  assert.equal(failed.image.loading, "eager");
+  assert.equal(failed.image.hidden, false);
+  assert.equal(failed.retry.hidden, true);
+  failed.image.naturalWidth = 800; failed.image.naturalHeight = 600;
+  page.handlers.get("load").forEach(handler => handler({ target: failed.image }));
+  assert.equal(failed.caption.textContent, "Source image · Example");
+  assert.equal(failed.note.hidden, true);
+});
+
+test("hydrated image markup exports bounded safe candidates and a hidden accessible manual retry", () => {
+  const { ui } = fixture();
+  const markup = ui.visualMarkup(article("safe-image", { image_url: "https://images.example.com/one.jpg", image_candidates: ["https://images.example.com/one.jpg", "javascript:alert(1)", "https://u:p@images.example.com/private", "https://images.example.com/two.jpg", "https://images.example.com/three.jpg", "https://images.example.com/four.jpg"] }));
+  assert.match(markup, /data-image-candidates=/);
+  assert.match(markup, /two\.jpg/);
+  assert.match(markup, /three\.jpg/);
+  assert.doesNotMatch(markup, /javascript|private|four\.jpg/);
+  assert.match(markup, /<button type="button" data-image-retry hidden>Retry image<\/button>/);
 });
 
 test("edition note uses the actual feed timestamp in SGT and the 48-hour window, not an invented issue number", () => {

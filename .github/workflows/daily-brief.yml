@@ -74,7 +74,11 @@ jobs:
         run: python scripts/export_public_feed.py --output web/public/data/latest.json --limit 60 --discover-images 60 --max-open-source 2 --max-academia 2 --min-importance 65 --min-academia-importance 70 --min-academia-confidence 65 --max-age-hours 48
 
       - name: Export permanent archive and RSS
-        run: python scripts/export_archive.py --output web/public
+        # Only image discovery for existing public records; no news or LLM.
+        # Bounded batches with a seven-day per-article cooldown heal history.
+        run: |
+          python scripts/repair_archive_images.py --input web/public/data/articles.json --limit 50 --workers 4
+          python scripts/export_archive.py --output web/public
 
       - name: Export evidence-linked field observations
         run: python scripts/export_observations.py --output web/public/data/observations.json --input web/public/data/articles.json

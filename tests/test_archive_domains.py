@@ -364,8 +364,8 @@ The last sentence is still here.'''
     def test_article_shell_uses_scoped_reading_layout_and_versioned_archive_styles(self):
         page = archive.page_shell("en", "Title", "Description", "https://polyemergence.com/en/archive/2026/11/12/id/", "https://polyemergence.com/zh/archive/2026/11/12/id/", "Body", og_type="article")
         self.assertIn('<body class="archive-detail">', page)
-        self.assertIn('/archive.css?v=9', page)
-        self.assertIn('<script defer src="/archive-media.js?v=2"></script>', page)
+        self.assertIn('/archive.css?v=10', page)
+        self.assertIn('<script defer src="/archive-media.js?v=3"></script>', page)
         listing = archive.page_shell("en", "Title", "Description", archive.SITE + "/en/archive/", archive.SITE + "/zh/archive/", "Body")
         self.assertIn('/archive-explore.js?v=1', listing)
         styles = (ROOT / "web/public/archive.css").read_text()

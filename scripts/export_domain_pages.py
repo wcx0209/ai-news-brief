@@ -419,12 +419,15 @@ def story_markup(item, locale, corpus, public, lead=False, domains=None, tier="f
     is_brief = not lead and tier == "brief"
     if image_url and not is_brief:
         loading = 'fetchpriority="high"' if lead else 'loading="lazy"'
-        image = f'<img class="media-contain" data-fallback-image src="{esc(image_url)}" alt="{esc(title)}" {loading} decoding="async" referrerpolicy="no-referrer">'
+        candidates = list(dict.fromkeys([image_url, *(safe_url(url) for url in (item.get("image_candidates") or []) if isinstance(url, str))]))[:3]
+        candidates = [url for url in candidates if url and url != "#"]
+        image = f'<img class="media-contain" data-fallback-image data-image-candidates="{esc(json.dumps(candidates, ensure_ascii=False))}" src="{esc(image_url)}" alt="{esc(title)}" {loading} decoding="async" referrerpolicy="no-referrer">'
         caption_label = ("Video thumbnail" if video else "Source image") if locale == "en" else ("视频缩略图" if video else "原文配图")
         caption = f'{caption_label} · {item.get("source") or ""}'
         unavailable = "Original image temporarily unavailable" if locale == "en" else "原文配图暂不可用"
+        retry = "Retry image" if locale == "en" else "重试图片"
         visual = (f'<figure class="{"story-visual" if lead else "card-visual"}" data-media-source="{esc(item.get("source"))}">'
-                  f'<div class="visual-media">{image}<div class="text-edition-note" data-image-unavailable-note hidden>{unavailable}</div></div>'
+                  f'<div class="visual-media">{image}<div class="text-edition-note" data-image-unavailable-note hidden>{unavailable}</div><button type="button" data-image-retry hidden>{retry}</button></div>'
                   f'<figcaption class="media-caption"><a href="{esc(original)}" target="_blank" rel="noopener noreferrer">{esc(caption)}</a></figcaption></figure>')
     else:
         visual = "" if is_brief else '<div class="text-edition-note">' + ("Text report · No source image available" if locale == "en" else "文字报道 · 暂无原文配图") + '</div>'

@@ -6,6 +6,7 @@ pyyaml>=6.0
 python-dotenv>=1.0.0
 requests>=2.31.0
 beautifulsoup4>=4.12.0
+Pillow>=12.0.0
 
 # Embedding model for semantic filtering (local, all-MiniLM-L6-v2)
 sentence-transformers>=2.2.0

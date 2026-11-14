@@ -642,53 +642,161 @@ function fallbackCover(item, hidden = false) {
   </div>`;
 }
 
+function safeImageUrl(value) {
+  if (typeof value !== "string" || /[\x00-\x20\\]/.test(value)) return "";
+  try {
+    const url = new URL(value);
+    return ["http:", "https:"].includes(url.protocol) && url.hostname && !url.username && !url.password ? url.href : "";
+  } catch (_) { return ""; }
+}
+
+function sourceImageCandidates(item) {
+  const provided = Array.isArray(item.image_candidates) ? item.image_candidates : [];
+  return [...new Set([youtubeThumbnail(item), item.image_url, ...provided].map(safeImageUrl).filter(Boolean))].slice(0, 3);
+}
+
 function imageMarkup(item, priority = false) {
-  const videoThumbnail = youtubeThumbnail(item);
-  const image = safeUrl(videoThumbnail || item.image_url);
+  const candidates = sourceImageCandidates(item);
+  const image = candidates[0];
   const alt = textFor(item).title;
   const loading = priority ? 'fetchpriority="high"' : 'loading="lazy"';
-  if (image === "#") return "";
-  return `<img class="media-${imageFit(item)}" data-fallback-image src="${escapeHtml(image)}" alt="${escapeHtml(alt)}" ${loading} decoding="async" referrerpolicy="no-referrer">`;
+  if (!image) return "";
+  return `<img class="media-${imageFit(item)}" data-fallback-image data-image-candidates="${escapeHtml(JSON.stringify(candidates))}" src="${escapeHtml(image)}" alt="${escapeHtml(alt)}" ${loading} decoding="async" referrerpolicy="no-referrer">`;
 }
 
 function hasSourceImage(item) {
-  return safeUrl(youtubeThumbnail(item) || item.image_url) !== "#";
+  return sourceImageCandidates(item).length !== 0;
 }
 
 function visualMarkup(item, slot = "card", priority = false) {
   if (!hasSourceImage(item)) return `<div class="text-edition-note">${escapeHtml(COPY[state.locale].textEdition)}</div>`;
   const caption = `${COPY[state.locale][youtubeThumbnail(item) ? "videoImage" : "sourceImage"]} · ${item.source || ""}`;
-  return `<figure class="${slot}-visual" data-media-source="${escapeHtml(item.source || "")}"><div class="visual-media">${imageMarkup(item, priority)}<div class="text-edition-note" data-image-unavailable-note hidden>${escapeHtml(COPY[state.locale].imageUnavailable)}</div></div><figcaption class="media-caption"><a href="${escapeHtml(safeUrl(item.url))}" target="_blank" rel="noopener noreferrer">${escapeHtml(caption)}</a></figcaption></figure>`;
+  return `<figure class="${slot}-visual" data-media-source="${escapeHtml(item.source || "")}"><div class="visual-media">${imageMarkup(item, priority)}<div class="text-edition-note" data-image-unavailable-note hidden>${escapeHtml(COPY[state.locale].imageUnavailable)}</div></div><figcaption class="media-caption"><a href="${escapeHtml(safeUrl(item.url))}" target="_blank" rel="noopener noreferrer">${escapeHtml(caption)}</a></figcaption><button type="button" data-image-retry hidden>${state.locale === "zh" ? "重试图片" : "Retry image"}</button></figure>`;
+}
+
+const sourceImageAttempts = new WeakMap();
+
+function sourceImageAttempt(image) {
+  if (sourceImageAttempts.has(image)) return sourceImageAttempts.get(image);
+  const visual = image.closest(".story-visual, .card-visual");
+  if (!visual) return null;
+  const original = safeImageUrl(image.getAttribute?.("src") || image.src || image.currentSrc);
+  let provided = [];
+  try { const parsed = JSON.parse(image.dataset?.imageCandidates || "[]"); if (Array.isArray(parsed)) provided = parsed; } catch (_) {}
+  const candidates = [...new Set([original, ...provided].map(safeImageUrl).filter(Boolean))].slice(0, 3);
+  const caption = visual.querySelector(".media-caption a");
+  let retry = visual.querySelector("[data-image-retry]");
+  if (!retry && document.createElement && visual.appendChild) {
+    retry = document.createElement("button");
+    retry.type = "button";
+    retry.setAttribute("data-image-retry", "");
+    retry.textContent = state.locale === "zh" ? "重试图片" : "Retry image";
+    retry.hidden = true;
+    visual.appendChild(retry);
+  }
+  const attempt = { visual, candidates, index: 0, originalRetried: false, timer: null, awaiting: false, exhausted: false,
+    caption, originalCaption: caption?.textContent || "", captionBox: visual.querySelector(".media-caption") || caption,
+    fallback: visual.querySelector("[data-image-unavailable-note]"), retry };
+  sourceImageAttempts.set(image, attempt);
+  return attempt;
+}
+
+function restoreSourceImage(image) {
+  const attempt = sourceImageAttempt(image);
+  if (!attempt) return;
+  if (attempt.timer !== null) clearTimeout(attempt.timer);
+  attempt.timer = null;
+  attempt.awaiting = false;
+  attempt.exhausted = false;
+  image.hidden = false;
+  if (attempt.fallback) attempt.fallback.hidden = true;
+  if (attempt.caption) attempt.caption.textContent = attempt.originalCaption;
+  if (attempt.captionBox) attempt.captionBox.hidden = false;
+  if (attempt.retry) attempt.retry.hidden = true;
+  attempt.visual.classList.remove?.("is-text-visual");
+  attempt.visual.closest("[data-story-id]")?.classList.remove?.("is-text-led");
 }
 
 function activateImageFallback(image) {
-  const visual = image.closest(".story-visual, .card-visual");
-  const fallback = visual?.querySelector("[data-image-unavailable-note]");
-  if (!visual || !fallback) return;
+  const attempt = sourceImageAttempt(image);
+  if (!attempt || !attempt.fallback) return;
+  const { visual, fallback, caption, captionBox, retry } = attempt;
+  attempt.awaiting = false;
+  attempt.exhausted = true;
   image.hidden = true;
   fallback.hidden = false;
   visual.classList.add("is-text-visual");
   visual.closest("[data-story-id]")?.classList.add("is-text-led");
-  const caption = visual.querySelector(".media-caption a");
   if (caption) caption.textContent = `${COPY[state.locale].imageUnavailable}${visual.dataset.mediaSource ? ` · ${visual.dataset.mediaSource}` : ""}`;
+  if (captionBox) captionBox.hidden = false;
+  if (retry) retry.hidden = false;
+}
+
+function requestSourceImage(image, url) {
+  const attempt = sourceImageAttempt(image);
+  if (!attempt || !url) return;
+  attempt.awaiting = true;
+  image.loading = "eager";
+  image.hidden = false;
+  if (attempt.fallback) attempt.fallback.hidden = true;
+  if (attempt.captionBox) attempt.captionBox.hidden = true;
+  if (attempt.retry) attempt.retry.hidden = true;
+  attempt.visual.classList.remove?.("is-text-visual");
+  attempt.visual.closest("[data-story-id]")?.classList.remove?.("is-text-led");
+  image.src = url; // Preserve signed URLs and original image framing unchanged.
+}
+
+function retryFailedSourceImage(image) {
+  const attempt = sourceImageAttempt(image);
+  if (!attempt || attempt.timer !== null) return;
+  if (attempt.exhausted) { activateImageFallback(image); return; }
+  attempt.awaiting = false;
+  if (attempt.index + 1 < attempt.candidates.length) {
+    requestSourceImage(image, attempt.candidates[++attempt.index]);
+  } else if (!attempt.originalRetried && attempt.candidates.length) {
+    attempt.originalRetried = true;
+    image.hidden = true;
+    if (attempt.captionBox) attempt.captionBox.hidden = true;
+    if (attempt.fallback) attempt.fallback.hidden = true;
+    attempt.timer = setTimeout(() => {
+      attempt.timer = null;
+      requestSourceImage(image, attempt.candidates[0]);
+    }, 150);
+  } else activateImageFallback(image);
 }
 
 function inspectLoadedImages(root = document) {
   [...(root.querySelectorAll?.("img[data-fallback-image]") || [])].forEach(image => {
-    if (image.complete && (image.naturalWidth < 480 || image.naturalHeight < 270)) activateImageFallback(image);
+    if (!image.complete || sourceImageAttempts.get(image)?.awaiting) return;
+    if (image.naturalWidth < 480 || image.naturalHeight < 270) retryFailedSourceImage(image);
+    else restoreSourceImage(image);
   });
 }
 
 document.addEventListener("error", event => {
-  if (event.target.matches?.("img[data-fallback-image]")) activateImageFallback(event.target);
+  if (event.target.matches?.("img[data-fallback-image]")) retryFailedSourceImage(event.target);
 }, true);
 
 document.addEventListener("load", event => {
   const image = event.target;
   if (!image.matches?.("img[data-fallback-image]")) return;
   const tooSmall = image.naturalWidth < 480 || image.naturalHeight < 270;
-  if (tooSmall) activateImageFallback(image);
+  if (tooSmall) retryFailedSourceImage(image);
+  else restoreSourceImage(image);
 }, true);
+
+document.addEventListener("click", event => {
+  const button = event.target.closest?.("[data-image-retry]");
+  const image = button?.closest(".story-visual, .card-visual")?.querySelector("img[data-fallback-image]");
+  if (!image) return;
+  event.preventDefault();
+  const attempt = sourceImageAttempt(image);
+  if (!attempt || !attempt.exhausted || !attempt.candidates.length) return;
+  attempt.index = 0;
+  attempt.originalRetried = false;
+  attempt.exhausted = false;
+  requestSourceImage(image, attempt.candidates[0]);
+});
 
 // Deferred scripts can miss an SSR image's earlier error/load event.
 inspectLoadedImages();

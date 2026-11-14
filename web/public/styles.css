@@ -713,6 +713,10 @@ footer p { margin: 0; color: var(--fog); }
 .is-text-visual .visual-media { aspect-ratio: auto; min-height: 0; background: transparent; }
 .is-text-visual .media-caption { display: none; }
 .is-text-visual .text-edition-note { border: 0; padding: 0; }
+[data-image-retry] { display: inline-flex; min-height: 44px; align-items: center; justify-content: center; margin-top: 10px; padding: 7px 13px; color: inherit; background: transparent; border: 1px solid currentColor; border-radius: 0; font-family: inherit; font-size: 12px; font-weight: 650; line-height: 1.5; cursor: pointer; }
+[data-image-retry]:hover { color: var(--orange); }
+[data-image-retry]:focus-visible { outline: 3px solid var(--orange); outline-offset: 3px; }
+[data-image-retry][hidden] { display: none !important; }
 .lead-copy .is-text-visual .text-edition-note { color: #bdbdb8; }
 .lead-story.is-text-led .is-text-visual { grid-column: 1; }
 .brief-grid .is-brief { padding: 24px 0; border-top: 1px solid #d5d2c9; }

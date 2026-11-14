@@ -45,6 +45,18 @@ the current reading template without returning to the curated feed. Future-dated
 URLs receive a noindex date-review notice with the complete original public HTML
 stored inertly in the page for safe recovery; no database history is deleted.
 
+Source images are discovered and repaired in GitHub Actions, not on a local
+computer. The exporter tries source metadata and actual article image candidates,
+then verifies complete decoding and the existing 480×270 minimum. Verified URLs
+are reused for seven days, and older archives preserve media even after leaving
+the 48-hour brief. Each cloud run repairs up to 50 more archived articles, with a
+seven-day retry cooldown. No image binaries, public image proxy or extra LLM calls
+are introduced. Public-address DNS pinning, per-hop redirect checks, timeouts and
+response-size limits protect outbound discovery. Publisher query signatures are
+preserved. Browser loading uses at most three candidates and one automatic retry;
+successful retries restore the image and source caption. An unavailable external
+source may still require a later manual retry.
+
 Reader likes and comments are handled separately by a Cloudflare Pages Function and a free D1 database. The service stores a salted visitor hash for like deduplication and rate limiting. It never stores the full visitor IP; public comments show only `poly`, the approximate Cloudflare region, and the final three IP characters.
 
 ## 1. Gemini
