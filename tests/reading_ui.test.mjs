@@ -11,14 +11,15 @@ function fixture(savedState = null, completedImages = [], { pathname = "/en/fiel
   const allNodes = new Map();
   const handlers = new Map();
   const timers = new Map();
+  const timerDelays = new Map();
   let timerId = 0;
   let roots = [];
   let nativeSummaries = [];
   const storage = new Map(savedState ? [["polyemergence-reading-v2", JSON.stringify(savedState)]] : []);
   const context = vm.createContext({
     URL, Date, Intl, Set, CSS: { escape: String }, innerHeight: 844, scrollX: 0, scrollY: 300,
-    setTimeout(callback) { timers.set(++timerId, callback); return timerId; },
-    clearTimeout(id) { timers.delete(id); },
+    setTimeout(callback, delay) { timers.set(++timerId, callback); timerDelays.set(timerId, delay); return timerId; },
+    clearTimeout(id) { timers.delete(id); timerDelays.delete(id); },
     location: { pathname, href: `https://polyemergence.com${pathname}`, origin: "https://polyemergence.com", hash: "", reload() { context.reloadCount = (context.reloadCount || 0) + 1; } },
     navigator: { language: "en", userAgent: "test", platform: "test" },
     localStorage: { setItem() {} },
@@ -39,9 +40,10 @@ function fixture(savedState = null, completedImages = [], { pathname = "/en/fiel
     fetch: async () => { throw Error("unconfigured request"); }
   });
   context.window = { navigator: context.navigator, addEventListener() {}, setInterval() {}, matchMedia: () => ({ matches: false }), scrollTo() {}, scrollBy() {} };
-  vm.runInContext(`${executable}\nglobalThis.ui = { state, applyBriefWindow, feedFingerprint, renderCard, renderLead, renderEditionSections, visualMarkup, activateImageFallback, inspectLoadedImages, editionNote, evidenceMarkup, plainText, inlineMarkup, fullSummaryMarkup, readingContextMarkup, renderFieldReadingGuidance, legacyTemplates: LEGACY_READING_CONTEXT, setRegistry: value => { domainRegistry = value; }, setLocale, renderFeed, renderFilters, updateFieldLinks, fieldFromUrl, captureReadingState, saveReadingState, summaryMarkup, interactionMarkup, loadFeed, applyFeed, publishedTimeMarkup, observationFreshness, updateObservationFreshness }; globalThis.renderCount = 0; setLocale = () => { renderCount += 1; };`, context);
+  vm.runInContext(`${executable}\nglobalThis.ui = { state, applyBriefWindow, feedFingerprint, renderCard, renderLead, renderEditionSections, visualMarkup, editorialArtworkUrl, activateImageFallback, inspectLoadedImages, imageAttempt: image => sourceImageAttempts.get(image), editionNote, evidenceMarkup, plainText, inlineMarkup, fullSummaryMarkup, readingContextMarkup, renderFieldReadingGuidance, legacyTemplates: LEGACY_READING_CONTEXT, setRegistry: value => { domainRegistry = value; }, setLocale, renderFeed, renderFilters, updateFieldLinks, fieldFromUrl, captureReadingState, saveReadingState, summaryMarkup, interactionMarkup, loadFeed, applyFeed, publishedTimeMarkup, observationFreshness, updateObservationFreshness }; globalThis.renderCount = 0; setLocale = () => { renderCount += 1; };`, context);
   return { context, ui: context.ui, nodes, storage, handlers, timers,
-    flushTimers() { const pending = [...timers.values()]; timers.clear(); pending.forEach(callback => callback()); },
+    countTimers: delay => [...timers.keys()].filter(id => timerDelays.get(id) === delay).length,
+    flushTimers(delay) { const pending = [...timers].filter(([id]) => delay === undefined || timerDelays.get(id) === delay); pending.forEach(([id]) => { timers.delete(id); timerDelays.delete(id); }); pending.forEach(([, callback]) => callback()); },
     setAll: (selector, values) => allNodes.set(selector, values), setRoots(value) { roots = value; }, setNativeSummaries(value) { nativeSummaries = value; } };
 }
 
@@ -52,15 +54,16 @@ function article(id = "one", overrides = {}) {
 function mediaImage({ src = "https://images.example.com/original.jpg?signature=keep", candidates = [], width = 1_200, height = 675, complete = false } = {}) {
   const classes = new Set(), articleClasses = new Set(), requests = [];
   const note = { hidden: true }, caption = { textContent: "Source image · Example" }, captionBox = { hidden: false };
+  const editorial = { hidden: true }, editorialCaption = { hidden: true };
   const retry = { hidden: true, closest: () => visual };
   const visual = { dataset: { mediaSource: "Example" },
     classList: { add: value => classes.add(value), remove: value => classes.delete(value) },
-    querySelector: selector => ({ "[data-image-unavailable-note]": note, ".media-caption a": caption, ".media-caption": captionBox, "[data-image-retry]": retry, "img[data-fallback-image]": image }[selector]),
+    querySelector: selector => ({ "[data-image-unavailable-note]": note, "[data-editorial-artwork]": editorial, "[data-editorial-caption]": editorialCaption, ".media-caption a": caption, "[data-source-caption]": captionBox, ".media-caption": captionBox, "[data-image-retry]": retry, "img[data-fallback-image]": image }[selector]),
     closest: () => ({ classList: { add: value => articleClasses.add(value), remove: value => articleClasses.delete(value) } }) };
   const image = { _src: src, hidden: false, naturalWidth: width, naturalHeight: height, complete, dataset: { imageCandidates: JSON.stringify(candidates) },
     closest: () => visual, matches: selector => selector === "img[data-fallback-image]", getAttribute: name => name === "src" ? image._src : null,
     get src() { return this._src; }, set src(value) { this._src = value; requests.push(value); this.complete = false; this.naturalWidth = 0; this.naturalHeight = 0; } };
-  return { image, visual, caption, captionBox, note, retry, classes, articleClasses, requests };
+  return { image, visual, caption, captionBox, note, editorial, editorialCaption, retry, classes, articleClasses, requests };
 }
 
 function contextMeta(id = "one") {
@@ -308,17 +311,37 @@ test("an SSR native summary opened before hydration stays expanded in the live c
   assert.match(ui.summaryMarkup({ summary: "Preview", fullSummary: "Complete content" }, article()), /data-summary-toggle aria-expanded="true"/);
 });
 
-test("missing evidence stays unknown and absent images are text-led without SVG placeholders", () => {
+test("missing evidence stays unknown while lead and feature artwork is explicitly editorial", () => {
   const { ui, nodes } = fixture();
   assert.match(ui.evidenceMarkup(article()), /Source type not yet identified/);
   assert.doesNotMatch(ui.evidenceMarkup(article()), /Stage not specified/);
   assert.match(ui.evidenceMarkup(article(), true), /Stage not specified/);
-  assert.match(ui.renderCard(article()), /story-card is-feature is-text-led/);
-  assert.match(ui.visualMarkup(article()), /Text report · No source image available/);
-  assert.doesNotMatch(ui.visualMarkup(article()), /<svg|<figure|<img|brand-cover/);
+  assert.match(ui.renderCard(article()), /story-card is-feature"/);
+  assert.match(ui.visualMarkup(article()), /data-editorial-artwork><img data-editorial-image src="\/assets\/editorial\/general.svg"/);
+  assert.match(ui.visualMarkup(article()), /Polyemergence editorial artwork · Not a source image/);
+  assert.doesNotMatch(ui.visualMarkup(article()), /data-fallback-image|data-source-caption|brand-cover|<svg/);
   ui.renderLead(article());
-  assert.equal(nodes.get("#lead-story").classList.contains("is-text-led"), true);
-  assert.doesNotMatch(nodes.get("#lead-story").innerHTML, /<figure|brand-cover/);
+  assert.equal(nodes.get("#lead-story").classList.contains("is-text-led"), false);
+  assert.match(nodes.get("#lead-story").innerHTML, /<figure.*is-editorial-visual/s);
+});
+
+test("editorial artwork uses only registry-approved local SVGs and leaves source media untouched", () => {
+  const { ui } = fixture();
+  const value = article("artwork", { image_url: null, image_candidates: [], image_status: "unavailable" });
+  const original = JSON.stringify(value);
+  ui.setRegistry([{ id: "ai", artwork: "/assets/editorial/ai.svg" }]);
+  assert.equal(ui.editorialArtworkUrl(value), "/assets/editorial/ai.svg");
+  assert.equal(ui.editorialArtworkUrl(article("unknown", { domain: "future_field" })), "/assets/editorial/general.svg");
+  assert.equal(ui.editorialArtworkUrl(article("missing", { domain: undefined })), "/assets/editorial/general.svg");
+  for (const artwork of ["https://evil.example/art.svg", "/assets/editorial/../../evil.svg", "/assets/editorial/ai.svg?redirect=x", '/assets/editorial/ai.svg" onload="x', "javascript:alert(1)"]) {
+    ui.setRegistry([{ id: "ai", artwork }]);
+    assert.equal(ui.editorialArtworkUrl(value), "/assets/editorial/general.svg");
+  }
+  ui.setRegistry([]);
+  assert.equal(ui.editorialArtworkUrl(article("unknown", { domain: "future_field" })), "/assets/editorial/general.svg");
+  ui.state.locale = "zh";
+  assert.match(ui.visualMarkup(value), /Polyemergence 编辑配图 · 非原文图片/);
+  assert.equal(JSON.stringify(value), original);
 });
 
 test("lead and feature images have conservative linked captions; video thumbnails are identified separately", () => {
@@ -327,7 +350,9 @@ test("lead and feature images have conservative linked captions; video thumbnail
   const markup = ui.visualMarkup(article("image", { source, image_url: "https://example.com/image.jpg?a=1&b=2" }));
   assert.match(markup, /^<figure class="card-visual"/);
   assert.match(markup, /<div class="visual-media"><img/);
-  assert.match(markup, /<figcaption class="media-caption"><a href="https:\/\/example\.com\/story"/);
+  assert.match(markup, /<figcaption class="media-caption" data-source-caption><a href="https:\/\/example\.com\/story"/);
+  assert.match(markup, /data-editorial-artwork hidden/);
+  assert.match(markup, /data-editorial-caption hidden/);
   assert.match(markup, /Source image · Example &lt;source&gt;/);
   assert.match(markup, /data-media-source="Example &lt;source&gt;"/);
   assert.match(markup, /a=1&amp;b=2/);
@@ -355,45 +380,32 @@ test("only the first three remaining stories become features; extra stories are 
   assert.doesNotMatch(ui.renderEditionSections(items.slice(0, 2)), /brief-section/);
 });
 
-test("image errors and low-resolution images become text notes and never retain a caption claiming the image is visible", () => {
-  const { ui, handlers } = fixture();
-  const classNames = new Set();
-  const articleClasses = new Set();
-  const note = { hidden: true };
-  const caption = { textContent: "Source image · Example" };
-  const visual = { dataset: { mediaSource: "Example" }, classList: { add: name => classNames.add(name) }, querySelector: selector => selector === "[data-image-unavailable-note]" ? note : caption, closest: () => ({ classList: { add: name => articleClasses.add(name) } }) };
-  const image = { hidden: false, naturalWidth: 120, naturalHeight: 90, closest: () => visual, matches: selector => selector === "img[data-fallback-image]" };
-  handlers.get("load").forEach(handler => handler({ target: image }));
-  assert.equal(image.hidden, true);
-  assert.equal(note.hidden, false);
-  assert.ok(classNames.has("is-text-visual"));
-  assert.ok(articleClasses.has("is-text-led"));
-  assert.equal(caption.textContent, "Original image temporarily unavailable · Example");
-  caption.textContent = "Source image · Example";
-  image.hidden = false;
-  handlers.get("error").forEach(handler => handler({ target: image }));
-  assert.equal(image.hidden, true);
-  assert.match(caption.textContent, /temporarily unavailable/);
+test("exhausted low-resolution source images show editorial artwork without a misleading source caption", () => {
+  const { handlers } = fixture();
+  const media = mediaImage({ src: "", width: 120, height: 90 });
+  handlers.get("load").forEach(handler => handler({ target: media.image }));
+  assert.equal(media.image.hidden, true);
+  assert.equal(media.note.hidden, true);
+  assert.equal(media.editorial.hidden, false);
+  assert.equal(media.editorialCaption.hidden, false);
+  assert.equal(media.captionBox.hidden, true);
+  assert.ok(media.classes.has("is-editorial-visual"));
+  assert.equal(media.articleClasses.has("is-text-led"), false);
+  assert.equal(media.caption.textContent, "Source image · Example");
 });
 
 test("SSR images completed before the deferred app loads are checked once, while healthy and pending images are preserved", () => {
-  function image(width, height, complete) {
-    const note = { hidden: true };
-    const caption = { textContent: "Source image · Example" };
-    const visual = { dataset: { mediaSource: "Example" }, classList: { add() {} }, querySelector: selector => selector === "[data-image-unavailable-note]" ? note : caption, closest: () => ({ classList: { add() {} } }) };
-    return { hidden: false, naturalWidth: width, naturalHeight: height, complete, closest: () => visual, note, caption };
-  }
-  const failed = image(0, 0, true);
-  const small = image(240, 135, true);
-  const healthy = image(1_200, 675, true);
-  const pending = image(0, 0, false);
-  fixture(null, [failed, small, healthy, pending]);
-  assert.equal(failed.hidden, true);
-  assert.equal(small.hidden, true);
-  assert.equal(failed.note.hidden, false);
-  assert.match(failed.caption.textContent, /temporarily unavailable/);
-  assert.equal(healthy.hidden, false);
-  assert.equal(pending.hidden, false);
+  const failed = mediaImage({ src: "", width: 0, height: 0, complete: true });
+  const small = mediaImage({ src: "", width: 240, height: 135, complete: true });
+  const healthy = mediaImage({ complete: true });
+  const pending = mediaImage({ width: 0, height: 0 });
+  fixture(null, [failed.image, small.image, healthy.image, pending.image]);
+  assert.equal(failed.image.hidden, true);
+  assert.equal(small.image.hidden, true);
+  assert.equal(failed.editorial.hidden, false);
+  assert.equal(failed.captionBox.hidden, true);
+  assert.equal(healthy.image.hidden, false);
+  assert.equal(pending.image.hidden, false);
 });
 
 test("source images try at most three safe distinct candidates, then the unchanged original once, and restore after success", () => {
@@ -418,16 +430,20 @@ test("source images try at most three safe distinct candidates, then the unchang
   emit("error");
   assert.equal(media.requests.length, 3, "two alternates and one original retry, no unbounded requests");
   assert.equal(media.image.hidden, true);
-  assert.equal(media.note.hidden, false);
+  assert.equal(media.note.hidden, true);
+  assert.equal(media.editorial.hidden, false);
+  assert.equal(media.editorialCaption.hidden, false);
   assert.equal(media.retry.hidden, false);
-  assert.ok(media.classes.has("is-text-visual"));
-  assert.ok(media.articleClasses.has("is-text-led"));
+  assert.ok(media.classes.has("is-editorial-visual"));
+  assert.equal(media.articleClasses.has("is-text-led"), false);
   for (let i = 0; i < 5; i += 1) emit("error");
   assert.equal(media.requests.length, 3);
   media.image.naturalWidth = 480; media.image.naturalHeight = 270;
   emit("load");
   assert.equal(media.image.hidden, false);
   assert.equal(media.note.hidden, true);
+  assert.equal(media.editorial.hidden, true);
+  assert.equal(media.editorialCaption.hidden, true);
   assert.equal(media.retry.hidden, true);
   assert.equal(media.caption.textContent, "Source image · Example");
   assert.equal(media.captionBox.hidden, false);
@@ -439,11 +455,12 @@ test("cached failed images retry once, pending lazy images do not, and a manual 
   const failed = mediaImage({ width: 0, height: 0, complete: true });
   const pending = mediaImage({ width: 0, height: 0, complete: false });
   const page = fixture(null, [failed.image, pending.image]);
-  assert.equal(page.timers.size, 1);
+  assert.equal(page.countTimers(150), 1);
+  assert.equal(page.countTimers(3000), 1);
   assert.equal(pending.requests.length, 0);
   page.ui.inspectLoadedImages();
-  assert.equal(page.timers.size, 1);
-  page.flushTimers();
+  assert.equal(page.countTimers(150), 1);
+  page.flushTimers(150);
   page.handlers.get("error").forEach(handler => handler({ target: failed.image }));
   assert.equal(failed.retry.hidden, false);
   let prevented = false;
@@ -452,12 +469,15 @@ test("cached failed images retry once, pending lazy images do not, and a manual 
   assert.equal(prevented, true);
   assert.equal(failed.requests.length, 2);
   assert.equal(failed.image.loading, "eager");
-  assert.equal(failed.image.hidden, false);
+  assert.equal(failed.image.hidden, true, "keep the editorial artwork visible while the source retry downloads");
+  assert.equal(failed.editorial.hidden, false);
+  assert.equal(failed.editorialCaption.hidden, false);
   assert.equal(failed.retry.hidden, true);
   failed.image.naturalWidth = 800; failed.image.naturalHeight = 600;
   page.handlers.get("load").forEach(handler => handler({ target: failed.image }));
   assert.equal(failed.caption.textContent, "Source image · Example");
   assert.equal(failed.note.hidden, true);
+  assert.equal(failed.editorial.hidden, true);
 });
 
 test("hydrated image markup exports bounded safe candidates and a hidden accessible manual retry", () => {
@@ -467,7 +487,46 @@ test("hydrated image markup exports bounded safe candidates and a hidden accessi
   assert.match(markup, /two\.jpg/);
   assert.match(markup, /three\.jpg/);
   assert.doesNotMatch(markup, /javascript|private|four\.jpg/);
-  assert.match(markup, /<button type="button" data-image-retry hidden>Retry image<\/button>/);
+  assert.match(markup, /<button type="button" data-image-retry hidden>Retry source image<\/button>/);
+});
+
+test("local editorial image load and error events never enter the source-image retry loop", () => {
+  const { handlers, timers } = fixture();
+  const image = { naturalWidth: 0, naturalHeight: 0, matches: () => false };
+  for (const type of ["load", "error"]) handlers.get(type).forEach(handler => handler({ target: image }));
+  assert.equal(timers.size, 0);
+});
+
+test("a pending lazy source gains a three-second editorial cover without network retries or losing lazy geometry", () => {
+  const media = mediaImage({ width: 0, height: 0 });
+  media.image.loading = "lazy";
+  const page = fixture(null, [media.image]);
+  assert.equal(page.countTimers(3000), 1);
+  assert.equal(page.countTimers(150), 0);
+  page.flushTimers(3000);
+  assert.equal(media.editorial.hidden, false);
+  assert.equal(media.editorialCaption.hidden, false);
+  assert.equal(media.captionBox.hidden, true);
+  assert.equal(media.image.hidden, false, "offscreen lazy source must remain eligible to load");
+  assert.equal(media.image.loading, "lazy");
+  assert.equal(media.requests.length, 0);
+  assert.equal(media.retry.hidden, true);
+  assert.equal(page.ui.imageAttempt(media.image).exhausted, false);
+  assert.equal(page.ui.imageAttempt(media.image).index, 0);
+  page.ui.inspectLoadedImages();
+  assert.equal(page.timers.size, 0, "the UI cover does not start infinite polling");
+  const target = { closest: selector => selector === "[data-image-retry]" ? media.retry : null };
+  page.handlers.get("click").forEach(handler => handler({ target, preventDefault() {} }));
+  assert.equal(media.requests.length, 0, "a pending cover does not enable manual network retries");
+  media.image.complete = true;
+  media.image.naturalWidth = 1200; media.image.naturalHeight = 675;
+  page.handlers.get("load").forEach(handler => handler({ target: media.image }));
+  assert.equal(media.editorial.hidden, true);
+  assert.equal(media.editorialCaption.hidden, true);
+  assert.equal(media.captionBox.hidden, false);
+  assert.equal(media.image.hidden, false);
+  assert.equal(media.classes.has("is-editorial-visual"), false);
+  assert.equal(page.timers.size, 0);
 });
 
 test("edition note uses the actual feed timestamp in SGT and the 48-hour window, not an invented issue number", () => {

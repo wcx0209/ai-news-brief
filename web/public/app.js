@@ -668,10 +668,23 @@ function hasSourceImage(item) {
   return sourceImageCandidates(item).length !== 0;
 }
 
+function editorialArtworkUrl(item) {
+  // Unlike feed classification, artwork must not guess AI for an unknown or
+  // missing domain: keep the server-rendered general illustration unchanged.
+  const artwork = domainRegistry.find(field => field.id === item?.domain)?.artwork;
+  return typeof artwork === "string" && /^\/assets\/editorial\/[a-z][a-z0-9_]*\.svg$/.test(artwork)
+    ? artwork : "/assets/editorial/general.svg";
+}
+
+function editorialArtworkMarkup(item, hidden = false) {
+  return `<div class="editorial-artwork" data-editorial-artwork${hidden ? " hidden" : ""}><img data-editorial-image src="${escapeHtml(editorialArtworkUrl(item))}" alt="" width="1200" height="675" loading="lazy" decoding="async"></div>`;
+}
+
 function visualMarkup(item, slot = "card", priority = false) {
-  if (!hasSourceImage(item)) return `<div class="text-edition-note">${escapeHtml(COPY[state.locale].textEdition)}</div>`;
+  const source = hasSourceImage(item);
   const caption = `${COPY[state.locale][youtubeThumbnail(item) ? "videoImage" : "sourceImage"]} · ${item.source || ""}`;
-  return `<figure class="${slot}-visual" data-media-source="${escapeHtml(item.source || "")}"><div class="visual-media">${imageMarkup(item, priority)}<div class="text-edition-note" data-image-unavailable-note hidden>${escapeHtml(COPY[state.locale].imageUnavailable)}</div></div><figcaption class="media-caption"><a href="${escapeHtml(safeUrl(item.url))}" target="_blank" rel="noopener noreferrer">${escapeHtml(caption)}</a></figcaption><button type="button" data-image-retry hidden>${state.locale === "zh" ? "重试图片" : "Retry image"}</button></figure>`;
+  const editorialCaption = state.locale === "zh" ? "Polyemergence 编辑配图 · 非原文图片" : "Polyemergence editorial artwork · Not a source image";
+  return `<figure class="${slot}-visual${source ? "" : " is-editorial-visual"}" data-media-source="${escapeHtml(item.source || "")}"><div class="visual-media">${source ? imageMarkup(item, priority) : ""}${editorialArtworkMarkup(item, source)}<div class="text-edition-note" data-image-unavailable-note hidden>${escapeHtml(COPY[state.locale].imageUnavailable)}</div></div>${source ? `<figcaption class="media-caption" data-source-caption><a href="${escapeHtml(safeUrl(item.url))}" target="_blank" rel="noopener noreferrer">${escapeHtml(caption)}</a></figcaption>` : ""}<figcaption class="media-caption editorial-caption" data-editorial-caption${source ? " hidden" : ""}>${editorialCaption}</figcaption>${source ? `<button type="button" data-image-retry hidden>${state.locale === "zh" ? "重试原图" : "Retry source image"}</button>` : ""}</figure>`;
 }
 
 const sourceImageAttempts = new WeakMap();
@@ -690,45 +703,82 @@ function sourceImageAttempt(image) {
     retry = document.createElement("button");
     retry.type = "button";
     retry.setAttribute("data-image-retry", "");
-    retry.textContent = state.locale === "zh" ? "重试图片" : "Retry image";
+    retry.textContent = state.locale === "zh" ? "重试原图" : "Retry source image";
     retry.hidden = true;
     visual.appendChild(retry);
   }
-  const attempt = { visual, candidates, index: 0, originalRetried: false, timer: null, awaiting: false, exhausted: false,
-    caption, originalCaption: caption?.textContent || "", captionBox: visual.querySelector(".media-caption") || caption,
-    fallback: visual.querySelector("[data-image-unavailable-note]"), retry };
+  const attempt = { visual, candidates, index: 0, originalRetried: false, timer: null, watchdog: null, awaiting: false, exhausted: false,
+    caption, originalCaption: caption?.textContent || "", captionBox: visual.querySelector("[data-source-caption]") || visual.querySelector(".media-caption") || caption,
+    fallback: visual.querySelector("[data-image-unavailable-note]"),
+    editorial: visual.querySelector("[data-editorial-artwork]"), editorialCaption: visual.querySelector("[data-editorial-caption]"), retry };
   sourceImageAttempts.set(image, attempt);
+  if (!image.complete) armSourceImageWatchdog(image, attempt);
   return attempt;
+}
+
+function clearSourceImageWatchdog(attempt) {
+  if (attempt.watchdog !== null) clearTimeout(attempt.watchdog);
+  attempt.watchdog = null;
+}
+
+function armSourceImageWatchdog(image, attempt) {
+  clearSourceImageWatchdog(attempt);
+  if (!attempt.editorial || !attempt.candidates.length || attempt.exhausted) return;
+  attempt.watchdog = setTimeout(() => {
+    attempt.watchdog = null;
+    if (attempt.exhausted || (image.complete && !attempt.awaiting)) return;
+    // Cover a slow response without hiding or eagerly loading the source: an
+    // offscreen lazy image must keep its geometry so it can still start later.
+    attempt.editorial.hidden = false;
+    if (attempt.editorialCaption) attempt.editorialCaption.hidden = false;
+    if (attempt.captionBox) attempt.captionBox.hidden = true;
+    if (attempt.fallback) attempt.fallback.hidden = true;
+    attempt.visual.classList.add("is-editorial-visual");
+  }, 3000);
 }
 
 function restoreSourceImage(image) {
   const attempt = sourceImageAttempt(image);
   if (!attempt) return;
+  clearSourceImageWatchdog(attempt);
   if (attempt.timer !== null) clearTimeout(attempt.timer);
   attempt.timer = null;
   attempt.awaiting = false;
   attempt.exhausted = false;
   image.hidden = false;
   if (attempt.fallback) attempt.fallback.hidden = true;
+  if (attempt.editorial) attempt.editorial.hidden = true;
+  if (attempt.editorialCaption) attempt.editorialCaption.hidden = true;
   if (attempt.caption) attempt.caption.textContent = attempt.originalCaption;
   if (attempt.captionBox) attempt.captionBox.hidden = false;
   if (attempt.retry) attempt.retry.hidden = true;
   attempt.visual.classList.remove?.("is-text-visual");
+  attempt.visual.classList.remove?.("is-editorial-visual");
   attempt.visual.closest("[data-story-id]")?.classList.remove?.("is-text-led");
 }
 
 function activateImageFallback(image) {
   const attempt = sourceImageAttempt(image);
-  if (!attempt || !attempt.fallback) return;
-  const { visual, fallback, caption, captionBox, retry } = attempt;
+  if (!attempt || (!attempt.fallback && !attempt.editorial)) return;
+  clearSourceImageWatchdog(attempt);
+  const { visual, fallback, caption, captionBox, retry, editorial, editorialCaption } = attempt;
   attempt.awaiting = false;
   attempt.exhausted = true;
   image.hidden = true;
-  fallback.hidden = false;
-  visual.classList.add("is-text-visual");
-  visual.closest("[data-story-id]")?.classList.add("is-text-led");
-  if (caption) caption.textContent = `${COPY[state.locale].imageUnavailable}${visual.dataset.mediaSource ? ` · ${visual.dataset.mediaSource}` : ""}`;
-  if (captionBox) captionBox.hidden = false;
+  if (fallback) fallback.hidden = Boolean(editorial);
+  if (editorial) {
+    editorial.hidden = false;
+    if (editorialCaption) editorialCaption.hidden = false;
+    if (captionBox) captionBox.hidden = true;
+    visual.classList.add("is-editorial-visual");
+    visual.classList.remove?.("is-text-visual");
+    visual.closest("[data-story-id]")?.classList.remove?.("is-text-led");
+  } else {
+    // Older cached HTML can still lack the new local-artwork wrapper.
+    visual.classList.add("is-text-visual");
+    if (caption) caption.textContent = `${COPY[state.locale].imageUnavailable}${visual.dataset.mediaSource ? ` · ${visual.dataset.mediaSource}` : ""}`;
+    if (captionBox) captionBox.hidden = false;
+  }
   if (retry) retry.hidden = false;
 }
 
@@ -737,18 +787,22 @@ function requestSourceImage(image, url) {
   if (!attempt || !url) return;
   attempt.awaiting = true;
   image.loading = "eager";
-  image.hidden = false;
+  const artworkVisible = attempt.editorial && !attempt.editorial.hidden;
+  image.hidden = Boolean(artworkVisible);
   if (attempt.fallback) attempt.fallback.hidden = true;
   if (attempt.captionBox) attempt.captionBox.hidden = true;
   if (attempt.retry) attempt.retry.hidden = true;
+  if (!artworkVisible) attempt.visual.classList.remove?.("is-editorial-visual");
   attempt.visual.classList.remove?.("is-text-visual");
   attempt.visual.closest("[data-story-id]")?.classList.remove?.("is-text-led");
   image.src = url; // Preserve signed URLs and original image framing unchanged.
+  armSourceImageWatchdog(image, attempt);
 }
 
 function retryFailedSourceImage(image) {
   const attempt = sourceImageAttempt(image);
   if (!attempt || attempt.timer !== null) return;
+  clearSourceImageWatchdog(attempt);
   if (attempt.exhausted) { activateImageFallback(image); return; }
   attempt.awaiting = false;
   if (attempt.index + 1 < attempt.candidates.length) {
@@ -767,7 +821,8 @@ function retryFailedSourceImage(image) {
 
 function inspectLoadedImages(root = document) {
   [...(root.querySelectorAll?.("img[data-fallback-image]") || [])].forEach(image => {
-    if (!image.complete || sourceImageAttempts.get(image)?.awaiting) return;
+    const attempt = sourceImageAttempt(image);
+    if (!image.complete || attempt?.awaiting) return;
     if (image.naturalWidth < 480 || image.naturalHeight < 270) retryFailedSourceImage(image);
     else restoreSourceImage(image);
   });
@@ -839,7 +894,7 @@ function scoreBreakdown(item, compact = false) {
 
 function renderLead(item) {
   $("#lead-story").hidden = !item;
-  $("#lead-story").classList.toggle("is-text-led", Boolean(item && !hasSourceImage(item)));
+  $("#lead-story").classList.toggle("is-text-led", false);
   if (!item) { $("#lead-story").innerHTML = ""; delete $("#lead-story").dataset.storyId; return; }
   const text = textFor(item);
   $("#lead-story").dataset.storyId = item.id;
@@ -855,7 +910,7 @@ function renderLead(item) {
 function renderCard(item, tier = "feature") {
   const text = textFor(item);
   const brief = tier === "brief";
-  return `<article class="story-card is-${brief ? "brief" : "feature"}${brief || !hasSourceImage(item) ? " is-text-led" : ""}" data-story-id="${escapeHtml(item.id)}">
+  return `<article class="story-card is-${brief ? "brief" : "feature"}${brief ? " is-text-led" : ""}" data-story-id="${escapeHtml(item.id)}">
     <div class="card-copy">
       ${storyHeadingMarkup(item, text)}
       ${brief ? "" : visualMarkup(item)}

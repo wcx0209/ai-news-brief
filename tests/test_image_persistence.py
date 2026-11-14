@@ -251,7 +251,7 @@ class ImagePersistenceTests(unittest.TestCase):
         match = re.search(r'data-image-candidates="([^"]+)"', detail)
         self.assertEqual(json.loads(html.unescape(match[1])), record["image_candidates"])
         self.assertIn("&quot;", detail)
-        self.assertIn("data-image-retry hidden>重试图片", detail)
+        self.assertIn("data-image-retry hidden>重试原图", detail)
         thumbnail = archive.archive_thumbnail(record, "archive-recommendation-image")
         self.assertIn("data-image-candidates", thumbnail)
         self.assertNotIn("<button", thumbnail)

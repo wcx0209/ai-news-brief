@@ -699,6 +699,11 @@ footer p { margin: 0; color: var(--fog); }
 .story-visual, .card-visual { margin: 0; aspect-ratio: auto; overflow: visible; }
 .visual-media { position: relative; width: 100%; aspect-ratio: 16 / 9; overflow: hidden; background: #ecebe6; }
 .visual-media img { display: block; width: 100%; height: 100%; object-fit: contain; }
+.editorial-artwork { display: grid; place-items: center; width: 100%; aspect-ratio: 16 / 9; overflow: hidden; background: #f3f1eb; }
+.editorial-artwork img { display: block; width: 100%; height: 100%; object-fit: contain; }
+.visual-media > .editorial-artwork { position: absolute; inset: 0; height: 100%; }
+.editorial-caption { font-size: 10px; line-height: 1.5; }
+.is-editorial-visual .visual-media { background: #f3f1eb; }
 .media-caption { padding: 8px 0 0; color: #706f69; font-size: 10px; line-height: 1.5; }
 .media-caption a { text-decoration: none; }
 .media-caption a:hover { text-decoration: underline; text-underline-offset: 3px; }

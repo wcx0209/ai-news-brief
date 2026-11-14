@@ -21,6 +21,7 @@ from zoneinfo import ZoneInfo
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "src"))
 from editorial_insights import enrich_item, reading_guidance, article_reading_context
+from editorial_artwork import editorial_artwork_path, editorial_caption
 SITE = "https://polyemergence.com"
 SGT = ZoneInfo("Asia/Singapore")
 WINDOW = timedelta(hours=48)
@@ -417,6 +418,10 @@ def story_markup(item, locale, corpus, public, lead=False, domains=None, tier="f
             f'{screening}<div class="story-actions">{actions}</div></div>')
     image_url, video = story_image(item)
     is_brief = not lead and tier == "brief"
+    artwork = (f'<div class="editorial-artwork" data-editorial-artwork{" hidden" if image_url else ""}>'
+               f'<img data-editorial-image src="{esc(editorial_artwork_path(item))}" alt="" width="1200" height="675" decoding="async"></div>')
+    artwork_caption = (f'<figcaption class="media-caption editorial-caption" data-editorial-caption{" hidden" if image_url else ""}>'
+                       f'{esc(editorial_caption(locale))}</figcaption>')
     if image_url and not is_brief:
         loading = 'fetchpriority="high"' if lead else 'loading="lazy"'
         candidates = list(dict.fromkeys([image_url, *(safe_url(url) for url in (item.get("image_candidates") or []) if isinstance(url, str))]))[:3]
@@ -425,16 +430,18 @@ def story_markup(item, locale, corpus, public, lead=False, domains=None, tier="f
         caption_label = ("Video thumbnail" if video else "Source image") if locale == "en" else ("视频缩略图" if video else "原文配图")
         caption = f'{caption_label} · {item.get("source") or ""}'
         unavailable = "Original image temporarily unavailable" if locale == "en" else "原文配图暂不可用"
-        retry = "Retry image" if locale == "en" else "重试图片"
+        retry = "Retry source image" if locale == "en" else "重试原图"
         visual = (f'<figure class="{"story-visual" if lead else "card-visual"}" data-media-source="{esc(item.get("source"))}">'
-                  f'<div class="visual-media">{image}<div class="text-edition-note" data-image-unavailable-note hidden>{unavailable}</div><button type="button" data-image-retry hidden>{retry}</button></div>'
-                  f'<figcaption class="media-caption"><a href="{esc(original)}" target="_blank" rel="noopener noreferrer">{esc(caption)}</a></figcaption></figure>')
+                  f'<div class="visual-media">{image}{artwork}<div class="text-edition-note" data-image-unavailable-note hidden>{unavailable}</div></div>'
+                  f'<figcaption class="media-caption" data-source-caption><a href="{esc(original)}" target="_blank" rel="noopener noreferrer">{esc(caption)}</a></figcaption>'
+                  f'{artwork_caption}<button type="button" data-image-retry hidden>{retry}</button></figure>')
     else:
-        visual = "" if is_brief else '<div class="text-edition-note">' + ("Text report · No source image available" if locale == "en" else "文字报道 · 暂无原文配图") + '</div>'
+        visual = "" if is_brief else (f'<figure class="{"story-visual" if lead else "card-visual"} is-editorial-visual">'
+                                     f'<div class="visual-media">{artwork}</div>{artwork_caption}</figure>')
     if lead:
         return f'<div class="lead-copy">{heading}{visual}{body}</div>'
     classes = "story-card is-brief" if is_brief else "story-card is-feature"
-    if not image_url or is_brief:
+    if is_brief:
         classes += " is-text-led"
     return f'<article class="{classes}" data-story-id="{esc(item.get("id"))}"><div class="card-copy">{heading}{visual}{body}</div></article>'
 
@@ -581,7 +588,7 @@ def render_field_page(shell, domain, locale, domains, feed, sources, corpus, pub
     page = re.sub(r'(<aside\b[^>]*\bid="field-reading-guidance"[^>]*)(>)', lambda m: m[1] + f' data-field="{esc(domain["id"])}"' + m[2], page, count=1)
     page = replace_content(page, "p", "field-description", esc(localized(domain.get("description"), locale)))
     page = replace_content(page, "div", "lead-story", story_markup(items[0], locale, corpus, public, True, domains) if items else "")
-    page = set_class_flag(page, "div", "lead-story", "is-text-led", bool(items and not story_image(items[0])[0]))
+    page = set_class_flag(page, "div", "lead-story", "is-text-led", False)
     if items:
         page = re.sub(r'(<div\b[^>]*\bid="lead-story"[^>]*)(>)', lambda m: m[1] + f' data-story-id="{esc(items[0].get("id"))}"' + m[2], page, count=1)
     features, briefs = items[1:4], items[4:]

@@ -25,6 +25,7 @@ from editorial_insights import enrich_item, article_reading_context
 from archive_exploration import normalize_tag, topic_labels, related_articles
 from source_images import normalize_source_url
 from export_public_feed import image_fields, merge_image_fields
+from editorial_artwork import editorial_artwork_path, editorial_caption
 
 
 SITE = "https://polyemergence.com"
@@ -273,24 +274,32 @@ def detail_dek(text, locale):
     return dek, full
 
 
+def editorial_media(record, locale, hidden=False, thumbnail=False):
+    visibility = " hidden" if hidden else ""
+    caption = ("Editorial artwork · Not a source image" if locale == "en" else "编辑配图 · 非原图") if thumbnail else editorial_caption(locale)
+    artwork = (f'<div class="editorial-artwork" data-editorial-artwork{visibility}>'
+               f'<img data-editorial-image src="{esc(editorial_artwork_path(record))}" alt="" width="1200" height="675" loading="lazy" decoding="async"></div>')
+    return artwork + f'<figcaption class="editorial-caption" data-editorial-caption{visibility}>{esc(caption)}</figcaption>'
+
+
 def archive_figure(record, locale):
     """Caption only source provenance, not guessed photographers or rights."""
     media = image_fields(record)
     image = safe_url(media["image_url"])
-    if image == "#":
-        return ""
     parts = urlparse(image)
     if parts.hostname == "polyemergence.com" and parts.path.startswith("/assets/"):
-        return ""  # Our own fallback branding is not an original-source image.
+        image = "#"  # Our own branding must never claim original provenance.
+    if image == "#":
+        return '<figure class="archive-figure is-editorial-visual">' + editorial_media(record, locale) + '</figure>'
     source_host = (urlparse(record.get("url") or "").hostname or "").lower()
     image_host = (parts.hostname or "").lower()
     video = (source_host in {"youtube.com", "www.youtube.com", "youtu.be"}
              or image_host == "ytimg.com" or image_host.endswith(".ytimg.com"))
     label = ("Video thumbnail" if locale == "en" else "视频缩略图") if video else ("Source image" if locale == "en" else "原文配图")
     unavailable = "Original image temporarily unavailable" if locale == "en" else "原文配图暂不可用"
-    retry = "Retry image" if locale == "en" else "重试图片"
+    retry = "Retry source image" if locale == "en" else "重试原图"
     candidates = esc(json.dumps(media["image_candidates"], ensure_ascii=False, separators=(",", ":")))
-    return f'<figure class="archive-figure" data-archive-media><img src="{esc(image)}" data-image-candidates="{candidates}" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer"><figcaption>{label} · <a href="{esc(safe_url(record.get("url")))}" target="_blank" rel="noopener noreferrer">{esc(record.get("source"))}</a></figcaption><p class="archive-media-unavailable" data-archive-media-fallback role="status" hidden>{unavailable}</p><button type="button" data-image-retry hidden>{retry}</button></figure>'
+    return f'<figure class="archive-figure" data-archive-media><img data-source-image src="{esc(image)}" data-image-candidates="{candidates}" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer"><figcaption data-source-caption>{label} · <a href="{esc(safe_url(record.get("url")))}" target="_blank" rel="noopener noreferrer">{esc(record.get("source"))}</a></figcaption>{editorial_media(record, locale, hidden=True)}<p class="archive-media-unavailable" data-archive-media-fallback role="status" hidden>{unavailable}</p><button type="button" data-image-retry hidden>{retry}</button></figure>'
 
 
 def safe_url(value):
@@ -730,7 +739,7 @@ def page_shell(locale, title, description, canonical, alternate, body, structure
     fields_current = ' aria-current="page"' if f"/{locale}/fields/" in current_path else ""
     archive_current = ' aria-current="page"' if f"/{locale}/archive/" in current_path else ""
     body_class = ' class="archive-detail"' if og_type == "article" else ""
-    media_script = '<script defer src="/archive-media.js?v=3"></script><script defer src="/archive-explore.js?v=1"></script>'
+    media_script = '<script defer src="/archive-media.js?v=4"></script><script defer src="/archive-explore.js?v=1"></script>'
     return f'''<!doctype html>
 <html lang="{c['lang']}" data-locale="{locale}"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
@@ -741,7 +750,7 @@ def page_shell(locale, title, description, canonical, alternate, body, structure
 <link rel="alternate" type="application/rss+xml" title="{esc(c['brand'])} RSS" href="/feed-{locale}.xml">
 <meta property="og:type" content="{esc(og_type)}"><meta property="og:site_name" content="{esc(c['brand'])}"><meta property="og:title" content="{esc(title)}"><meta property="og:description" content="{esc(description)}"><meta property="og:url" content="{esc(canonical)}"><meta property="og:image" content="{SITE}/assets/social-preview.png">
 <meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="{esc(title)}"><meta name="twitter:description" content="{esc(description)}"><meta name="twitter:image" content="{SITE}/assets/social-preview.png">
-<link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="/styles.css?v=20261114-1"><link rel="stylesheet" href="/archive.css?v=10">{media_script}{structured_html}</head>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="/styles.css?v=20261114-2"><link rel="stylesheet" href="/archive.css?v=11">{media_script}{structured_html}</head>
 <body{body_class}><header class="site-header"><a class="brand" href="/{locale}/" aria-label="{esc(c['brand'])}"><img src="/assets/{logo}" alt="{esc(c['brand'])}" width="420" height="70"></a>
 <nav class="desktop-nav" aria-label="{'Primary' if locale == 'en' else '主导航'}"><a href="/{locale}/#fields"{fields_current}>{esc(c['fields'])}</a><a href="/{locale}/archive/"{archive_current}>{esc(c['archive'])}</a><a href="/{locale}/#about">{esc(c['method'])}</a></nav>
 <div class="header-tools"><span class="edition">{esc(c['edition'])}</span><div class="language-switch"><a data-archive-locale href="{esc(alternate)}" hreflang="{COPY[other]['lang']}">{'中' if other == 'zh' else 'EN'}</a><span>|</span><a href="{esc(canonical)}" aria-current="page">{'中' if locale == 'zh' else 'EN'}</a></div></div></header>
@@ -899,14 +908,14 @@ def render_daily_brief(output, locale, day, items):
     path.write_text(page_shell(locale, title, description, canonical, alternate, body, structured), encoding="utf-8")
 
 
-def archive_thumbnail(record, css_class):
+def archive_thumbnail(record, css_class, locale="en"):
     media = image_fields(record)
     image = safe_url(media["image_url"])
     if image == "#" or image == SITE + "/assets/social-preview.png":
-        return ""
+        return f'<figure class="{css_class} is-editorial-visual">{editorial_media(record, locale, thumbnail=True)}</figure>'
     candidates = esc(json.dumps(media["image_candidates"], ensure_ascii=False, separators=(",", ":")))
     # Recommendation figures can be inside a link; no nested retry button.
-    return f'<figure class="{css_class}" data-archive-media><img src="{esc(image)}" data-image-candidates="{candidates}" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer"><p data-archive-media-fallback hidden></p></figure>'
+    return f'<figure class="{css_class}" data-archive-media><img data-source-image src="{esc(image)}" data-image-candidates="{candidates}" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer">{editorial_media(record, locale, hidden=True, thumbnail=True)}<p data-archive-media-fallback hidden></p></figure>'
 
 
 def continue_reading_html(record, records, locale):
@@ -925,7 +934,7 @@ def continue_reading_html(record, records, locale):
         date_text = date.astimezone(LOCAL_TZ).strftime("%Y-%m-%d") if date else ("Date unknown" if locale == "en" else "时间未知")
         shared = " · ".join(match["shared_tags"][:2])
         reason = ("Shared topic: " if locale == "en" else "共同主题：") + shared
-        cards.append(f'''<a class="archive-recommendation{' is-featured' if pos == 0 else ''}" href="{article_path(locale, day, item)}" data-related-kind="{esc(match['kind'])}" data-related-id="{esc(item['id'])}">{archive_thumbnail(item, 'archive-recommendation-image')}<div class="archive-recommendation-copy"><p class="archive-card-meta">{esc(kinds[locale][match['kind']])} · {esc(date_text)}</p><h3>{esc(clean_text(item[locale]['title']))}</h3><p class="archive-card-reason">{esc(reason)}</p><span class="archive-card-source">{esc(item['source'])} →</span></div></a>''')
+        cards.append(f'''<a class="archive-recommendation{' is-featured' if pos == 0 else ''}" href="{article_path(locale, day, item)}" data-related-kind="{esc(match['kind'])}" data-related-id="{esc(item['id'])}">{archive_thumbnail(item, 'archive-recommendation-image', locale)}<div class="archive-recommendation-copy"><p class="archive-card-meta">{esc(kinds[locale][match['kind']])} · {esc(date_text)}</p><h3>{esc(clean_text(item[locale]['title']))}</h3><p class="archive-card-reason">{esc(reason)}</p><span class="archive-card-source">{esc(item['source'])} →</span></div></a>''')
     title = "Keep exploring" if locale == "en" else "继续探索"
     intro = "Follow the topic, not just the headline." if locale == "en" else "顺着这条线索，看看它从哪里来，又走到了哪里。"
     browse = f"Explore the {label} archive" if locale == "en" else f"探索{label}历史报道"
@@ -1076,7 +1085,7 @@ def render_archive_field(output, locale, domain, records):
         search = " ".join([record[locale]["title"], record[locale]["summary"], record["source"], *record["tags"]])
         date_text = date.strftime("%Y-%m-%d") if date else ("Date unknown" if locale == "en" else "时间未知")
         date_text = (("First seen " if locale == "en" else "首次发现 ") if first_seen else "") + date_text
-        cards.append(f'''<article class="archive-explore-card{' is-featured' if pos == 0 else ''}" data-archive-entry data-search="{esc(search)}" data-tags="{esc(json.dumps(tags, ensure_ascii=False))}" data-month="{month}">{archive_thumbnail(record, 'archive-explore-image')}<div class="archive-explore-copy"><p class="archive-card-meta">{esc(date_text)} · {esc(record['source'])}</p><h2><a href="{article_path(locale, day, record)}">{esc(clean_text(record[locale]['title']))}</a></h2><p class="archive-card-excerpt">{esc(excerpt)}</p><a class="archive-summary-link" href="{article_path(locale, day, record)}">{'Read the brief' if locale == 'en' else '阅读简报'} →</a></div></article>''')
+        cards.append(f'''<article class="archive-explore-card{' is-featured' if pos == 0 else ''}" data-archive-entry data-search="{esc(search)}" data-tags="{esc(json.dumps(tags, ensure_ascii=False))}" data-month="{month}">{archive_thumbnail(record, 'archive-explore-image', locale)}<div class="archive-explore-copy"><p class="archive-card-meta">{esc(date_text)} · {esc(record['source'])}</p><h2><a href="{article_path(locale, day, record)}">{esc(clean_text(record[locale]['title']))}</a></h2><p class="archive-card-excerpt">{esc(excerpt)}</p><a class="archive-summary-link" href="{article_path(locale, day, record)}">{'Read the brief' if locale == 'en' else '阅读简报'} →</a></div></article>''')
     search_label = "Search this field" if locale == "en" else "在此领域内搜索"
     month_label = "Publication month" if locale == "en" else "发布月份"
     all_months = "All months" if locale == "en" else "全部月份"
@@ -1253,7 +1262,7 @@ class LegacyArticleReader(HTMLParser):
         attrs = dict(attrs)
         classes = set(attrs.get("class", "").split())
         in_article = any("archive-story" in node[1] for node in self.stack)
-        if in_article and tag == "img":
+        if in_article and tag == "img" and "data-editorial-image" not in attrs:
             values = [attrs.get("src")]
             try:
                 stored = json.loads(attrs.get("data-image-candidates", "[]"))

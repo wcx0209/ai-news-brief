@@ -364,8 +364,8 @@ The last sentence is still here.'''
     def test_article_shell_uses_scoped_reading_layout_and_versioned_archive_styles(self):
         page = archive.page_shell("en", "Title", "Description", "https://polyemergence.com/en/archive/2026/11/12/id/", "https://polyemergence.com/zh/archive/2026/11/12/id/", "Body", og_type="article")
         self.assertIn('<body class="archive-detail">', page)
-        self.assertIn('/archive.css?v=10', page)
-        self.assertIn('<script defer src="/archive-media.js?v=3"></script>', page)
+        self.assertIn('/archive.css?v=11', page)
+        self.assertIn('<script defer src="/archive-media.js?v=4"></script>', page)
         listing = archive.page_shell("en", "Title", "Description", archive.SITE + "/en/archive/", archive.SITE + "/zh/archive/", "Body")
         self.assertIn('/archive-explore.js?v=1', listing)
         styles = (ROOT / "web/public/archive.css").read_text()
@@ -428,9 +428,31 @@ The last sentence is still here.'''
         record["url"] = 'https://www.youtube.com/watch?v=abcdefghijk'
         self.assertIn('视频缩略图', archive.archive_figure(record, "zh"))
         record["image_url"] = 'javascript:alert(1)'
-        self.assertEqual(archive.archive_figure(record, "en"), "")
+        self.assertIn('data-editorial-image', archive.archive_figure(record, "en"))
+        self.assertNotIn('javascript:', archive.archive_figure(record, "en"))
         record["image_url"] = archive.SITE + '/assets/social-preview.png'
-        self.assertEqual(archive.archive_figure(record, "en"), "")
+        self.assertIn('Not a source image', archive.archive_figure(record, "en"))
+        self.assertNotIn('data-source-image', archive.archive_figure(record, "en"))
+
+    def test_missing_source_gets_local_labelled_artwork_without_changing_provenance(self):
+        record = fixture("no-image", "programmable_life", "No source image")
+        for locale, label in (("en", "Not a source image"), ("zh", "非原文图片")):
+            detail = archive.archive_figure(record, locale)
+            self.assertIn('/assets/editorial/programmable_life.svg', detail)
+            self.assertIn(label, detail)
+            self.assertIn('is-editorial-visual', detail)
+            self.assertNotIn('data-source-image', detail)
+            self.assertNotIn('data-archive-media>', detail)
+            self.assertNotIn('data-image-retry', detail)
+            thumbnail = archive.archive_thumbnail(record, 'archive-recommendation-image', locale)
+            self.assertIn('非原图' if locale == 'zh' else 'Not a source image', thumbnail)
+            self.assertNotIn('<button', thumbnail)
+        self.assertEqual(record['image_url'], '#')
+
+    def test_legacy_reader_never_recovers_editorial_art_as_a_source_image(self):
+        reader = archive.LegacyArticleReader()
+        reader.feed('<article class="archive-story"><img data-editorial-image src="https://polyemergence.com/assets/editorial/ai.svg"><img data-source-image src="https://example.org/source.jpg"></article>')
+        self.assertEqual(reader.image_candidates, ['https://example.org/source.jpg'])
 
     def test_failed_media_state_can_collapse_without_a_caption_or_empty_image_slot(self):
         styles = (ROOT / "web/public/archive.css").read_text()

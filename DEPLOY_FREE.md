@@ -56,9 +56,20 @@ response-size limits protect outbound discovery. Publisher query signatures are
 preserved. Browser loading uses at most three candidates and one automatic retry;
 successful retries restore the image and source caption. An unavailable external
 source may still require a later manual retry. An old image confirmed to be
-undersized is not retained as a temporary network failure: the article becomes
-text-led when the original has no qualifying image. QbitAI's non-semantic article
+undersized is not retained as a temporary network failure. QbitAI's non-semantic article
 container has a host-scoped adapter that excludes the author information area.
+
+Lead/feature visual slots and archive cards/details now use local editorial
+artwork when no original image is available, or when browser recovery is
+exhausted. These lightweight, self-contained SVGs follow the field registry's
+`artwork` setting and explicitly say they are not source images. They never
+enter `image_url`, verification status, image candidates, or source-image
+structured data. Compact text briefs remain image-free. A three-second UI
+watchdog covers stalled original loads without interrupting lazy loading or
+issuing additional requests. Retry keeps the editorial illustration visible
+until an original successfully returns.
+Run `python scripts/generate_editorial_artwork.py` to reproduce the SVG assets;
+new fields without a dedicated illustration safely use the general artwork.
 
 Reader likes and comments are handled separately by a Cloudflare Pages Function and a free D1 database. The service stores a salted visitor hash for like deduplication and rate limiting. It never stores the full visitor IP; public comments show only `poly`, the approximate Cloudflare region, and the final three IP characters.
 
