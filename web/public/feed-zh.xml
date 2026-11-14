@@ -1,5 +1,27 @@
 <?xml version='1.0' encoding='utf-8'?>
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>多重涌现</title><link>https://polyemergence.com/zh/archive/</link><description>按新加坡发布日期整理的多重涌现人工智能与新兴科技情报永久记录。</description><language>zh-Hans</language><lastBuildDate>Sat, 14 Nov 2026 10:34:40 +0000</lastBuildDate><atom:link href="https://polyemergence.com/feed-zh.xml" rel="self" type="application/rss+xml" /><item><title>Coherus 裁员 30% 以集中资源研发食管癌联合疗法</title><link>https://polyemergence.com/zh/archive/2026/11/14/24698ee9-8a96-44b7-8125-b13ba17fd92e/</link><guid isPermaLink="true">https://polyemergence.com/zh/archive/2026/11/14/24698ee9-8a96-44b7-8125-b13ba17fd92e/</guid><pubDate>Fri, 13 Nov 2026 23:31:17 +0000</pubDate><category>商业</category><category>生物技术与可编程生命</category><description>生物制药公司 Coherus Oncology 宣布将裁员 30%，并将其癌症治疗研发管线收窄，集中精力推进试验性联合疗法在食管癌领域的适应症。
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>多重涌现</title><link>https://polyemergence.com/zh/archive/</link><description>按新加坡发布日期整理的多重涌现人工智能与新兴科技情报永久记录。</description><language>zh-Hans</language><lastBuildDate>Sat, 14 Nov 2026 13:08:28 +0000</lastBuildDate><atom:link href="https://polyemergence.com/feed-zh.xml" rel="self" type="application/rss+xml" /><item><title>黄仁勋在执掌33年后离开英伟达</title><link>https://polyemergence.com/zh/archive/2026/11/14/8bd8121f-5602-4839-b3f7-c08af3475663/</link><guid isPermaLink="true">https://polyemergence.com/zh/archive/2026/11/14/8bd8121f-5602-4839-b3f7-c08af3475663/</guid><pubDate>Sat, 14 Nov 2026 12:00:00 +0000</pubDate><category>公司</category><category>人工智能</category><description>离职背景与权力核心
+2025年1月6日，黄仁勋最后一次以英伟达CEO身份公开亮相。随后，在遭遇芯片走私丑闻与个人风波后，他离开了这家自己创办了33年的公司。作为英伟达绝对的核心，公司过去一切决策都高度集中在他手中，甚至有大约60名员工直接向他汇报。
+业务与技术影响评估
+多位行业分析师指出，英伟达的短期业务并不会立即陷入危机。该公司的产品路线图和制造供应链已经锁定到了2027年，其供应链优势依然稳固。然而，专家认为黄仁勋身上那种敢于豪赌的远见和拍板魄力极难复制，正是他当年力排众议推动的CUDA平台，才为后来的AI浪潮奠定了基础。
+寻找继任者的挑战
+由于黄仁勋没有设立直接副手，整个公司围绕他一人打造，寻找合适的继任者将变得异常艰难。业内普遍认为，英伟达可能需要从外部物色新帅，以在过渡期内维持投资者信心并保护其核心软件生态。</description><source url="https://www.theverge.com/tech/1033781/nvidia-jensen-huang-last-visionary-showman-founder-ceo">The Verge AI</source></item><item><title>AI正在文学界掀起轩然大波</title><link>https://polyemergence.com/zh/archive/2026/11/14/3e49b2e4-0b74-47fc-a6c0-46903b661405/</link><guid isPermaLink="true">https://polyemergence.com/zh/archive/2026/11/14/3e49b2e4-0b74-47fc-a6c0-46903b661405/</guid><pubDate>Sat, 14 Nov 2026 09:00:40 +0000</pubDate><category>社会</category><category>人工智能</category><description>AI作者的崛起
+一些独立作家正在利用生成式人工智能快速创作图书，以适应Kindle Unlimited等鼓励高产的平台。相关研究估计，近期有相当一部分自助出版的书籍包含AI生成文本，不过作家们指出，要想成功，理解结构和写作技巧依然不可或缺。
+丑闻与指控
+主流出版业正经历剧烈动荡，多位作家被指控使用AI后，其备受瞩目的图书交易遭到取消。有色人种作家在这些调查性质的指控中面临不成比例的审视，而无辜的作家则生活在对检测工具误报的恐惧中，甚至因为极力避免被误认为AI而束手束脚。
+版权与未来困境
+美国版权法目前规定图书必须由人类创作才能获得完整保护，这让出版商对全面拥抱AI犹豫不决。尽管传统出版商拒绝彻底承诺禁用AI，但在不断加剧的市场焦虑背景下，行业内的许多人依然坚定致力于保护人类艺术家的利益。</description><source url="https://www.theguardian.com/books/ng-interactive/2026/nov/14/its-like-the-wild-west-how-ai-has-rocked-the-literary-world">The Guardian AI</source></item><item><title>AI时代，公司越来越扁平，也越来越官僚</title><link>https://polyemergence.com/zh/archive/2026/11/14/f0120458-5edd-44f6-8bf0-564d74bbd709/</link><guid isPermaLink="true">https://polyemergence.com/zh/archive/2026/11/14/f0120458-5edd-44f6-8bf0-564d74bbd709/</guid><pubDate>Sat, 14 Nov 2026 07:21:00 +0000</pubDate><category>社会</category><category>人工智能</category><description>监督成本降低背后的代价
+大企业过去通常依赖层层主管和经理来执行规则、检查合规，这种模式受限于时间和人力成本，本身存在自然的边界。然而，随着徐升记、益禾堂、百果园等连锁品牌开始引入AI工具，企业能够以极低的成本自动化巡店、持续分析海量运营数据并迅速揪出违规行为。
+从层级官僚到触角延伸
+这种技术跃迁带来了组织扁平化的悖论。虽然管理层级减少、审批链条缩短让公司的组织架构图看起来更清爽，但AI却绕过了传统层级，直接将标准压到每一个细碎的操作上。过去每周一次的核对变成了每日追责的任务，一线员工不得不花大量时间解释异常，从而失去了灵活应变和主动寻找问题的空间。
+在控制与探索之间寻找平衡
+组织研究表明，算法驱动的监控虽然能提高基础执行力，但过度严密的数字化管控往往会削弱员工的主动建言和责任感。当企业把复制过去、执行标准做到极致时，很可能会将任何创新尝试视为异常，最终为了短期的全面合规而牺牲长期的适应能力。</description><source url="https://www.tmtpost.com/8205239.html">TMTPost 钛媒体</source></item><item><title>由于卫星交付延误，织女星C型火箭发射推迟至圣诞节前后</title><link>https://polyemergence.com/zh/archive/2026/11/14/0b46b5b2-784f-4bc3-bcb1-3e9035af3439/</link><guid isPermaLink="true">https://polyemergence.com/zh/archive/2026/11/14/0b46b5b2-784f-4bc3-bcb1-3e9035af3439/</guid><pubDate>Sat, 14 Nov 2026 06:00:41 +0000</pubDate><category>商业</category><category>太空经济</category><description>据阿维奥公司首席执行官吉ulio·兰佐在第三季度财报电话会议上透露，2026年的第三次织女星C型火箭发射时间比原计划的12月初推迟了两到三周。该任务将为意大利的IRIDE地球观测星座运送六颗卫星，这些卫星近期已通过空运运抵法属圭亚那的圭亚那航天中心。兰佐指出，载荷交付延迟今年已经多次打乱了阿维奥的发射计划，导致该公司今年迄今为止只能完成三次发射。虽然阿维奥此前曾计划在2027年实现多达五次发射，但兰佐在11月的会议上调低了预期，暗示将更平稳地过渡到每年四次飞行，前提是客户能够按时交付航天器。</description><source url="https://europeanspaceflight.com/next-vega-c-launch-edges-closer-to-christmas-day-as-satellites-arrive-late/">European Spaceflight</source></item><item><title>法国设立全新文学奖，专门奖励借助人工智能创作的作品</title><link>https://polyemergence.com/zh/archive/2026/11/14/da0a2acd-24ac-4d97-b546-108dbefeff85/</link><guid isPermaLink="true">https://polyemergence.com/zh/archive/2026/11/14/da0a2acd-24ac-4d97-b546-108dbefeff85/</guid><pubDate>Sat, 14 Nov 2026 04:30:07 +0000</pubDate><category>社会</category><category>人工智能</category><description>法国新设立的帕斯卡奖旨在接纳AI在文学创作中的应用，专门奖励与人工智能合作完成的作品。此前，出版界刚刚经历了一场巨大风波：加拿大海地裔作家泰利森·奥雷利恩因被指控未公开使用AI写作，其小说被多家知名文学奖项除名，并遭到加拿大出版商解约。在这一背景下，由散文家雅克·阿塔利担任评委会主席的帕斯卡奖应运而生，邀请从未出版过作品的作者提交长达30万字符的法语文本。
+
+为了符合参评资格，参赛者必须保持透明，明确承认自己使用了Claude、Gemini或ChatGPT等工具。此外，候选人还必须提交一份技术文件，详细说明所使用的大语言模型或AI智能体，并附上一份两页的说明，解释最初灵感来源的“种子”，即触发整个创作项目的某个词、某句话或某个数字。</description><source url="https://www.lemonde.fr/en/m-le-mag/article/2026/11/14/new-french-literary-prize-will-reward-work-created-with-ai-help_6780556_117.html">Le Monde AI</source></item><item><title>大鼠主动停止运动前会出现短暂的脑电波beta振荡</title><link>https://polyemergence.com/zh/archive/2026/11/14/bd12128b-d370-408f-9dec-cac788c18bef/</link><guid isPermaLink="true">https://polyemergence.com/zh/archive/2026/11/14/bd12128b-d370-408f-9dec-cac788c18bef/</guid><pubDate>Sat, 14 Nov 2026 00:00:00 +0000</pubDate><category>研究</category><category>神经科技与人机接口</category><description>背景
+被称为beta振荡的脑电波活动长期以来一直被认为与身体如何控制和抑制运动有关，但科学家们一直难以搞清楚它们与实际停止运动的精确时间关系。这种混乱主要源于传统的测试方法，在那些测试中，具体的停止时刻是隐藏的或无法直接观测的。
+细节
+为了弄清这一点，研究人员记录了头部被固定的大鼠在跑步机上停止跑步时的 32 电极脑电活动，以及它们的跑步速度。他们观察到，在老鼠停下之前大约 200 毫秒，其左侧运动皮层会稳定出现一个单一的beta波周期。通过信息论分析，研究表明beta波的强度包含有关未来速度的信息，但前提是动物正在积极计划停止。当研究人员故意加入微小的时间抖动来模拟旧的测试方法时，这种清晰的脑-行动关系便彻底失效了。
+影响
+利用机器学习方法，研究团队证明，尽管这种特定的beta振荡是停止运动的清晰生物学标志，但它在实时动作解码方面的实际应用价值相当有限。这项工作为大脑如何控制动作的物理停止提供了一个全新的概念模型。</description><source url="https://www.nature.com/articles/s42003-026-11331-4">Nature Brain-Machine Interfaces</source></item><item><title>Coherus 裁员 30% 以集中资源研发食管癌联合疗法</title><link>https://polyemergence.com/zh/archive/2026/11/14/24698ee9-8a96-44b7-8125-b13ba17fd92e/</link><guid isPermaLink="true">https://polyemergence.com/zh/archive/2026/11/14/24698ee9-8a96-44b7-8125-b13ba17fd92e/</guid><pubDate>Fri, 13 Nov 2026 23:31:17 +0000</pubDate><category>商业</category><category>生物技术与可编程生命</category><description>生物制药公司 Coherus Oncology 宣布将裁员 30%，并将其癌症治疗研发管线收窄，集中精力推进试验性联合疗法在食管癌领域的适应症。
 
 上个月，Coherus 公布了其靶向 CCR8 的抗体 tagmokitug 与已获批的 PD-1 抑制剂 Loqtorzi 联合治疗的 1b 期数据。据该公司称，该联合疗法在一线食管鳞状细胞癌患者中显示出 75% 的确认客观缓解率，且与 PD-L1 状态无关。公司首席医疗官 Rosh Dias 表示，这些数据表明调节性 T 细胞是耐药性的关键驱动因素，而 tagmokitug 能够增强 PD-1 的活性。
 
@@ -18,7 +40,6 @@ AbCellera 曾推进一款靶向 OX40 配体的抗体药物 ABCL575，用于治�
 韩国能源和化工巨头GS Caltex将AI模型的开发和运维分成了两部分：懂业务的工程师负责在可视化工具里直接建模，而机器学习工程师则负责用流水线工具把模型推向生产。
 
 过去，把开发好的模型搬到生产环境需要繁琐的手工配置，光是连数据、配环境就要花掉大约一周时间。通过自动化改造，GS Caltex让工程师们能在几个小时内搞定模型部署。他们现在每30分钟自动跑一次批量预测，不用再长期开着高成本的实时服务器，省下了不少钱。</description><source url="https://aws.amazon.com/blogs/machine-learning/production-mlops-at-gs-caltex-with-amazon-sagemaker-canvas-part-1/">AWS Machine Learning</source></item><item><title>谷歌研究院发布 Antigravity teamwork 与 Gemini 4 用于攻克科学难题</title><link>https://polyemergence.com/zh/archive/2026/11/14/53150ae6-1fa2-418b-ae1b-37f3f8c286ec/</link><guid isPermaLink="true">https://polyemergence.com/zh/archive/2026/11/14/53150ae6-1fa2-418b-ae1b-37f3f8c286ec/</guid><pubDate>Fri, 13 Nov 2026 20:47:18 +0000</pubDate><category>模型</category><category>人工智能</category><description>据Google Research发布的信息：
-
 背景与系统设计
 谷歌研究院详细介绍了 Antigravity teamwork 多智能体系统的设计与应用，该系统基于 Gemini 4 Argon、Carbon 和 Hydrogen 等多种模型构建。前沿研究需要查阅大量文献、构建计算流水线并验证每个步骤。为了解决单次模型生成的不确定性以及长周期任务中的上下文丢失问题，teamwork 采用了并行探索与专用验证器（如 Lean 4 证明检查器和执行模拟器）相结合的方式，同时将上下文分配给不同的专业智能体进行隔离处理。
 科学与工程成果
@@ -71,7 +92,6 @@ Delix Therapeutics 是一家总部位于波士顿的生物技术公司，于 201
 默沙东公布了一项针对 386名患者 的2b期临床试验数据。这些患者均患有MASH以及F2或F3期纤维化，他们在52周内接受了三种不同剂量的efinopegdutide或安慰剂治疗。结果显示，在不同剂量组中，有 56%至63% 的患者实现了MASH消除，而安慰剂组这一比例为13%。
 药物机制与背景
 该药物通过皮下注射发挥作用，能够同时激活 GLP-1和胰高血糖素受体。默沙东在试验中还设立了一个对照组，使用诺和诺德的司美格鲁肽，其MASH消除率为53%。默沙东于2020年从韩美药品公司引进了这款候选药物，该药物最初由强生公司研发。</description><source url="https://www.fiercebiotech.com/biotech/mercks-mash-hopeful-efinopegdutide-wins-mid-stage-study">Fierce Biotech</source></item><item><title>Cohere 收购 AISLE 与 cubic，进一步扩展主权 AI 平台</title><link>https://polyemergence.com/zh/archive/2026/11/13/3554c610-387a-4ade-865e-178a96dc4347/</link><guid isPermaLink="true">https://polyemergence.com/zh/archive/2026/11/13/3554c610-387a-4ade-865e-178a96dc4347/</guid><pubDate>Fri, 13 Nov 2026 14:00:00 +0000</pubDate><category>公司</category><category>人工智能</category><description>据Cohere Blog发布的信息：
-
 背景与收购动作
 Cohere 表示，企业和政府在部署人工智能时越来越需要兼顾强大性能与绝对控制权，即所谓的“主权 AI”。为此，Cohere 宣布完成对漏洞自动发现与修复系统构建商 AISLE 的收购，并吸纳了 AI 代码审查平台 cubic 的团队。这是 Cohere 今年继 Aleph Alpha 和 Reliant AI 之后的又一批战略并购。
 网络安全与布拉格研发中心
@@ -88,7 +108,13 @@ POTS 是一种与头晕和疲劳相关的慢性自主神经系统疾病，目前
 肌肉保护与减脂质量
 除了单纯的体重下降数字，生物医药行业开始高度关注身体成分的改善。Biohaven 和 Wave Life Sciences 等公司正在展示针对肌肉生长抑制素等靶点的疗法，旨在在减少脂肪的同时保留肌肉，以此解决现有肠促胰岛素药物的一个主要痛点。
 治疗依从性与长期价值
-行业专家指出，大约有一半的患者在接受减肥治疗六个月内会选择放弃。本次会议上 Rhythm Pharmaceuticals 等公司带来的长期数据表明，治疗的持久性和患者依从性，正成为评估肥胖症疗法商业潜力和临床价值的关键指标。</description><source url="https://www.biospace.com/drug-development/biopharma-pushes-beyond-glp-1s-weight-loss-at-obesityweek-2026">BioSpace Drug Development</source></item><item><title>英伟达高层地震，以色列创投圈嗅到竞争对手的逆袭机会</title><link>https://polyemergence.com/zh/archive/2026/11/13/4efb2fa7-1e56-4d3b-aa40-9a18848551fa/</link><guid isPermaLink="true">https://polyemergence.com/zh/archive/2026/11/13/4efb2fa7-1e56-4d3b-aa40-9a18848551fa/</guid><pubDate>Fri, 13 Nov 2026 12:52:19 +0000</pubDate><category>商业</category><category>人工智能</category><description>英伟达前CEO黄仁勋的辞职在以色列引发了广泛关注。作为英伟达除美国以外最大的研发基地所在地，以色列拥有约6000名英伟达员工，其经济和科技生态与这家芯片巨头深度绑定。当地科技界担心，失去一手推动收购Mellanox并对当地持续投资的黄仁勋后，英伟达未来对以色列的承诺可能会发生变化。目前临时CEO科莱特·克雷斯与以色列联系紧密，同时苹果的约尼·斯鲁吉和英伟达的迈克尔·卡冈也被传为潜在接班人选。
+行业专家指出，大约有一半的患者在接受减肥治疗六个月内会选择放弃。本次会议上 Rhythm Pharmaceuticals 等公司带来的长期数据表明，治疗的持久性和患者依从性，正成为评估肥胖症疗法商业潜力和临床价值的关键指标。</description><source url="https://www.biospace.com/drug-development/biopharma-pushes-beyond-glp-1s-weight-loss-at-obesityweek-2026">BioSpace Drug Development</source></item><item><title>Dyania Health 用 AI 帮医院快速翻阅病历，缩短患者等候时间</title><link>https://polyemergence.com/zh/archive/2026/11/13/d5484c57-91b0-4a6d-96d7-7740c1d4ff55/</link><guid isPermaLink="true">https://polyemergence.com/zh/archive/2026/11/13/d5484c57-91b0-4a6d-96d7-7740c1d4ff55/</guid><pubDate>Fri, 13 Nov 2026 13:00:42 +0000</pubDate><category>公司</category><category>人工智能</category><description>据NVIDIA Generative AI发布的信息：
+Synapsis AI 如何工作
+医院里积攒了大量的患者病历，大都以自由文本的形式存在于医生笔记和手术报告中。Dyania Health 开发的 Synapsis AI 能够阅读这些分散的文档，串联多年数据来解答复杂的临床问题，为医护团队提供清晰的参考信号。
+数据安全与本地运行
+为了保护患者隐私，Synapsis AI 完全运行在医院防火墙内的英伟达加速计算平台上。该平台借助英伟达的工具进行优化，让医院能够在本地处理海量病历，而无需将敏感数据传输到外部。
+克利夫兰诊所的实际应用
+在克利夫兰诊所涉及 7800 多名主动脉瓣置换患者的研究中，该院利用 Synapsis AI 审查历史病历并构建了预测模型，用来评估瓣膜退化和再次手术的风险。克利夫兰诊所表示，这种方法完成了原本需要人工花费数年才能做完的病历审查工作，同时最终决策权依然掌握在医生手中。</description><source url="https://blogs.nvidia.com/blog/how-ai-is-helping-care-teams/">NVIDIA Generative AI</source></item><item><title>英伟达高层地震，以色列创投圈嗅到竞争对手的逆袭机会</title><link>https://polyemergence.com/zh/archive/2026/11/13/4efb2fa7-1e56-4d3b-aa40-9a18848551fa/</link><guid isPermaLink="true">https://polyemergence.com/zh/archive/2026/11/13/4efb2fa7-1e56-4d3b-aa40-9a18848551fa/</guid><pubDate>Fri, 13 Nov 2026 12:52:19 +0000</pubDate><category>商业</category><category>人工智能</category><description>英伟达前CEO黄仁勋的辞职在以色列引发了广泛关注。作为英伟达除美国以外最大的研发基地所在地，以色列拥有约6000名英伟达员工，其经济和科技生态与这家芯片巨头深度绑定。当地科技界担心，失去一手推动收购Mellanox并对当地持续投资的黄仁勋后，英伟达未来对以色列的承诺可能会发生变化。目前临时CEO科莱特·克雷斯与以色列联系紧密，同时苹果的约尼·斯鲁吉和英伟达的迈克尔·卡冈也被传为潜在接班人选。
 
 尽管面临本地的不确定性，以色列的风险投资人普遍认为，这次领导层变动可能削弱英伟达在行业内的绝对统治力。Vertex Ventures合伙人雅奈·奥伦指出，英伟达决策变慢可能会给竞争对手留下切入市场的窗口。Selah Ventures创始人阿迪·莱瓦农则认为，黄仁勋的离开虽然不会摧毁英伟达的技术壁垒，但确实可能减缓其走向全面垄断的步伐，为研发AI专用芯片和推理软件的新兴企业创造了证明自身经济价值的难得机遇。</description><source url="https://techcrunch.com/2026/11/13/israels-vcs-see-opportunity-for-challengers-in-nvidias-turmoil/">TechCrunch AI</source></item><item><title>尽管受到美国出口管制，价值30亿美元的中国AI数据中心项目仍在使用英伟达芯片</title><link>https://polyemergence.com/zh/archive/2026/11/13/679fbd55-2e99-4285-90ad-e45ac4f96fb7/</link><guid isPermaLink="true">https://polyemergence.com/zh/archive/2026/11/13/679fbd55-2e99-4285-90ad-e45ac4f96fb7/</guid><pubDate>Fri, 13 Nov 2026 12:22:49 +0000</pubDate><category>商业</category><category>人工智能</category><description>项目详情
 据路透社报道，中国多个地区已将受限的英伟达处理器纳入其AI基础设施规划中。涉及H100和H200芯片的项目分布在福建、陕西、吉林、内蒙古和甘肃等省份，投资额达数十亿元。部分设施（如无锡使用H800处理器的计算集群）已经投入运营，而深圳大学和西北工业大学等机构也进行了小规模的芯片采购。
@@ -114,7 +140,6 @@ POTS 是一种与头晕和疲劳相关的慢性自主神经系统疾病，目前
 与此同时，忒弥斯可重复使用助推器的首飞计划却一再推迟。尽管欧空局此前曾预计在2026年初进行首次跳跃测试，但随着冬季再次降临瑞典埃斯兰吉航天中心，火箭依然停在发射台上。欧空局运输主管在10月的记者会上表示，相关各方将在11月底前决定，是否有可能在今年底前实施首次飞行，否则测试将面临因冬季恶劣天气而暂停的风险。</description><source url="https://europeanspaceflight.com/esa-confirms-latest-prometheus-tests-not-connected-to-themis-hop-preparations/">European Spaceflight</source></item><item><title>美国议员在间谍丑闻后传唤英伟达前CEO</title><link>https://polyemergence.com/zh/archive/2026/11/13/c0708759-1753-4695-8744-44f2ca8c692a/</link><guid isPermaLink="true">https://polyemergence.com/zh/archive/2026/11/13/c0708759-1753-4695-8744-44f2ca8c692a/</guid><pubDate>Fri, 13 Nov 2026 07:37:12 +0000</pubDate><category>公司</category><category>人工智能</category><description>在英伟达长期掌舵人因婚外情报道宣布辞职后，美国国会议员迅速采取行动要求给出解释。参议员蒂姆·斯科特要求前CEO与商务部长霍华德·卢特尼克在12月出席参议院银行委员会的听证会，同时众议院的三个委员会也要求进行闭门约谈。
 
 报道称，相关涉事人员之一被指控为中国国家安全部的特工，这引发了各方对保护美国敏感技术安全的严重关切。这场持续发酵的风波已导致英伟达市值蒸发近半万亿美元，由首席财务官科莱特·克雷斯担任临时CEO，使这家芯片巨头和整个人工智能行业陷入了未知的政治与安全漩涡。</description><source url="https://www.lemonde.fr/en/international/article/2026/11/13/us-lawmakers-summon-nvidia-ex-ceo-after-affair-with-suspected-spy_6779566_4.html">Le Monde AI</source></item><item><title>Zugwise：用于数字化手写国际象棋记分表的地盘感知游戏重建技术</title><link>https://polyemergence.com/zh/archive/2026/11/13/d338b03a-243b-4004-80e2-4f297c15d439/</link><guid isPermaLink="true">https://polyemergence.com/zh/archive/2026/11/13/d338b03a-243b-4004-80e2-4f297c15d439/</guid><pubDate>Fri, 13 Nov 2026 05:00:00 +0000</pubDate><category>学术</category><category>人工智能</category><description>据这篇预印本作者报告：传统上，手写国际象棋记分表的数字化被视为手写识别任务与走棋合法性检查的结合。然而，作者认为这种方法会漏掉“隐蔽错误”——即把字认错成一个合法但却错误的着法，从而破坏后续整局棋。为此，作者推出了 Zugwise 系统，它重新利用了计算机国际象棋的底层机制（如静止搜索、静态交换评估和牵制检测），来评估人类是否可能写下某个序列。该系统包含一个荒谬检测器、用于追溯错误症状的反向搜索，以及使用 Needleman-Wunsch 算法融合双方记分表证据的合并机制。在锦标赛切片的回放测试中，该系统将隐蔽错误从 16 个减少到 1 个，以及从 50 个减少到 13 个。两个学习信号（CTC 重新打分和 Maia 风格的人类走棋先验）将正确修正方案的排名前列率从 58.8% 提升至 78.0%。该软件完全在浏览器中运行，免费、私密且支持离线使用，并附带了一套三方裁决协议。</description><source url="https://arxiv.org/abs/2611.14544">arXiv Artificial Intelligence</source></item><item><title>拒绝并非阈值合规：开源语言模型中声明的评分规则研究</title><link>https://polyemergence.com/zh/archive/2026/11/13/75d69d7f-7e27-4ee0-a173-5f0fbbaff530/</link><guid isPermaLink="true">https://polyemergence.com/zh/archive/2026/11/13/75d69d7f-7e27-4ee0-a173-5f0fbbaff530/</guid><pubDate>Fri, 13 Nov 2026 05:00:00 +0000</pubDate><category>学术</category><category>人工智能</category><description>据这篇预印本作者报告：本文研究了 Kalai 等人提出的在提示词中使用显式概率阈值作为评分规则的方法，即指导语言模型仅在置信度超过阈值 t 时才回答。作者对四个开源 3-8B 模型系列在三个后训练阶段的 12 个检查点以及最高 32B 的探索性模型进行了测试。实证结果表明：虽然在 t = 0.75 时，强制的拒绝格式行将平均拒绝率从 20% 提高到 91%，但在此格式下将 t 从 0.5 提高到 0.9 仅使拒绝率变化了 -0.8 个百分点。在没有该格式的情况下，更高的阈值甚至会降低拒绝率，高达 40% 的检查点条目收到了不符合阈值独立信念的决策。此外，基于重新校准的 P(True) 的外部阈值在 TriviaQA 和 PopQA 等数据集之间表现出脆弱的泛化能力，针对阈值条件目标训练的模型也无法一致地跟踪未见过的阈值。研究总结认为，高拒绝率并不意味着真正的规则合规，并为声明的评分规则提出了严格的评估标准。</description><source url="https://arxiv.org/abs/2611.14661">arXiv Computation and Language</source></item><item><title>初创公司 Robust AI 推出协作移动机器人，旨在融入人类工作场所</title><link>https://polyemergence.com/zh/archive/2026/11/13/514ca378-da7c-458e-bba3-f778b885fe42/</link><guid isPermaLink="true">https://polyemergence.com/zh/archive/2026/11/13/514ca378-da7c-458e-bba3-f778b885fe42/</guid><pubDate>Fri, 13 Nov 2026 05:00:00 +0000</pubDate><category>创业</category><category>机器人与自主系统</category><description>据MIT Robotics发布的信息：
-
 背景与创立
 Robust AI 由安东尼·朱尔斯和麻省理工学院名誉教授罗德尼·布鲁克斯于 2019 年共同创立。布鲁克斯曾担任麻省理工学院计算机科学与人工智能实验室负责人，并曾联合创立 iRobot 和 Rethink Robotics。在经历新冠疫情带来的业务调整后，创始人团队通过多年的客户访谈，决定将目光投向那些尚未实现全面自动化的物流和制造行业。
 技术与工作流程
@@ -126,7 +151,6 @@ Robust AI 强调人类的主导权，并从中汲取了过去自动化失败的�
 互联网大厂正在加速补齐这一短板。苹果在手表上推出了全天对话回顾功能，国内的 OPPO 和阿里则推出了转写后直接删除原始音频的产品。由于各大主流应用纷纷拒绝 AI 代理操作，手机很难在后台抓取线下交流，这给了硬件厂商一条不得不走的绕路机会。
 争夺 AI 助手的入口
 这些积累下来的全天记录，最终并不是给人看的，而是交给 AI 助手来读。随着各大手机厂商加速将记忆功能融入底层系统，独立录音硬件只剩下约半年的时间窗口，它们必须赶在手机厂商全面接管之前，努力成为大厂 AI 助手的核心外挂入口。</description><source url="http://www.geekpark.net/news/373946">GeekPark 极客公园</source></item><item><title>如何为人工智能模型构建可靠的安全评估体系</title><link>https://polyemergence.com/zh/archive/2026/11/13/3fccf24a-c063-44e0-815a-df00b77bfb6b/</link><guid isPermaLink="true">https://polyemergence.com/zh/archive/2026/11/13/3fccf24a-c063-44e0-815a-df00b77bfb6b/</guid><pubDate>Fri, 13 Nov 2026 00:00:00 +0000</pubDate><category>研究</category><category>人工智能</category><description>据Anthropic Research发布的信息：
-
 背景与挑战
 
 安全评估指导着人工智能模型部署的关键决策。然而，研究发现 AI 评估容易被钻空子、文档记录不足，且对格式变化高度敏感。Anthropic 借鉴心理学领域的改革经验，总结了一套旨在提高评估可信度的最佳实践。
@@ -159,21 +183,18 @@ Google推出了Gemini 4系列的第三个模型Gemini 4 Hydrogen，前两个为A
 根据Artificial Analysis的数据，Hydrogen标准思考水平得分为51分。Google称其速度比上一代Gemini 3.8 Flash快约2.5倍。在Google与Anthropic Claude Sonnet 5.5及OpenAI GPT-6.1 Terra的对比中，Hydrogen在10个测试项目中的7个领先，其中包括58.8%的HLE-Diamond推理能力测试，但在终端操作等3个项目上落后于对手。
 价格与可用性
 该模型拥有100万个token的上下文窗口。API定价为每百万输入token 1.5美元、输出token 7.5美元。目前它已通过多个开发者平台、Workspace工具以及Gemini免费版向全球用户提供。</description><source url="https://www.itmedia.co.jp/news/article/2611/13/2000003162/">ITmedia AI+</source></item><item><title>麻省理工学院研究太空核能与辐射探测难题</title><link>https://polyemergence.com/zh/archive/2026/11/13/142ea5db-384d-42af-8941-b3e0555109f9/</link><guid isPermaLink="true">https://polyemergence.com/zh/archive/2026/11/13/142ea5db-384d-42af-8941-b3e0555109f9/</guid><pubDate>Thu, 12 Nov 2026 22:10:00 +0000</pubDate><category>研究</category><category>新能源与能源储存</category><description>据MIT Energy发布的信息：
-
 太空热管理
 随着深空任务对功率的要求不断提高，核反应堆会产生大量热量。由于太空中没有大气层来进行对流散热，传统的固体金属散热器显得过于笨重。据麻省理工学院称，赫克拉正在研究液滴辐射器（LDR），利用微小液滴组成的液膜来散发热量，这有望将冷却系统的重量减少一个数量级。
 辐射探测与切尔诺贝利
 赫克拉对辐射探测的热情始于童年，并促使他在麻省理工学院研究X射线装置和条约核查方法。他实地造访切尔诺贝利的经历坚定了其对核安全与放射性污染管理的承诺，并最终影响了他关于辐射成像和反中微子探测的研究生课题。
 安全保障与太空安全
 赫克拉的研究还延伸到了监测航空航天核应用领域，例如追踪吸气式核推进系统以及探测卫星中的易裂变材料。通过开发紧凑型中子望远镜并追踪运行特征，他的工作旨在为未来的军控协议奠定技术基础。</description><source url="https://news.mit.edu/2026/addressing-nuclear-challenges-jake-hecla-1112">MIT Energy</source></item><item><title>亚马逊推出 SGLang-Neuron，支持在 AWS Trainium 芯片上部署前沿大模型</title><link>https://polyemergence.com/zh/archive/2026/11/13/d9ad1237-ec6f-4b2f-bd3f-cd3366366068/</link><guid isPermaLink="true">https://polyemergence.com/zh/archive/2026/11/13/d9ad1237-ec6f-4b2f-bd3f-cd3366366068/</guid><pubDate>Thu, 12 Nov 2026 22:03:34 +0000</pubDate><category>开源</category><category>人工智能</category><description>据AWS Machine Learning发布的信息：
-
 背景介绍
 亚马逊宣布 SGLang-Neuron 现已通过 AWS 深度学习容器公开可用。该工具由 RadixArk 与 Annapurna Labs 合作开发，旨在将广受欢迎的 SGLang 模型服务框架引入亚马逊专有的 AWS Trainium 芯片，为大规模 AI 训练和推理提供更具成本效益的选择。
 技术细节
 SGLang-Neuron 采用独立于核心代码的插件设计，将 SGLang 与 Trainium 芯片连接起来。SGLang 的核心部分负责处理 API 服务器、请求生命周期和缓存管理，而该插件则通过原生 PyTorch 和专属内核接口（NKI）来处理 Trainium 特定的模型架构、注意力机制以及专家混合（MoE）模型。此外，它还支持 PD 分离架构，允许预填充（prefill）和解码（decode）阶段在不同服务器上运行，并通过高性能网络传输缓存数据。
 实际影响
 开发者现在可以使用与以往完全相同的 SGLang 接口在 Trainium 芯片上部署大模型。这大大降低了企业在转向 AWS 自研芯片时的迁移成本，让他们无需重构服务管道即可运行大规模 AI 推理和强化学习任务。</description><source url="https://aws.amazon.com/blogs/machine-learning/deploy-frontier-ai-models-on-aws-trainium-with-sglang-neuron/">AWS Machine Learning</source></item><item><title>比尔·盖茨支持的突破能源称全球去碳化成本约为7.5万亿美元</title><link>https://polyemergence.com/zh/archive/2026/11/13/26764bf6-548a-41d7-bf28-86b720e75259/</link><guid isPermaLink="true">https://polyemergence.com/zh/archive/2026/11/13/26764bf6-548a-41d7-bf28-86b720e75259/</guid><pubDate>Thu, 12 Nov 2026 21:30:00 +0000</pubDate><category>商业</category><category>气候、水与环境工程</category><description>据MIT Climate发布的信息：
-
 背景与成本
 突破能源首席技术官埃里克·图恩在麻省理工学院的年度能源会议上发言指出，全球繁荣程度的提升必然会推动能源需求和温室气体排放增加。图恩表示，虽然实现全球经济去碳化完全可行，但真正的挑战不仅在于经计算得出的7.5万亿美元成本，更在于现实情况是消费者乃至富裕阶层大都不愿为零碳替代品支付额外费用。通过借助人工智能进行分析，该机构估算出了这一庞大的总成本，并指出如果各项新技术取得成功，这一数字有望降至3.5万亿美元。
 技术解决方案
@@ -197,7 +218,6 @@ Vidit-Ostwal 宣布发布 1.15.41 版本。该版本引入了一项新功能，�
 错误修复与改进
 
 开发团队报告了在此次发布中的多项重要错误修复。项目已更新为依赖 PyMuPDF 2.x 版本。此外，网址读取测试中剔除了真实的存储网址，LiteLLM 路径 也正确剥离了 cache_breakpoint 标记，同时系统在人工反馈恢复流程中能够保留早期的步骤输出。</description><source url="https://github.com/crewAIInc/crewAI/releases/tag/1.15.41">CrewAI Releases</source></item><item><title>谷歌发布 Gemini 4 Hydrogen 模型，主打快速执行与智能体工作流</title><link>https://polyemergence.com/zh/archive/2026/11/13/ef947a5d-9a1d-4aaf-a3a3-fad2dc5bef6a/</link><guid isPermaLink="true">https://polyemergence.com/zh/archive/2026/11/13/ef947a5d-9a1d-4aaf-a3a3-fad2dc5bef6a/</guid><pubDate>Thu, 12 Nov 2026 18:00:50 +0000</pubDate><category>模型</category><category>人工智能</category><description>据Google DeepMind发布的信息：
-
 背景与定位
 谷歌正式发布了 Gemini 4 Hydrogen 模型，旨在将前沿的AI智能以高速度和高效率带入日常编程与智能体工作流中。虽然谷歌的旗舰模型 Carbon 和 Argon 专注于处理复杂的长周期推理任务，但 Hydrogen 的核心定位则是作为一个高效的执行引擎，胜任各类高频和多步骤的日常任务。
 性能与关键细节
@@ -245,7 +265,6 @@ AI 企业 Cohere 宣布任命行业资深专家 Jaya Baloo 为公司首位首席
 津巴布韦作家辛巴拉谢·孔迪泽扎凭借短篇小说《蓝色斗士》赢得了1万英镑的凯恩奖。然而几天后，《大西洋月刊》发表文章，援引AI检测工具的分析结果，质疑该获奖作品是由人工智能生成的。
 调查结果与行业反响
 凯恩奖评委会随后展开了为期一个月的详细调查，通过访谈与元数据分析核实了手稿。评委会主席埃拉·瓦卡塔马确认该作品确系人类创作。这一风波同时在网络上引发了关于少数族裔作家是否更容易受到不公正指控的讨论。</description><source url="https://www.theguardian.com/books/2026/nov/12/zimbabwean-author-simbarashe-kundizeza-cleared-ai-caine-prize-winning-story">The Guardian AI</source></item><item><title>AMD 发布搭载原生双精度与 HBM4 内存的 Instinct MI430X GPU</title><link>https://polyemergence.com/zh/archive/2026/11/12/09ef6dc2-fa2e-44b0-ab23-2a00a4b5c445/</link><guid isPermaLink="true">https://polyemergence.com/zh/archive/2026/11/12/09ef6dc2-fa2e-44b0-ab23-2a00a4b5c445/</guid><pubDate>Thu, 12 Nov 2026 12:53:00 +0000</pubDate><category>公司</category><category>人工智能</category><description>据AMD Blogs发布的信息：
-
 硬件架构与核心参数
 据 AMD 称，其新推出的 Instinct MI430X GPU 专为科学计算与人工智能的融合而设计。该芯片基于 CDNA 5 架构，拥有最高 288 TFLOPS 的原生 FP64（双精度）计算性能，并配备了高达 432 GB 的 HBM4 内存，带宽达到 23.3 TB/s。在多卡互联方面，单节点通过无交换机的 Infinity Fabric 网状架构将四块 GPU 与第六代 EPYC 服务器处理器紧密相连。
 关于双精度模拟局限性的研究
@@ -255,7 +274,6 @@ AMD 表示，MI430X 已经获得美国橡树岭国家实验室的 Discovery、�
 在播客节目《Denatured》的这期内容中，BioSpace洞察总监詹妮弗与Antheia首席执行官克里斯蒂娜以及Cencora数据与AI产品负责人凯尔共同探讨了日益严重的药物短缺威胁。
 探讨的方向与方案
 访谈深入分析了药品短缺情况不断恶化的背后原因。嘉宾们探讨了潜在的应对方案，重点关注如何利用预测性分析来预判供应链中断，以及如何通过灵活的分布式制造来增强基本药物的供应韧性，从而改善患者的用药可及性。</description><source url="https://www.biospace.com/drug-development/can-we-finally-get-ahead-of-drug-shortages">BioSpace Drug Development</source></item><item><title>Meta 签署清洁制造协议以推进数据中心供应链低碳化</title><link>https://polyemergence.com/zh/archive/2026/11/12/2f53cf8a-2f7d-4d40-a894-92e83a04fd2a/</link><guid isPermaLink="true">https://polyemergence.com/zh/archive/2026/11/12/2f53cf8a-2f7d-4d40-a894-92e83a04fd2a/</guid><pubDate>Thu, 12 Nov 2026 12:00:07 +0000</pubDate><category>商业</category><category>人工智能</category><description>据Meta Newsroom AI发布的信息：
-
 背景
 Meta 表示正在采取行动，通过把目标对准上游制造环节，来推进其数据中心供应链的绿色转型。
 细节
@@ -316,7 +334,6 @@ Lucas Monteiro Paes 及其合著者深入研究了大模型对齐的底层信息
 作者使用了包含 188 件鞋类物体的 Google 斯堪尼斯对象数据集子集。为了在避免遗忘原有能力的同时高效适配模型，他们将 LoRA 适配器专门应用到了稀疏结构流 DiT 和形状流 DiT 组件中，同时冻结了纹理生成阶段。整个训练过程通过 Hugging Face Jobs 在 A100 GPU 上运行，或通过 Docker 在本地执行。
 实验结果
 在测试集上的量化评估显示出显著改进。微调后的模型平均 F 分数从基础模型的 0.276 提升到了 0.803，倒角距离（Chamfer distance）从 0.174 降至 0.033，法线一致性也有所提高，证明了有针对性的微调能够成功让通用 3D 模型适应特定的物体类别。</description><source url="https://huggingface.co/blog/3d-lora-finetuning">Hugging Face</source></item><item><title>ParseBench-2：引入错误严重程度评估的文档解析基准</title><link>https://polyemergence.com/zh/archive/2026/11/12/c4a2bdc8-8d18-4658-8e05-53aad1e46f50/</link><guid isPermaLink="true">https://polyemergence.com/zh/archive/2026/11/12/c4a2bdc8-8d18-4658-8e05-53aad1e46f50/</guid><pubDate>Thu, 12 Nov 2026 00:00:00 +0000</pubDate><category>模型</category><category>人工智能</category><description>据LlamaIndex Blog发布的信息：
-
 背景与改进
 传统的文档解析基准往往采用脆弱的评估指标，会对无害的格式变化过度惩罚，却对关键数据错误（如数字颠倒）惩罚不足。ParseBench-2 引入了基于专家定义的 330 种错误类型的严重程度评分机制，涵盖文本、格式、表格、图表、布局和表单六个维度。该基准的文档语料库从 2.1k 扩大到 4.3k 个真实企业文档，包含 1,025 个图表以及来自 30 个国家的 500 页表单。
 性能洞察与 OCRia-1.5
@@ -337,7 +354,6 @@ AWS Neuron SDK 是亚马逊云科技专门为开发者准备的核心开发工�
 这次发布的 2.33.1 版本主要是在上一个大版本的基础上进行了错误修复。虽然它没加什么天翻地覆的新功能，但能让依赖亚马逊芯片的大型 AI 系统跑得更稳当、更少出故障。
 怎么开始用
 开发者可以直接通过查阅亚马逊云科技的官方文档，把这些最新的补丁应用到自己现有的机器学习工作流里去。</description><source url="https://github.com/aws-neuron/aws-neuron-sdk/releases/tag/v2.33.1">AWS Neuron Releases</source></item><item><title>谷歌研究利用穿戴设备和人工智能预测个性化健康习惯</title><link>https://polyemergence.com/zh/archive/2026/11/12/c0797d67-c4a3-4388-b670-872c4b65275f/</link><guid isPermaLink="true">https://polyemergence.com/zh/archive/2026/11/12/c0797d67-c4a3-4388-b670-872c4b65275f/</guid><pubDate>Wed, 11 Nov 2026 19:54:00 +0000</pubDate><category>研究</category><category>人工智能</category><description>据Google Research发布的信息：
-
 背景介绍
 心脏病、肾脏疾病以及2型糖尿病等代谢紊乱形成了一个紧密相连的网络，被称为心血管-肾脏-代谢综合征。这些健康隐患往往在症状出现前的数年就已悄然萌芽。虽然智能手表能轻松记录过去的活动，但要把这些数据变成有指导意义的实际行动却非常困难。
 框架细节
@@ -359,7 +375,6 @@ AWS Neuron SDK 是亚马逊云科技专门为开发者准备的核心开发工�
 尽管好处显而易见，将AI融入食品科学也伴随着明显的风险。企业非常担心将敏感的测试结果和独家配方暴露给外部AI模型。为了降低这些风险，各大机构正在部署企业级的安全环境、构建内部解决方案，或执行严格的合同保障。此外，企业必须弥合碎片化的内部知识，在研发、IT和商业团队之间建立跨部门权责划分，而不是仅仅依靠孤立的试点项目。
 人的核心优势
 虽然自动化系统和更便宜的AI工具正在重塑整个行业，但人类的专业知识依然不可替代。由于现成的AI工具对所有人开放，企业独特的人类洞察力才构成了真正的竞争优势。最成功的食品公司正在从小处着手以找出瓶颈、证明清晰的价值，并周密地重新设计工作流程，以便在AI驱动的市场中脱颖而出。</description><source url="https://www.foodnavigator.com/Article/2026/11/11/ai-use-in-food-rd-pros-and-cons/?utm_source=RSS_Feed&amp;utm_medium=RSS&amp;utm_campaign=RSS">FoodNavigator</source></item><item><title>谷歌推出 Gemini Decisions API，实现极速低成本的多模态决策</title><link>https://polyemergence.com/zh/archive/2026/11/12/4f932ab6-f9cd-410c-b66d-fa480014c610/</link><guid isPermaLink="true">https://polyemergence.com/zh/archive/2026/11/12/4f932ab6-f9cd-410c-b66d-fa480014c610/</guid><pubDate>Wed, 11 Nov 2026 18:00:00 +0000</pubDate><category>模型</category><category>人工智能</category><description>据Google AI发布的信息：
-
 工作原理
 跟传统大模型逐个字蹦答案不同，Gemini Decision 1 采用单次前向计算直接给候选选项打分。它支持文本、图片、音频、视频和最多 25.6 万个 Token 的 PDF，开发者可以在单次请求中同时问多达 1,000 个独立问题。每个答案都会附带一个置信度分数，方便代码自动把拿不准的情况转给人工或者备用方案。
 性能与价格
@@ -374,7 +389,6 @@ langchain-typesafe 库旨在通过强制执行严格的类型检查，让使用 
 核心功能与改进
 
 除了常规的技术升级，这次更新还引入了一个全新的 TypeSafeClassifier，用作你 AI 工作流中的可靠决策模型。同时，为了精简代码库，官方已经正式弃用了旧的实验性中间件。</description><source url="https://github.com/langchain-ai/langchain/releases/tag/langchain-typesafe%3D%3D0.1.0">LangChain Releases</source></item><item><title>麻省理工和东北大学借鉴自然界网络，设计出更强韧的超材料</title><link>https://polyemergence.com/zh/archive/2026/11/12/0f60883b-b09f-40ee-953e-fe88cc1cfddb/</link><guid isPermaLink="true">https://polyemergence.com/zh/archive/2026/11/12/0f60883b-b09f-40ee-953e-fe88cc1cfddb/</guid><pubDate>Wed, 11 Nov 2026 16:00:00 +0000</pubDate><category>研究</category><category>新制造与产业基础设施</category><description>据MIT Advanced Manufacturing发布的信息：
-
 背景
 几十年来，合成超材料的设计通常采用单一建筑模块即所谓的单胞，通过复制和粘贴来形成精确的周期性微观结构。虽然这种有序的方法提升了整体性能，但它有一个重大缺陷：一旦某个区域出现裂纹，周围相同的单胞就会迅速屈曲，导致整个结构崩溃。
 细节
@@ -389,32 +403,4 @@ langchain-typesafe 库旨在通过强制执行严格的类型检查，让使用 
 细节与影响
 Ronen Schneider博士在节目中探讨了Natera的RenasightIQ如何将基因检测结果与来自30万多名患者的病史、实验室数据及理赔数据相结合。通过将基因型作为试验变量，药物研发团队可以更好地理解疾病的自然发展史、选择更准确的疗效终点，并优化患者招募。这种方法不仅能帮助团队重新审视以往研究中的盲区，还能利用真实世界数据对未来的研发策略进行压力测试。</description><source url="https://www.fiercebiotech.com/sponsored/use-kidney-genetics-strengthen-clinical-trial-design">Fierce Biotech</source></item><item><title>PepGen股价暴涨近一倍，其治疗肌强直性营养不良的新药临床数据惊艳</title><link>https://polyemergence.com/zh/archive/2026/11/11/39c7fd93-4992-4cdd-8440-118cea6fea4e/</link><guid isPermaLink="true">https://polyemergence.com/zh/archive/2026/11/11/39c7fd93-4992-4cdd-8440-118cea6fea4e/</guid><pubDate>Wed, 11 Nov 2026 15:23:20 +0000</pubDate><category>商业</category><category>生物技术与可编程生命</category><description>生物医药公司 PepGen 近日宣布，其用于治疗 1 型肌强直性营养不良的药物 PGN-EDODM1 在二期临床试验中表现亮眼。在第 13 周时，患者平均基因剪接纠正率达到了 46.5%，远超竞争对手通常不到 30% 的水平。受此消息鼓舞，该公司股价单日暴涨 92%。
 
-除了亮眼的实验室数据，研究人员还观察到患者在肌肉控制、行动能力和握力等方面出现了 实际功能改善。更令人期待的是，这只是最低剂量组的表现，更高剂量的试验结果预计在 2027 年上半年揭晓。尽管此前曾遭遇美国 FDA 的部分临床暂停，PepGen 依然凭借海外临床站点的亮眼数据，顺势启动了 1.25 亿美元的公开股票发售以推进后续研发。</description><source url="https://www.biospace.com/drug-development/pepgen-shares-almost-double-as-dm1-oligonucleotide-achieves-best-in-class-splicing">BioSpace Drug Development</source></item><item><title>亚马逊 SageMaker AI 为实时流式传输推出按量计费功能</title><link>https://polyemergence.com/zh/archive/2026/11/11/c66e141c-4c9e-496d-86d0-aa1f3d22b241/</link><guid isPermaLink="true">https://polyemergence.com/zh/archive/2026/11/11/c66e141c-4c9e-496d-86d0-aa1f3d22b241/</guid><pubDate>Wed, 11 Nov 2026 15:10:23 +0000</pubDate><category>商业</category><category>人工智能</category><description>据AWS Machine Learning发布的信息：
-
-背景
-语音助手和实时转写等实时语音 AI 应用严重依赖双向流式传输。然而，为这些长时间运行的会话计费非常困难，因为传统的 AWS Marketplace 软件计费仅适用于标准的请求-响应 API，即可计费数量在请求结束时即可立即可知。对于持续长达 30 分钟的直播流，按小时计费往往在静默期也会向客户收费，无法真正反映实际消耗。
-技术细节
-为了解决这个问题，亚马逊 SageMaker AI 现在在主数据流旁开辟了第二条 WebSocket 连接。这个伴随的元数据连接运行在专用路径上，允许模型服务器发送报告增量用量的 JSON 文本帧。提供商使用 inference.count 维度和 ConsumedUnits 数量来发送指标。开发者可以自行选择当元数据连接断开时是终止推理会话还是继续进行纯数据模式，从而在可靠性与计费连续性之间取得平衡。
-行业影响
-这一更新从根本上将软件收费与实时 AI 工作负载的实际消耗进行了对齐。企业客户可以享受合并的 AWS 账单和私有优惠，无需管理单独的供应商关系；而模型提供商则获得了一条标准化通道，能够通过 AWS Marketplace 无缝实现流式 AI 的商业化。</description><source url="https://aws.amazon.com/blogs/machine-learning/introducing-usage-based-pricing-for-amazon-sagemaker-ai-bidirectional-streaming/">AWS Machine Learning</source></item><item><title>等待FDA裁决之际，Capricor加大生产投入为新药上市做准备</title><link>https://polyemergence.com/zh/archive/2026/11/11/237cd9fc-931d-42d8-95d3-7d5cc47b71d5/</link><guid isPermaLink="true">https://polyemergence.com/zh/archive/2026/11/11/237cd9fc-931d-42d8-95d3-7d5cc47b71d5/</guid><pubDate>Wed, 11 Nov 2026 15:00:29 +0000</pubDate><category>商业</category><category>生物技术与可编程生命</category><description>在迎来针对其细胞疗法deramiocel的关键FDA裁决前夕，Capricor Therapeutics大幅加快了资金投入与生产准备步伐。第三季度，该公司的支出飙升至4470万美元，比去年同期增长了70%，主要用于扩大圣迭戈工厂的产能以及开展各项上市前的筹备工作。
-
-公司CEO琳达·马尔班在财报电话会议上表示，圣迭戈工厂的一层洁净室已经准备就绪，不仅通过了上市前的检查，还能每年为多达250名患者提供药物。与此同时，公司正在对二楼进行产能扩展，预计在完成验证后，年产能将提升至2000到2500名患者水平，以满足长期的市场需求。
-
-不过，该疗法的商业化之路并非一帆风顺。由于此前曾因生产和化学控制问题遭到FDA拒绝，加上近期顾问委员会投出了反对票，外界对此次能否顺利获批仍存疑虑。如果此次未能获得FDA批准，管理层表示将审慎评估反馈，考虑是否需要通过进一步的临床试验来证明其有效性与安全性。</description><source url="https://www.biospace.com/drug-development/capricor-ramps-up-manufacturing-spend-ahead-of-fda-decision-for-dmd-therapy">BioSpace Drug Development</source></item><item><title>AlphaGenome 2 能预测基因变异如何影响特定人体细胞</title><link>https://polyemergence.com/zh/archive/2026/11/11/90188d30-4621-44aa-ba30-72ce8de29409/</link><guid isPermaLink="true">https://polyemergence.com/zh/archive/2026/11/11/90188d30-4621-44aa-ba30-72ce8de29409/</guid><pubDate>Wed, 11 Nov 2026 15:00:15 +0000</pubDate><category>模型</category><category>生物技术与可编程生命</category><description>据Google DeepMind发布的信息：
-
-AlphaGenome 2 是一款旨在连接单细胞生物学与人类遗传学的新一代 DNA 序列模型。与前代版本同时分析广泛组织不同，AlphaGenome 2 采用了条件架构，每次针对一种特定的细胞类型或状态来评估百万长度的 DNA 序列。该模型在超过 1.07 亿个来自人类和小鼠的单细胞剖面上进行训练，能够预测基因表达、染色质可及性以及 DNA 甲基化。它还具备极强的泛化能力，无需重新训练就能适应疾病或疫苗接种等未见过的细胞状态。
-
-在基准测试中，AlphaGenome 2 识别出的致病变异和定向基因效应数量达到了前代工具的近两倍。它已经展现出精确定位复杂疾病驱动因素的能力，例如在肠道免疫细胞中找出了导致炎症性肠病的调控变异。目前，该模型已通过 API 向非商业研究人员开放，商业研究则提供私密预览，未来还计划整合到谷歌的智能代理开发平台中。</description><source url="https://deepmind.google/blog/alphagenome-2-deciphering-how-cells-read-dna-to-better-understand-disease/">Google DeepMind</source></item><item><title>Databricks 新推出的 AI 智能体成了大老板的“实话实说”神器</title><link>https://polyemergence.com/zh/archive/2026/11/11/7d3c9197-6ed3-4837-9b9d-9b3d4ef61daf/</link><guid isPermaLink="true">https://polyemergence.com/zh/archive/2026/11/11/7d3c9197-6ed3-4837-9b9d-9b3d4ef61daf/</guid><pubDate>Wed, 11 Nov 2026 15:00:00 +0000</pubDate><category>模型</category><category>人工智能</category><description>Databricks 最近升级了旗下的 AI 智能体 Genie，让它能够借助企业内部的数据上下文，自主完成需要多个步骤的长周期工作。在实际演示中，公司 CEO 阿里·戈德西展示了他是如何利用这个工具处理内部事务的，包括分析员工满意度调查中的低分原因、总结搞砸的销售拜访，以及为公开访谈做准备。
-
-这个工具的核心价值在于解决了企业管理中的邓巴数效应。当公司规模超过 150 人时，CEO 很难与所有人保持直接联系，员工面对高管时往往报喜不报忧。Genie 就像是一个能够绕过企业层级过滤的自动化助手，帮领导者挖出那些必须面对的真实问题。
-
-为了打消企业的顾虑，戈德西表示 Genie 能够安全地处理企业内部数据，避免了隐私泄露的风险。同时，针对企业担心 AI 智能体带来高昂使用成本的问题，Databricks 提供了 Unity Gateway 产品，允许公司设置使用上限并随时替换更便宜的开源模型。</description><source url="https://techcrunch.com/2026/11/11/databricks-new-ai-agent-tells-ceo-ali-ghodsi-the-unvarnished-truth/">TechCrunch AI</source></item><item><title>派森生物口服抗癌组合二期临床数据过关，向注射大分子疗法发起挑战</title><link>https://polyemergence.com/zh/archive/2026/11/11/a0f3ce1f-f3b1-484c-9e0b-919b3152a1cb/</link><guid isPermaLink="true">https://polyemergence.com/zh/archive/2026/11/11/a0f3ce1f-f3b1-484c-9e0b-919b3152a1cb/</guid><pubDate>Wed, 11 Nov 2026 14:47:12 +0000</pubDate><category>可编程生命</category><category>生物技术与可编程生命</category><description>派森生物对其名为Piktor的口服药物组合（包含serabelisib和sapanisertib）进行了二期临床试验，并联合紫杉醇治疗42名晚期或复发性子宫内膜癌患者。试验结果显示，该疗法的确认客观缓解率为33%，初步中位无进展生存期为7.4 months。这一表现超过了分析师预期的30%达标线，足以媲美目前的免疫疗法和抗体偶联药物等注射治疗方案。
-
-目前大型药企多押注于需要注射的抗体偶联药物，但患者容易对这类药物产生耐药性。派森生物的口服疗法通过多靶点抑制PI3K/AKT/mTOR通路，提供了差异化的作用机制。该公司计划与美国食药监局沟通推进三阶段随机临床试验，并预计在明年公布乳腺癌相关临床数据。</description><source url="https://www.fiercebiotech.com/biotech/faeths-phase-2-data-power-oral-combo-forward-cancer-targeted-adc-heavyweights">Fierce Biotech</source></item><item><title>杏林制药斥资1.4亿美元获得Edesa呼吸系统药物日本独家权益</title><link>https://polyemergence.com/zh/archive/2026/11/11/b8d27321-68f5-4651-bce2-a8c694a54a8f/</link><guid isPermaLink="true">https://polyemergence.com/zh/archive/2026/11/11/b8d27321-68f5-4651-bce2-a8c694a54a8f/</guid><pubDate>Wed, 11 Nov 2026 14:47:12 +0000</pubDate><category>可编程生命</category><category>生物技术与可编程生命</category><description>Edesa生物技术公司与日本杏林制药达成了一项重磅许可协议，将其用于治疗急性呼吸窘迫综合征的抗TLR4抗体paridiprubart引入日本市场。根据协议，杏林制药将支付1200万美元首付款，未来还将支付高达1.34亿美元的里程碑款项以及销售提成。
-
-此前，这款抗体在一项针对新冠引起的急性呼吸窘迫综合征的3期临床试验中表现出良好潜力，促使Edesa将研发重点扩展至更广泛的适应症。近期的探索性分析还表明，该药物对伴有急性肾损伤的患者同样具有降低死亡率的潜力。杏林制药将全资负责该药在日本的开发和商业化，并希望凭借其在呼吸道疾病领域的经验，推动这款创新疗法在日本落地。</description><source url="https://www.fiercebiotech.com/biotech/kyorin-pens-140m-deal-japan-rights-edesas-phase-3-stage-respiratory-drug">Fierce Biotech</source></item><item><title>不被最初的结果局限，在医药研发中寻找新可能</title><link>https://polyemergence.com/zh/archive/2026/11/11/b3c615f3-34e3-4220-9828-6448a6b2e29b/</link><guid isPermaLink="true">https://polyemergence.com/zh/archive/2026/11/11/b3c615f3-34e3-4220-9828-6448a6b2e29b/</guid><pubDate>Wed, 11 Nov 2026 14:47:12 +0000</pubDate><category>可编程生命</category><category>生物技术与可编程生命</category><description>透过挫折看本质
-在药物研发中，某个疾病领域的假设失败并不意味着底层科学走到了尽头。例如，在肝病治疗中未能达到预期的临床数据，有时反而能为原发性胆汁性胆管炎指明有效的方向，这表明只要研究人员愿意换个角度思考，生物标志物就能揭示出隐藏的价值。
-战略收购与专业积累
-药企必须将深厚的治疗领域专业知识与探索被忽视机会的勇气结合起来。易普森收购专注于肾脏相关疾病的 Memo Therapeutics 以及专注于肿瘤学的 Kartos Therapeutics 等举措，充分说明了全面分析数据如何能够引领企业无需从零开始就进入全新领域。
-医药行业的未来
-医疗健康的未来不取决于重复那些走进死胡同的老问题。真正的创新需要遵循证据的纪律和勇于转换方向的决心，将意料之外的科学结果转化为真正造福患者的疗法。</description><source url="https://www.fiercebiotech.com/sponsored/philippe-lopes-fernandes-executive-vice-president-chief-business-officer-ipsen">Fierce Biotech</source></item></channel></rss>
+除了亮眼的实验室数据，研究人员还观察到患者在肌肉控制、行动能力和握力等方面出现了 实际功能改善。更令人期待的是，这只是最低剂量组的表现，更高剂量的试验结果预计在 2027 年上半年揭晓。尽管此前曾遭遇美国 FDA 的部分临床暂停，PepGen 依然凭借海外临床站点的亮眼数据，顺势启动了 1.25 亿美元的公开股票发售以推进后续研发。</description><source url="https://www.biospace.com/drug-development/pepgen-shares-almost-double-as-dm1-oligonucleotide-achieves-best-in-class-splicing">BioSpace Drug Development</source></item></channel></rss>
