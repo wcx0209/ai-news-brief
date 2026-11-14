@@ -55,7 +55,10 @@ are introduced. Public-address DNS pinning, per-hop redirect checks, timeouts an
 response-size limits protect outbound discovery. Publisher query signatures are
 preserved. Browser loading uses at most three candidates and one automatic retry;
 successful retries restore the image and source caption. An unavailable external
-source may still require a later manual retry.
+source may still require a later manual retry. An old image confirmed to be
+undersized is not retained as a temporary network failure: the article becomes
+text-led when the original has no qualifying image. QbitAI's non-semantic article
+container has a host-scoped adapter that excludes the author information area.
 
 Reader likes and comments are handled separately by a Cloudflare Pages Function and a free D1 database. The service stores a salted visitor hash for like deduplication and rate limiting. It never stores the full visitor IP; public comments show only `poly`, the approximate Cloudflare region, and the final three IP characters.
 

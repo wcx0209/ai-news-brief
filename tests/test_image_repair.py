@@ -3,6 +3,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 import sys
 import unittest
+from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
@@ -58,6 +59,21 @@ class ImageRepairTests(unittest.TestCase):
         self.assertEqual(len(repaired["items"]), 1)
         self.assertEqual(repaired["items"][0]["image_url"], current["image_url"])
         self.assertEqual(repaired["items"][0]["en"]["title"], "Unchanged news")
+
+    def test_confirmed_low_resolution_is_not_preserved_as_temporarily_unavailable(self):
+        low = "https://cdn.example.com/low-logo.png"
+        payload = {"items": [item("one", image_url=low)]}
+
+        def discovery(url, rejected=None):
+            rejected.append(low)
+            return []
+
+        with patch("repair_archive_images.discover_images", side_effect=discovery):
+            repaired, stats = repair_payload(payload, now=NOW)
+        self.assertEqual(stats, {"checked": 1, "verified": 0})
+        self.assertIsNone(repaired["items"][0]["image_url"])
+        self.assertEqual(repaired["items"][0]["image_rejected_urls"], [low])
+        self.assertEqual(repaired["items"][0]["published_at"], payload["items"][0]["published_at"])
 
 
 if __name__ == "__main__":

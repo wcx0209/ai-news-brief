@@ -71,16 +71,26 @@ def image_fields(item):
     """
     source = normalize_source_url(item.get("url"))
     bound = normalize_source_url(item.get("image_source_url") or item.get("url"))
-    result = {"image_url": None, "image_candidates": [], "image_source_url": source}
+    result = {"image_url": None, "image_candidates": [], "image_source_url": source,
+              "image_rejected_urls": []}
     if not source or source != bound:
         return result
+    rejected = set()
+    if isinstance(item.get("image_rejected_urls"), list):
+        for value in item["image_rejected_urls"]:
+            normalized = normalize_source_url(value)
+            if normalized and normalized not in rejected:
+                rejected.add(normalized)
+                result["image_rejected_urls"].append(value)
+                if len(result["image_rejected_urls"]) >= 12:
+                    break
     values = [item.get("image_url")]
     if isinstance(item.get("image_candidates"), list):
         values.extend(item["image_candidates"])
     seen = set()
     for value in values:
         normalized = normalize_source_url(value)
-        if normalized and normalized not in seen:
+        if normalized and normalized not in seen and normalized not in rejected:
             seen.add(normalized)
             result["image_candidates"].append(value)
             if len(result["image_candidates"]) >= 3:
@@ -104,22 +114,28 @@ def merge_image_fields(current, previous, now=None):
     if not same_id or not same_source:
         return result
     prior = image_fields(previous)
-    if not prior["image_candidates"]:
-        return result
     checked = _image_date(result.get("image_checked_at"))
     prior_checked = _image_date(prior.get("image_checked_at"))
     # The archive repair runs after the live-feed export. Do not let that
     # earlier snapshot overwrite a newer successful check during their merge.
-    if prior_checked and checked and checked < prior_checked <= (now or datetime.now(timezone.utc)):
+    if (prior_checked and prior_checked <= (now or datetime.now(timezone.utc))
+            and (checked is None or checked < prior_checked)):
         return prior
-    if result["image_candidates"]:
-        if result.get("image_status") == "verified":
-            return result
-        if result.get("image_status") != "unavailable":
-            return prior if prior.get("image_status") == "verified" else result
+    if result["image_candidates"] and result.get("image_status") == "verified":
+        # A real newer successful check may rehabilitate a previously rejected
+        # URL. Only this attempt's explicit failures remain on the denylist.
+        return result
+    use_current = bool(result["image_candidates"]) and (
+        not prior["image_candidates"] or (
+            result.get("image_status") != "unavailable" and prior.get("image_status") != "verified"))
+    preferred = result if use_current else prior
     # A failed new attempt is still recorded as unavailable, rather than
-    # falsely claiming the preserved older URL passed a fresh check.
-    return {**prior, **{key: result[key] for key in ("image_checked_at", "image_status") if key in result}}
+    # falsely claiming the preserved older URL passed a fresh check. Explicit
+    # low-resolution rejections, unlike timeouts, must remove an old candidate.
+    merged = {**preferred, "url": current.get("url"),
+              "image_rejected_urls": result["image_rejected_urls"] + prior["image_rejected_urls"],
+              **{key: result[key] for key in ("image_checked_at", "image_status") if key in result}}
+    return image_fields(merged)
 
 
 def collect_image_fields(rows, previous, discover_limit=60, now=None):
@@ -140,10 +156,13 @@ def collect_image_fields(rows, previous, discover_limit=60, now=None):
             pending[index] = (current, prior)
     if pending:
         with ThreadPoolExecutor(max_workers=min(6, len(pending))) as executor:
-            futures = {executor.submit(discover_images, item[0]["url"], timeout=8, limit=3): index
-                       for index, item in pending.items()}
+            futures = {}
+            for index, item in pending.items():
+                rejected = []
+                future = executor.submit(discover_images, item[0]["url"], timeout=8, limit=3, rejected=rejected)
+                futures[future] = (index, rejected)
             for future in as_completed(futures):
-                index = futures[future]
+                index, rejected = futures[future]
                 current, prior = pending[index]
                 try:
                     candidates = future.result()
@@ -155,6 +174,7 @@ def collect_image_fields(rows, previous, discover_limit=60, now=None):
                     "image_source_url": normalize_source_url(current["url"]),
                     "image_checked_at": now.isoformat().replace("+00:00", "Z"),
                     "image_status": "verified" if candidates else "unavailable",
+                    "image_rejected_urls": rejected,
                 }
                 output[index] = merge_image_fields(discovered, prior, now=now)
     return output

@@ -28,6 +28,7 @@ def item(identifier="one", url="https://publisher.example.org/story", **changes)
         "importance": 85, "scores": {"confidence": 80}, "tags": ["Gemini", "evaluation"],
         "published_at": published, "source_published_at": published, "site_published_at": published,
         "image_url": FIRST, "image_candidates": [FIRST, SECOND], "image_source_url": url,
+        "image_rejected_urls": [],
         "image_status": "verified", "image_checked_at": NOW.isoformat().replace("+00:00", "Z"),
         "en": {"title": "Gemini evaluation protocol", "summary": "A reported research result.", "full_summary": "Complete reported result."},
         "zh": {"title": "Gemini 评测方法", "summary": "研究成果摘要。", "full_summary": "完整研究成果摘要。"},
@@ -61,7 +62,7 @@ class ImagePersistenceTests(unittest.TestCase):
         rows = [{"id": "one", "url": "https://publisher.example.org/story"}]
         with patch.object(feed, "discover_images", return_value=[FIRST, SECOND]) as discover:
             values = feed.collect_image_fields(rows, [], now=NOW)
-        discover.assert_called_once_with(rows[0]["url"], timeout=8, limit=3)
+        discover.assert_called_once_with(rows[0]["url"], timeout=8, limit=3, rejected=[])
         self.assertEqual(values[0]["image_candidates"], [FIRST, SECOND])
         self.assertEqual(values[0]["image_status"], "verified")
         self.assertEqual(values[0]["image_checked_at"], "2026-11-14T03:00:00Z")
@@ -161,13 +162,71 @@ class ImagePersistenceTests(unittest.TestCase):
         unchecked = item(image_status=None, image_checked_at=None)
         self.assertEqual(feed.merge_image_fields(unchecked, repaired, now=NOW)["image_url"], SECOND)
 
+    def test_explicit_low_resolution_rejection_removes_only_the_rejected_old_candidate(self):
+        previous = item()
+        unavailable = item(image_url=None, image_candidates=[], image_status="unavailable",
+                           image_rejected_urls=[FIRST], image_checked_at=NOW.isoformat())
+        media = feed.merge_image_fields(unavailable, previous, now=NOW)
+        self.assertEqual(media["image_candidates"], [SECOND])
+        self.assertEqual(media["image_url"], SECOND)
+        self.assertEqual(media["image_rejected_urls"], [FIRST])
+        self.assertEqual(media["image_status"], "unavailable")
+        unavailable["image_rejected_urls"].append(SECOND)
+        media = feed.merge_image_fields(unavailable, previous, now=NOW)
+        self.assertEqual(media["image_candidates"], [])
+        self.assertIsNone(media["image_url"])
+
+    def test_newer_no_image_rejection_cannot_be_resurrected_by_an_older_feed(self):
+        rejected = item(image_url=None, image_candidates=[], image_status="unavailable",
+                        image_rejected_urls=[FIRST, SECOND], image_checked_at=NOW.isoformat())
+        older = item(image_checked_at=(NOW - timedelta(minutes=5)).isoformat())
+        media = feed.merge_image_fields(older, rejected, now=NOW)
+        self.assertEqual(media["image_candidates"], [])
+        self.assertEqual(media["image_rejected_urls"], [FIRST, SECOND])
+        self.assertEqual(media["image_status"], "unavailable")
+        unchecked = item(image_status=None, image_checked_at=None)
+        self.assertIsNone(feed.merge_image_fields(unchecked, rejected, now=NOW)["image_url"])
+
+    def test_new_real_verification_can_clear_older_rejections(self):
+        previous = item(image_url=None, image_candidates=[], image_status="unavailable",
+                        image_rejected_urls=[FIRST], image_checked_at=(NOW - timedelta(minutes=5)).isoformat())
+        media = feed.merge_image_fields(item(image_candidates=[FIRST]), previous, now=NOW)
+        self.assertEqual(media["image_candidates"], [FIRST])
+        self.assertEqual(media["image_rejected_urls"], [])
+        self.assertEqual(media["image_status"], "verified")
+
+    def test_rejection_guard_caps_safe_urls_and_does_not_reuse_another_source_denylist(self):
+        rejected = ["http://127.0.0.1/image.png", "https://user:secret@cdn.example.org/image.png"]
+        rejected.extend(f"https://cdn.example.org/small-{number}.png" for number in range(20))
+        media = feed.image_fields(item(image_rejected_urls=rejected))
+        self.assertEqual(len(media["image_rejected_urls"]), 12)
+        self.assertTrue(all(value.startswith("https://cdn.example.org/small-") for value in media["image_rejected_urls"]))
+        changed = item(url="https://publisher.example.org/other", image_source_url="https://publisher.example.org/other",
+                       image_url=None, image_candidates=[], image_status=None, image_checked_at=None)
+        previous = item(image_rejected_urls=[FIRST])
+        self.assertEqual(feed.merge_image_fields(changed, previous, now=NOW)["image_rejected_urls"], [])
+
+    def test_each_discovery_thread_owns_its_rejection_list(self):
+        rows = [{"id": str(number), "url": f"https://publisher.example.org/{number}"} for number in range(2)]
+        lists = []
+        def discover(url, timeout, limit, rejected):
+            lists.append(rejected)
+            rejected.append(FIRST if url.endswith("0") else SECOND)
+            return []
+        with patch.object(feed, "discover_images", side_effect=discover):
+            media = feed.collect_image_fields(rows, [], now=NOW)
+        self.assertEqual(len({id(value) for value in lists}), 2)
+        self.assertEqual(media[0]["image_rejected_urls"], [FIRST])
+        self.assertEqual(media[1]["image_rejected_urls"], [SECOND])
+        self.assertTrue(all(value["image_status"] == "unavailable" for value in media))
+
     def test_public_archive_export_round_trip_keeps_media_and_source_dates(self):
         original = item()
         record = archive.enrich_record(archive.record_from_feed(original))
         with tempfile.TemporaryDirectory() as directory:
             archive.render_public_data(Path(directory), [record])
             exported = json.loads((Path(directory) / "data/articles.json").read_text())["items"][0]
-        for key in ("image_url", "image_candidates", "image_source_url", "image_checked_at", "image_status"):
+        for key in ("image_url", "image_candidates", "image_source_url", "image_checked_at", "image_status", "image_rejected_urls"):
             self.assertEqual(exported[key], original[key])
         for key in ("published_at", "source_published_at", "site_published_at"):
             self.assertEqual(exported[key], original[key])
@@ -183,7 +242,7 @@ class ImagePersistenceTests(unittest.TestCase):
             exported = json.loads(output.read_text())
         discover.assert_not_called()
         self.assertEqual(exported["generated_at"], "2026-11-14T00:00:00Z")
-        for key in ("image_url", "image_candidates", "image_source_url", "image_checked_at", "image_status", "source_published_at"):
+        for key in ("image_url", "image_candidates", "image_source_url", "image_checked_at", "image_status", "image_rejected_urls", "source_published_at"):
             self.assertEqual(exported["items"][0][key], original[key])
 
     def test_candidate_json_is_escaped_and_only_detail_figure_has_retry_button(self):

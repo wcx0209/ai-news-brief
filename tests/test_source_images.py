@@ -95,6 +95,30 @@ class SourceImageTests(unittest.TestCase):
                                                    "https://publisher.example.org/story"),
                          ["https://publisher.example.org/schema.jpg"])
 
+    def test_qbit_div_article_skips_author_area_and_falls_back_to_body(self):
+        html = b'''<meta property="og:image" content="/low-logo.png"><div class="article">
+          <div class="article_info"><img src="/author-200px.jpg"></div>
+          <div class="pgc-img"><img data-original="/news-body.jpg"></div></div>'''
+        self.assertEqual(images.extract_candidates(html, "https://www.qbitai.com/2026/11/news.html"),
+                         ["https://www.qbitai.com/low-logo.png", "https://www.qbitai.com/news-body.jpg"])
+        with patch.object(images, "_fetch_bytes", side_effect=[
+            ("https://www.qbitai.com/2026/11/news.html", html, "text/html"),
+            ("https://www.qbitai.com/low-logo.png", picture((320, 100)), "image/png"),
+            ("https://www.qbitai.com/news-body.jpg", picture(), "image/jpeg"),
+        ]) as fetch:
+            self.assertEqual(images.discover_images("https://www.qbitai.com/2026/11/news.html", limit=1),
+                             ["https://www.qbitai.com/news-body.jpg"])
+        self.assertFalse(any("author-200px" in call.args[0] for call in fetch.call_args_list))
+
+    def test_qbit_div_article_adapter_is_host_scoped(self):
+        html = '<div class="article"><div class="pgc-img"><img src="/body.jpg"></div></div>'
+        for host in ("qbitai.com", "www.qbitai.com", "news.qbitai.com"):
+            with self.subTest(host=host):
+                self.assertEqual(images.extract_candidates(html, f"https://{host}/news"), [f"https://{host}/body.jpg"])
+        for host in ("publisher.example.org", "qbitai.com.example.org", "notqbitai.com"):
+            with self.subTest(host=host):
+                self.assertEqual(images.extract_candidates(html, f"https://{host}/news"), [])
+
     def test_redirected_page_is_base_for_relative_image(self):
         with patch.object(images, "_fetch_bytes", side_effect=[
             ("https://new.example.org/path/post/", b'<article><img src="../figure.png"></article>', "text/html"),
@@ -204,6 +228,45 @@ class SourceImageTests(unittest.TestCase):
             self.assertEqual(fetch.call_count, 2)
             self.assertTrue(all(call.kwargs.get("image") for call in fetch.call_args_list))
         self.assertEqual(images._youtube_images("https://notyoutube.com/watch?v=abcdefghijk"), [])
+
+    def test_confirmed_low_resolution_reports_original_and_redirect_url(self):
+        rejected = []
+        html = b'<meta property="og:image" content="/low.png"><article><img src="/good.png"></article>'
+        with patch.object(images, "_fetch_bytes", side_effect=[
+            ("https://publisher.example.org/story", html, "text/html"),
+            ("https://cdn.example.org/low.png?sig=KEEP", picture((256, 256)), "image/png"),
+            ("https://publisher.example.org/good.png", picture(), "image/png"),
+        ]):
+            self.assertEqual(images.discover_images("https://publisher.example.org/story", rejected=rejected),
+                             ["https://publisher.example.org/good.png"])
+        self.assertEqual(rejected, ["https://publisher.example.org/low.png", "https://cdn.example.org/low.png?sig=KEEP"])
+
+    def test_temporary_corrupt_unsupported_and_resource_failures_not_reported_as_lowres(self):
+        html = b'<meta property="og:image" content="/image.png">'
+        for fetched in (None, ("https://cdn.example.org/image.png", b"corrupt", "image/png"),
+                        ("https://cdn.example.org/image.svg", b'<svg width="256" height="256"/>', "image/svg+xml"),
+                        ("https://cdn.example.org/truncated.jpg", picture((256, 256), "JPEG")[:-30], "image/jpeg"),
+                        ("https://cdn.example.org/oversized.png", b"x" * (images.IMAGE_BYTES + 1), "image/png")):
+            rejected = []
+            with patch.object(images, "_fetch_bytes", side_effect=[("https://publisher.example.org/story", html, "text/html"), fetched]):
+                self.assertEqual(images.discover_images("https://publisher.example.org/story", rejected=rejected), [])
+            self.assertEqual(rejected, [])
+        rejected = []
+        with patch.object(images, "MAX_DECODE_PIXELS", 1), patch.object(images, "_fetch_bytes", side_effect=[
+            ("https://publisher.example.org/story", html, "text/html"),
+            ("https://cdn.example.org/low.gif", picture((256, 256), "GIF"), "image/gif"),
+        ]):
+            self.assertEqual(images.discover_images("https://publisher.example.org/story", rejected=rejected), [])
+        self.assertEqual(rejected, [])
+
+    def test_low_resolution_report_is_safe_deduplicated_and_bounded(self):
+        rejected = ["https://cdn.example.org/low.png"]
+        images._report_low_resolution(rejected, "https://cdn.example.org/low.png", "http://127.0.0.1/a")
+        self.assertEqual(rejected, ["https://cdn.example.org/low.png"])
+        for index in range(20):
+            images._report_low_resolution(rejected, f"https://cdn.example.org/{index}.png", f"https://cdn.example.org/{index}.png")
+        self.assertEqual(len(rejected), 12)
+        self.assertEqual(len(set(rejected)), 12)
 
     def test_zero_limit_does_not_fetch(self):
         with patch.object(images, "_fetch_bytes") as fetch:

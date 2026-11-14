@@ -27,8 +27,13 @@ def parsed_date(value):
         return None
 
 
+def inspect_source_images(url, discover=None):
+    rejected = []
+    urls = discover(url) if discover is not None else discover_images(url, rejected=rejected)
+    return urls, rejected
+
+
 def repair_payload(payload, limit=50, workers=4, now=None, discover=None, current_items=None):
-    discover = discover or discover_images
     now = now or datetime.now(timezone.utc)
     output = deepcopy(payload)
     latest = {str(item.get("id")): item for item in (current_items or []) if isinstance(item, dict)}
@@ -57,21 +62,26 @@ def repair_payload(payload, limit=50, workers=4, now=None, discover=None, curren
     successes = 0
     if queued:
         with ThreadPoolExecutor(max_workers=max(1, min(6, int(workers)))) as executor:
-            futures = {executor.submit(discover, item["url"]): index for index, item in queued}
+            futures = {executor.submit(inspect_source_images, item["url"], discover): index for index, item in queued}
             for future in as_completed(futures):
                 index = futures[future]
                 item = output["items"][index]
                 try:
-                    urls = list(dict.fromkeys(future.result() or []))[:3]
+                    urls, rejected = future.result()
+                    urls = list(dict.fromkeys(value for value in (urls or []) if normalize_source_url(value)))[:3]
+                    rejected = list(dict.fromkeys(value for value in rejected if normalize_source_url(value)))[:12]
                 except Exception:
-                    urls = []
-                item["image_checked_at"] = now.isoformat().replace("+00:00", "Z")
-                item["image_source_url"] = normalize_source_url(item["url"])
-                item["image_status"] = "verified" if urls else "unavailable"
-                if urls:
-                    item["image_url"] = urls[0]
-                    item["image_candidates"] = urls
-                    successes += 1
+                    urls, rejected = [], []
+                fresh = {
+                    "id": item.get("id"), "url": item["url"],
+                    "image_url": urls[0] if urls else None, "image_candidates": urls,
+                    "image_rejected_urls": rejected,
+                    "image_checked_at": now.isoformat().replace("+00:00", "Z"),
+                    "image_source_url": normalize_source_url(item["url"]),
+                    "image_status": "verified" if urls else "unavailable",
+                }
+                item.update(merge_image_fields(fresh, item, now=now))
+                successes += bool(urls)
                 # A transient source error must not erase previously published
                 # image URLs. Browser-side bounded recovery still applies.
     return output, {"checked": len(queued), "verified": successes}

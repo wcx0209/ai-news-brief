@@ -173,6 +173,8 @@ def extract_candidates(html, page_url, limit=12):
     if not limit:
         return []
     soup = BeautifulSoup(html[:HTML_BYTES], "html.parser")
+    host = urlsplit(page_url).hostname or ""
+    qbit_body = host == "qbitai.com" or host.endswith(".qbitai.com")
     raw = []
     metas = soup.find_all("meta")
     for names in (("og:image:secure_url",), ("og:image", "og:image:url"), ("twitter:image", "twitter:image:src")):
@@ -186,10 +188,14 @@ def extract_candidates(html, page_url, limit=12):
     # Some publisher templates use div-based WordPress/editor body containers
     # rather than semantic article/main elements. Do not fall back to all imgs:
     # navigation, site chrome, and unmarked recommendation blocks stay outside.
-    for root in soup.select(BODY_SELECTOR):
+    # QbitAI's inspected publisher template uses div.article for the body,
+    # unlike the generic div.article cards used on many unrelated sites.
+    selector = BODY_SELECTOR + (", div.article" if qbit_body else "")
+    for root in soup.select(selector):
         for node in root.find_all("img"):
             if any(parent.name in {"nav", "header", "footer"} or parent.get("role") in {"navigation", "banner"}
-                   for parent in node.parents if parent is not root and getattr(parent, "attrs", None) is not None):
+                   or (qbit_body and "article_info" in (parent.get("class") or []))
+                   for parent in node.parents if getattr(parent, "attrs", None) is not None):
                 continue
             picture = node.find_parent("picture")
             if picture:
@@ -298,20 +304,21 @@ def _fetch_bytes(url, maximum, timeout, image=False):
     return None
 
 
-def _complete_image(body):
+def _image_status(body):
     from PIL import Image
 
     if not body or len(body) > IMAGE_BYTES:
-        return False
+        return "unavailable"
     try:
         with warnings.catch_warnings():
             warnings.simplefilter("error", Image.DecompressionBombWarning)
             with Image.open(BytesIO(body)) as image:
                 width, height = image.size
-                if width < 480 or height < 270 or width * height > MAX_PIXELS:
-                    return False
+                low_resolution = width < 480 or height < 270
+                if width * height > MAX_PIXELS:
+                    return "unavailable"
                 if image.format == "GIF" and not body.rstrip().endswith(b";"):
-                    return False
+                    return "unavailable"
                 image.verify()
             # verify() checks structure; load() forces a fresh full pixel decode
             # so a JPEG header alone or a truncated raster is not accepted.
@@ -322,17 +329,30 @@ def _complete_image(body):
                     frames += 1
                     decoded_pixels += width * height
                     if width * height > MAX_PIXELS or decoded_pixels > MAX_DECODE_PIXELS or frames > MAX_FRAMES:
-                        return False
+                        return "unavailable"
                     image.load()
                     try:
                         image.seek(image.tell() + 1)
                     except EOFError:
                         break
-        return True
+        return "low_resolution" if low_resolution else "verified"
     except Exception:
         # Decoders may raise format-specific errors for malformed third-party
         # bytes. A corrupt image must fail closed, not abort the news export.
-        return False
+        return "unavailable"
+
+
+def _complete_image(body):
+    return _image_status(body) == "verified"
+
+
+def _report_low_resolution(rejected, candidate, final_url):
+    if not isinstance(rejected, list):
+        return
+    for value in (candidate, final_url):
+        safe = normalize_source_url(value)
+        if safe and safe not in rejected and len(rejected) < 12:
+            rejected.append(safe)
 
 
 def _youtube_images(url):
@@ -350,11 +370,14 @@ def _youtube_images(url):
     return []
 
 
-def discover_images(article_url, timeout=8, limit=3):
+def discover_images(article_url, timeout=8, limit=3, rejected=None):
     """Return up to three safely fetched, decoded, sufficiently large images.
 
     At most six candidate image URLs are attempted; three redirects per request
     are allowed. A failed/blocked original is skipped, never proxied to readers.
+    If supplied, ``rejected`` receives up to 12 safely formatted original/final
+    URLs confirmed low-resolution after a successful complete raster decode.
+    Temporary failures and resource limits are not evidence of low resolution.
     """
     article_url = normalize_source_url(article_url)
     try:
@@ -373,7 +396,10 @@ def discover_images(article_url, timeout=8, limit=3):
     verified = []
     for candidate in candidates[:MAX_ATTEMPTS]:
         fetched = _fetch_bytes(candidate, IMAGE_BYTES, timeout, image=True)
-        if fetched and _complete_image(fetched[1]):
+        status = _image_status(fetched[1]) if fetched else "unavailable"
+        if status == "low_resolution":
+            _report_low_resolution(rejected, candidate, fetched[0])
+        elif status == "verified":
             final_url = fetched[0]
             if final_url not in verified:
                 verified.append(final_url)
