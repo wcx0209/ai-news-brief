@@ -28,6 +28,7 @@ jobs:
           python -m unittest discover -s tests -p test_agent_reach_client.py -v
           python -m unittest discover -s tests -p test_news_collector.py -v
           python -m unittest discover -s tests -p test_reach_probe.py -v
+          python -m unittest discover -s tests -p test_lsh_dedup.py -v
       - name: Verify catalog routes and real Agent Reach reads
         run: python scripts/check_agent_reach.py --probe --output output/agent-reach-check.json
       - name: Verify 30 Chinese specialist sources through the new collector

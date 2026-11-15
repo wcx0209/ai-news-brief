@@ -227,6 +227,13 @@ class ReachPipelineIntegrationTests(unittest.TestCase):
         self.engine.summarize_content.assert_called_once()
         self.legacy.assert_not_called()
 
+    def test_hashing_failure_does_not_consume_the_url_or_call_llm(self):
+        with patch('lsh_dedup.compute_simhash', side_effect=OverflowError('uint8 fixture')):
+            with self.assertRaises(OverflowError):
+                self.process(self.entry(), FakeCollector(result()))
+        self.database.record_fetched_url.assert_not_called()
+        self.engine.summarize_content.assert_not_called()
+
     def test_pipeline_blocks_missing_invalid_and_future_source_dates_before_llm(self):
         for date in (None, "not-a-date", (self.now + timedelta(days=1)).isoformat()):
             with self.subTest(date=date):

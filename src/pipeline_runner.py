@@ -421,11 +421,10 @@ def _process_single_entry(entry, sources, source_map, user_db, ai_engine, vector
                 fetch_stats.record_failure(rss_url, rss_desc, 'content_extract_failed')
                 return 0
     
-    # 记录已成功获取内容的URL
-    user_db.record_fetched_url(url, source_id)
-    
     # LSH Deduplication
+    # Do not permanently consume an otherwise valid URL if hashing fails.
     content_hash = compute_simhash(full_text)
+    user_db.record_fetched_url(url, source_id)
     similar_article = user_db.get_similar_article(content_hash)
     if similar_article:
         logging.warning(f"{log_prefix}Skipping duplicate content (LSH): {title}")
@@ -731,6 +730,7 @@ def _fetch_and_process_source(source: dict, rss_fetcher, sources, source_map,
         except LoginRequiredError:
             raise
         except Exception as exc:
+            fetch_stats.record_failure(url, stats_desc, 'entry_processing_error')
             logging.error(f"{log_prefix}Error processing entry '{entry.get('title', 'unknown')}': {exc}", exc_info=True)
 
     user_db.update_rss_source_fetch_time(sid)

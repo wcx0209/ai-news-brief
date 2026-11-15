@@ -21,7 +21,15 @@ def compute_simhash(text: str) -> int:
     """
     if not text or not text.strip():
         return 0
-    val = Simhash(text).value
+    fingerprint = Simhash(0)
+    # simhash's large-weight shortcut multiplies a uint8 bit array by the
+    # frequency. NumPy 2 rejects frequencies above 255. Use the library's
+    # equivalent repeated-digest batching instead, without changing its text
+    # tokenization, MD5, 64-bit width or strict-majority/tie rule. Set this on
+    # this instance only; other callers and concurrent workers are unaffected.
+    fingerprint.large_weight_cutoff = float('inf')
+    fingerprint.build_by_text(text)
+    val = fingerprint.value
     # Convert to signed 64-bit integer for PostgreSQL BIGINT
     if val >= (1 << 63):
         val -= (1 << 64)

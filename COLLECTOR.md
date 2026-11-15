@@ -85,6 +85,22 @@ reader. These results are explicit advisories, not successful reads. No cookie,
 browser, paid service or legacy fallback was used. Existing archive records
 remain accessible; new interviews from blocked reads are skipped.
 
+[First full production cycle 43668648396](https://github.com/wcx0209/ai-news-brief/actions/runs/43668648396)
+stored **22 new articles**, exported **40 current briefs** and generated the
+archive containing **274 stories**. Cloudflare deployment succeeded. Production
+logs show real `agent_reach:jina` reads; already-captured official page content
+is separately labelled `publisher_adapter`. The run also recorded 155 skips and
+32 failed attempts; a successful job is not a claim that all sources succeeded.
+
+The first run exposed three long-text SimHash/NumPy 2 overflow errors. The fix
+uses the library's equivalent batched algorithm, retaining existing 64-bit
+fingerprints, and hashing now precedes the permanent fetched-URL marker.
+**Retry exact failed collector URLs** can set only existing failed URL markers
+due now (1–10 explicit public URLs), excluding URLs already stored as articles.
+It changes no article, source ID, publication date, or history and makes no LLM
+calls. The next regular cycle applies the usual date, relevance and Method
+gates; being retryable is not a promise of publication.
+
 ## Explicit rollback
 
 An operator may change `collector.backend` to `legacy` and publish that config.

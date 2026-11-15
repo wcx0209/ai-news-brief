@@ -1,0 +1,35 @@
+name: Retry exact failed collector URLs
+
+on:
+  workflow_dispatch:
+    inputs:
+      urls_json:
+        description: JSON array of 1–10 exact failed article URLs; never deletes articles
+        type: string
+        required: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: polyemergence-daily-brief
+  cancel-in-progress: false
+
+jobs:
+  retry:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      INBRIEF_CONFIG_PATH: config.free.yaml
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0
+        with:
+          python-version: "3.11"
+      - name: Install maintenance dependencies only
+        run: pip install psycopg2-binary pgvector pyyaml python-dotenv requests Pillow
+      - name: Make only existing unpersisted targets retryable
+        env:
+          INBRIEF_SUPABASE_DB_URL: ${{ secrets.INBRIEF_SUPABASE_DB_URL }}
+          RETRY_URLS_JSON: ${{ inputs.urls_json }}
+        run: python scripts/retry_collector_failures.py
