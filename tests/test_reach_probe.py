@@ -120,6 +120,22 @@ class ReachProbeTests(unittest.TestCase):
         self.assertEqual(report["status"], "failed")
         reader.assert_not_called()
 
+    def test_broken_channel_feed_still_tests_a_previously_public_video_without_new_discovery(self):
+        client, collector = MagicMock(), MagicMock()
+        collector.parse_feed.return_value = {'entries': [], 'error': 'rss_http_404'}
+        client.read_web.side_effect = lambda url: envelope('web', 'jina', url)
+        client.read_github.side_effect = lambda url: envelope('github', 'github-api', url)
+        client.read_youtube.side_effect = lambda url: envelope('youtube', 'yt-dlp', url)
+        existing = {'link': 'https://www.youtube.com/watch?v=abcdefghijk', 'published_at': '2026-11-12T11:00:00Z',
+                    'source': 'Existing public channel', 'canary_basis': 'existing_public_archive'}
+        with patch.dict(os.environ, {'GITHUB_ACTIONS': 'true'}), patch.object(probe, '_archived_youtube_canary', return_value=existing):
+            checks = probe.probe_readers(probe.source_manifest(), collector=collector, client=client)
+        video = next(item for item in checks if item['name'] == 'youtube_interview')
+        self.assertEqual(video['status'], 'ok')
+        self.assertEqual(video['canary_basis'], 'existing_public_archive')
+        self.assertTrue(video['original_date_unchanged'])
+        self.assertEqual(next(item for item in checks if item['name'] == 'youtube_rss')['status'], 'failed')
+
     def test_only_real_core_readers_gate_success_and_advisory_is_visible(self):
         checks = [{"name": "official_web", "required": True, "status": "ok"},
                   {"name": "github_repository", "required": True, "status": "ok"},

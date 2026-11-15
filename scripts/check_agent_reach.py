@@ -193,6 +193,21 @@ def _discovery_probe(name, source, collector):
             "legacy_fallback_used": False}, entries
 
 
+def _archived_youtube_canary():
+    """Already-public URL only; no database/history mutation or fresh scraping."""
+    try:
+        corpus = json.loads((ROOT / 'web/public/data/articles.json').read_text(encoding='utf-8'))
+        for item in corpus.get('items', []):
+            url = _report_url(item.get('url'))
+            parsed = urlsplit(url or '')
+            if parsed.hostname == 'www.youtube.com' and parsed.path == '/watch' and parsed.query.startswith('v='):
+                return {'link': url, 'published_at': item.get('published_at'),
+                        'source': item.get('source'), 'canary_basis': 'existing_public_archive'}
+    except (OSError, ValueError, TypeError, AttributeError):
+        pass
+    return None
+
+
 def probe_readers(manifest, *, collector=None, client=None):
     """Explicit GHA guard also protects programmatic callers and test seams."""
     if os.environ.get("GITHUB_ACTIONS") != "true":
@@ -260,6 +275,9 @@ def probe_readers(manifest, *, collector=None, client=None):
         probes.append(youtube_discovery)
         entry = next((entry for entry in entries if (urlsplit(entry.get("link") or "").hostname or "").lower()
                       in {"youtube.com", "www.youtube.com", "m.youtube.com", "youtu.be"}), None)
+        # A broken channel feed is a separate finding, not a reason to leave the
+        # runtime action untested. Use one URL already in our public archive.
+        entry = entry or _archived_youtube_canary()
         if entry:
             original_date = entry.get("published_at")
             try:
@@ -270,7 +288,8 @@ def probe_readers(manifest, *, collector=None, client=None):
                                      expected_channel="youtube", allowed_backends={"yt-dlp"})
             youtube["original_published_at"] = _source_date(original_date)
             youtube["original_date_unchanged"] = entry.get("published_at") == original_date
-            youtube["source_channel"] = youtube_source["name"]
+            youtube["source_channel"] = entry.get('source') or youtube_source["name"]
+            youtube["canary_basis"] = entry.get('canary_basis', 'current_channel_rss')
         else:
             youtube = {"name": "youtube_interview", "status": "not_tested", "error_code": "NO_PUBLIC_VIDEO_DISCOVERED",
                        "source_channel": youtube_source["name"], "legacy_fallback_used": False}
