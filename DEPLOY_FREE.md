@@ -5,9 +5,11 @@ This setup keeps the public site static and places all credentials in GitHub Act
 ## Architecture
 
 ```text
-Public RSS + Hacker News + YouTube + GitHub Trending
+Public RSS + official HTML/JSON indexes + YouTube feeds
                    ↓
     GitHub Actions (06:00 / 18:00 UTC)
+                   ↓
+ Agent Reach public web / GitHub / YouTube readers
                    ↓
        Gemini OpenAI-compatible endpoint
                    ↓
@@ -19,6 +21,13 @@ Public RSS + Hacker News + YouTube + GitHub Trending
 ```
 
 The browser never connects to Postgres and never receives a database URL or API key. Postgres permanently retains the complete article and vector history; the Daily Brief contains only stories whose original source publication time is within the latest 48-hour reading window.
+
+The active `collector.backend` is `agent_reach`. Native RSS discovery and
+date-bound official publisher adapters are maintained by Polyemergence; they
+are not a native Agent Reach feature. Already validated first-party page text
+is reused. Article reads never silently revert to AI News Brief's browser or
+trafilatura reader. Read [COLLECTOR.md](COLLECTOR.md) for the pinned runtime,
+public-provider/privacy boundaries, cloud-only check and explicit rollback.
 
 After archive export, `export_observations.py` builds a separate 30-day,
 evidence-linked observation set from the public corpus. Field-page export then

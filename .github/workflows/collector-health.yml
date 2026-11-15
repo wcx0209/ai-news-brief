@@ -1,0 +1,44 @@
+name: Agent Reach collector verification
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      INBRIEF_CONFIG_PATH: config.free.yaml
+      # Public reads only. Never expose a user/private-repository token.
+      GITHUB_TOKEN: ""
+      GH_TOKEN: ""
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0
+        with:
+          python-version: "3.11"
+          cache: pip
+      - name: Install reviewed public-read runtime (no setup/login)
+        run: pip install -r requirements-collector.txt
+      - name: Test public-reader safety offline
+        run: |
+          python -m unittest discover -s tests -p test_agent_reach_client.py -v
+          python -m unittest discover -s tests -p test_news_collector.py -v
+          python -m unittest discover -s tests -p test_reach_probe.py -v
+      - name: Verify catalog routes and real Agent Reach reads
+        run: python scripts/check_agent_reach.py --probe --output output/agent-reach-check.json
+      - name: Verify 30 Chinese specialist sources through the new collector
+        if: always()
+        run: python scripts/check_china_sources.py --output output/china-source-health.json
+      - name: Retain migration evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: agent-reach-verification
+          path: |
+            output/agent-reach-check.json
+            output/china-source-health.json
+          retention-days: 30

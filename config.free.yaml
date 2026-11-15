@@ -1,3 +1,8 @@
+collector:
+  backend: agent_reach
+  # RSS/official-index discovery is Polyemergence-owned; public content reads
+  # use pinned Agent Reach. No automatic legacy/browser/account fallback.
+
 llm:
   base_url: "https://generativelanguage.googleapis.com/v1beta/openai/"
   api_key: ""

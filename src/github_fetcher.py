@@ -176,7 +176,7 @@ def is_github_trending_source(source):
         return False
 
 
-def fetch_github_trending(user_db, ai_engine, vector_store, fetch_stats: 'FetchStats' = None) -> int:
+def fetch_github_trending(user_db, ai_engine, vector_store, fetch_stats: 'FetchStats' = None, collector=None) -> int:
     """
     从 GitHub Trending 抓取热门开源项目，筛选 AI 相关项目，生成摘要后入库。
     每天执行一次；历史仓库永久保留，上榜刷新只改变热度与星数摘要。
@@ -228,18 +228,26 @@ def fetch_github_trending(user_db, ai_engine, vector_store, fetch_stats: 'FetchS
     trending_url = f'https://github.com/trending?since={since}'
     logging.info(f"[GitHub] Fetching trending page: {trending_url}")
     
-    try:
-        resp = requests.get(trending_url, timeout=30, headers={
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-            'Accept-Language': 'en-US,en;q=0.9',
-        })
-        resp.raise_for_status()
-    except Exception as e:
-        logging.error(f"[GitHub] Failed to fetch trending page: {e}")
-        fetch_stats.record_failure('https://github.com/trending', 'GitHub Trending', 'page_fetch_failed')
-        return 0
-    
-    repos = _parse_github_trending_page(resp.text)
+    if collector is not None:
+        from reach_github import read_trending
+        repos, read_error = read_trending(collector.client, trending_url, max_repos)
+        if read_error:
+            logging.warning('[GitHub] Agent Reach stopped: %s; no legacy fallback', read_error)
+            fetch_stats.record_failure('https://github.com/trending', 'GitHub Trending', 'reach_' + read_error.lower())
+            return 0
+    else:
+        # Explicit legacy rollback only; never reached from Agent Reach mode.
+        try:
+            resp = requests.get(trending_url, timeout=30, headers={
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+                'Accept-Language': 'en-US,en;q=0.9',
+            })
+            resp.raise_for_status()
+        except Exception as e:
+            logging.error(f"[GitHub] Failed to fetch trending page: {e}")
+            fetch_stats.record_failure('https://github.com/trending', 'GitHub Trending', 'page_fetch_failed')
+            return 0
+        repos = _parse_github_trending_page(resp.text)
     if not repos:
         logging.warning("[GitHub] No repos parsed from trending page")
         fetch_stats.record_failure('https://github.com/trending', 'GitHub Trending', 'parse_failed')
@@ -259,6 +267,7 @@ def fetch_github_trending(user_db, ai_engine, vector_store, fetch_stats: 'FetchS
     skipped_llm_failed = 0
 
     for rank, repo_info in enumerate(repos, 1):
+        rank = repo_info.get('rank', rank)
         owner = repo_info['owner']
         repo_name = repo_info['repo']
         repo_url = repo_info['url']
@@ -292,7 +301,7 @@ def fetch_github_trending(user_db, ai_engine, vector_store, fetch_stats: 'FetchS
             continue
 
         # 获取 README
-        readme_text = _fetch_github_readme(owner, repo_name)
+        readme_text = repo_info.get('readme_text', '') if collector is not None else _fetch_github_readme(owner, repo_name)
         
         if not readme_text and not description:
             logging.info(f"[GitHub] No README or description for {owner}/{repo_name}, skipping")

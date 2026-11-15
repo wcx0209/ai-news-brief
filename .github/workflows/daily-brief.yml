@@ -68,6 +68,9 @@ jobs:
 
       - name: Collect and curate
         if: ${{ !inputs.refresh_only }}
+        env:
+          GITHUB_TOKEN: ""
+          GH_TOKEN: ""
         run: python scripts/run_once.py
 
       - name: Export public feed

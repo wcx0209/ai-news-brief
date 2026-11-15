@@ -16,7 +16,8 @@ from vector_store import VectorStore
 from content_processor import ContentProcessor
 from ai_engine import AIEngine
 from fetch_stats import FetchStats
-from rss_fetcher import RSSFetcher
+from news_collector import get_news_collector
+from reach_content import publication_time, read_entry_content
 
 from browser_utils import _create_browser, _close_browser, _is_playwright_domain, _fetch_article_via_playwright, _check_logins_needed, _ensure_browser_logins, LoginRequiredError
 from reddit_fetcher import _fetch_reddit_content, _scrape_reddit_search, _scrape_reddit_subreddit_hot, _is_reddit_keyword_source, _is_reddit_subreddit_source, _extract_subreddit_name
@@ -90,7 +91,7 @@ def _process_single_entry(entry, sources, source_map, user_db, ai_engine, vector
                            is_interactive=False,
                            discussion_cutoff_date=None, discussion_update_cutoff=None,
                            discussion_too_new_cutoff=None,
-                           log_prefix: str = ''):
+                           log_prefix: str = '', collector=None):
     """
     处理单条 entry：内容抓取 → 去重 → LLM 摘要 → 入库。
     
@@ -146,13 +147,7 @@ def _process_single_entry(entry, sources, source_map, user_db, ai_engine, vector
     if published_at:
         try:
             if isinstance(published_at, str):
-                pub_date = None
-                for fmt in ['%Y-%m-%dT%H:%M:%S', '%Y-%m-%d %H:%M:%S', '%Y-%m-%d']:
-                    try:
-                        pub_date = datetime.strptime(published_at[:19], fmt).replace(tzinfo=timezone.utc)
-                        break
-                    except ValueError:
-                        continue
+                pub_date = publication_time(published_at)
             elif isinstance(published_at, datetime):
                 pub_date = published_at if published_at.tzinfo else published_at.replace(tzinfo=timezone.utc)
             else:
@@ -234,7 +229,31 @@ def _process_single_entry(entry, sources, source_map, user_db, ai_engine, vector
     youtube_delay_max = youtube_cfg.get('delay_max', 60)
     twitter_max_per_run = twitter_cfg.get('max_per_run', 50)
     
-    if entry.get('is_hackernews') and entry.get('comments_url'):
+    if getattr(collector, 'backend', None) == 'agent_reach':
+        if entry.get('is_youtube'):
+            with counter_lock:
+                if youtube_fetched_counter[0] >= youtube_max_per_run:
+                    fetch_stats.record_skip(rss_url, rss_desc, 'youtube_limit')
+                    return 0
+                delay = random.uniform(youtube_delay_min, youtube_delay_max) if youtube_fetched_counter[0] else 0
+                youtube_fetched_counter[0] += 1
+            if delay:
+                time.sleep(delay)
+        full_text, read_backend, read_error = read_entry_content(collector, entry, first_party=is_first_party)
+        if read_error:
+            fetch_stats.record_failure(rss_url, rss_desc, read_error)
+            logging.warning('%sPublic read stopped (%s); no legacy fallback', log_prefix, read_error)
+            return 0
+        publication = publication_time(entry.get('published_at'))
+        if not publication or publication > datetime.now(timezone.utc) + timedelta(minutes=5):
+            fetch_stats.record_skip(rss_url, rss_desc, 'missing_or_invalid_source_date')
+            return 0
+        if publication < cutoff_date and not entry.get('is_hf_papers'):
+            fetch_stats.record_skip(rss_url, rss_desc, 'old_article')
+            return 0
+        logging.info('%sCollector=agent_reach discovery=%s read=%s published=%s',
+                     log_prefix, entry.get('discovery_backend'), read_backend, entry['published_at'])
+    elif entry.get('is_hackernews') and entry.get('comments_url'):
         full_text, discussion_importance_score, points, hn_comments = _fetch_hackernews_content(url, entry['comments_url'], page=browser_page, log_prefix=log_prefix)
         # Switch to comments_url as canonical URL from here on
         url = entry['comments_url']
@@ -606,6 +625,10 @@ def _fetch_and_process_source(source: dict, rss_fetcher, sources, source_map,
     log_prefix = f"[desc={desc}] "
 
     # 1) 拉取该源的 entries
+    if getattr(rss_fetcher, 'backend', None) == 'agent_reach' and (
+            _is_reddit_keyword_source(source) or _is_reddit_subreddit_source(source)):
+        fetch_stats.record_skip(url, stats_desc, 'reach_social_not_configured')
+        return 0
     if _is_reddit_keyword_source(source):
         if browser_page is None:
             logging.warning(f"{log_prefix}Reddit keyword search needs browser, but none available; skipping")
@@ -653,7 +676,7 @@ def _fetch_and_process_source(source: dict, rss_fetcher, sources, source_map,
             return 0
         logging.info(f"{log_prefix}Reddit subreddit hot returned {len(entries)} qualifying posts; will fetch each post detail page sequentially")
     else:
-        feed_config = {'url': url, 'name': name, 'id': sid, 'description': desc}
+        feed_config = {**source, 'url': url, 'name': name, 'id': sid, 'description': desc}
         logging.info(f"{log_prefix}Fetching RSS list...")
         result = rss_fetcher.parse_feed(feed_config)
         if result.get('error'):
@@ -703,6 +726,7 @@ def _fetch_and_process_source(source: dict, rss_fetcher, sources, source_map,
                 discussion_update_cutoff=discussion_update_cutoff,
                 discussion_too_new_cutoff=discussion_too_new_cutoff,
                 log_prefix=log_prefix,
+                collector=rss_fetcher,
             )
         except LoginRequiredError:
             raise
@@ -850,7 +874,7 @@ def fetch_articles_for_sources(sources: list, user_db: UserDatabase, ai_engine: 
             return official_count + secondary_count
 
     feeds_config = [{'url': s['url'], 'name': s['name'], 'id': s['id'], 'description': s.get('description', s['name'])} for s in sources]
-    rss_fetcher = RSSFetcher(feeds_config)
+    rss_fetcher = get_news_collector(feeds_config)
 
     if fetch_stats is None:
         fetch_stats = FetchStats()
@@ -882,7 +906,9 @@ def fetch_articles_for_sources(sources: list, user_db: UserDatabase, ai_engine: 
     non_browser_sources = []
     for s in sources:
         url_lower = (s.get('url') or '').lower()
-        if 'reddit.com' in url_lower:
+        if getattr(rss_fetcher, 'backend', None) == 'agent_reach':
+            non_browser_sources.append(s)
+        elif 'reddit.com' in url_lower:
             reddit_sources.append(s)
         elif 'youtube.com' in url_lower or 'youtu.be' in url_lower:
             youtube_sources.append(s)
@@ -976,11 +1002,15 @@ def fetch_articles_for_sources(sources: list, user_db: UserDatabase, ai_engine: 
 
 def run_pipeline():
     """Main pipeline: fetch articles for all active RSS sources."""
-    logging.info("Starting InBrief Pipeline...")
+    logging.info("Starting Polyemergence collection pipeline...")
+    config = ConfigLoader.get_instance()
+    collector = get_news_collector([])
+    if getattr(collector, 'backend', None) == 'agent_reach' and os.environ.get('GITHUB_ACTIONS') != 'true':
+        raise RuntimeError('News collection is cloud-only; dispatch GitHub Actions instead')
+    logging.info('Collection backend: %s', getattr(collector, 'backend', 'legacy'))
     
     # 1. Init modules
     user_db = UserDatabase()
-    config = ConfigLoader.get_instance()
     llm_config = config.get('llm')
     
     ai_engine = AIEngine(llm_config)
@@ -1045,10 +1075,14 @@ def run_pipeline():
             secondary_rss, user_db, ai_engine, vector_store,
             fetch_stats=fetch_stats, _split_first_party=False)))
 
-    pipeline_jobs.append(('Twitter', lambda: fetch_twitter_posts(
-        twitter_sources, user_db, ai_engine, vector_store, fetch_stats=fetch_stats)))
+    if getattr(collector, 'backend', None) != 'agent_reach':
+        pipeline_jobs.append(('Twitter', lambda: fetch_twitter_posts(
+            twitter_sources, user_db, ai_engine, vector_store, fetch_stats=fetch_stats)))
+    elif twitter_sources:
+        logging.info('Skipping %d authenticated social sources; no account/cookie configured', len(twitter_sources))
     pipeline_jobs.append(('GitHub', lambda: fetch_github_trending(
-        user_db, ai_engine, vector_store, fetch_stats=fetch_stats)))
+        user_db, ai_engine, vector_store, fetch_stats=fetch_stats,
+        collector=collector if getattr(collector, 'backend', None) == 'agent_reach' else None)))
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=len(pipeline_jobs)) as executor:
         future_to_name = {executor.submit(job): name for name, job in pipeline_jobs}
@@ -1062,6 +1096,7 @@ def run_pipeline():
 
     # 7. 统一输出所有采集管道的统计报告
     fetch_stats.log_report()
+    collector.close()
     
     logging.info("All pipelines finished.")
 

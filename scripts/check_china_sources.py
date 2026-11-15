@@ -13,20 +13,17 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "src"))
 
-from rss_fetcher import OFFICIAL_HTML_INDEX_RULES, RSSFetcher
+from news_collector import get_news_collector
 from source_catalog import china_sources
 from relevance_filter import passes_source_ai_filter
 
 
 def check_source(source):
-    fetcher = RSSFetcher([])
+    fetcher = get_news_collector([])
     # Match the deployed collector's timeout; a stricter probe would falsely
     # reject slower institutional publishers that the real collector can read.
     try:
-        rule = OFFICIAL_HTML_INDEX_RULES.get(source["url"].rstrip("/"))
-        result = fetcher._fetch_official_html_index(source, {
-            **rule, "max_index_links": 4, "max_articles": 3,
-        }) if rule else fetcher.parse_feed(source)
+        result = fetcher.parse_feed(source)
         entries = result.get("entries", [])
         dated = [entry for entry in entries if entry.get("title") and entry.get("published_at")]
         readable = [entry for entry in dated if not source.get("html") or len(entry.get("official_content", "")) >= 120]
@@ -34,6 +31,8 @@ def check_source(source):
             "name": source["name"], "url": source["url"],
             "domain": source["category"], "kind": source["kind"], "region": source["region"],
             "status": "ok" if readable and not result.get("error") else "failed",
+            "collector_backend": getattr(fetcher, 'backend', 'legacy'),
+            "discovery_backends": sorted(set(entry.get('discovery_backend', 'legacy') for entry in entries)),
             "dated_entries": len(dated), "readable_entries": len(readable),
             "relevance_passed_entries": sum(passes_source_ai_filter(source["name"], entry["title"]) for entry in readable),
             "error": result.get("error") or ("No readable article body" if dated and not readable else None),

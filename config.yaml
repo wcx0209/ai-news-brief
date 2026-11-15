@@ -1,3 +1,6 @@
+collector:
+  backend: agent_reach # Cloud-only. "legacy" is an explicit operator rollback.
+
 llm:
   base_url: "https://api.deepseek.com/v1" # Any OpenAI-compatible endpoint. Override via INBRIEF_LLM_BASE_URL
   api_key: ""  # Set via DEEPSEEK_API_KEY / INBRIEF_LLM_API_KEY

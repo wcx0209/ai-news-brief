@@ -1,4 +1,4 @@
-# PolyEmergence · AI News Brief engine
+# PolyEmergence · Agent Reach collection
 
 This fork powers [PolyEmergence](https://polyemergence.com/), a bilingual
 emerging-technology publication covering 11 fields. Its free cloud profile
@@ -7,6 +7,13 @@ for all ten non-AI fields. Readers choose a field before seeing its latest 48-ho
 field has a dedicated English and Chinese landing page for readers and search
 engines. Collection and publication run in GitHub Actions, with permanent
 PostgreSQL storage and a Cloudflare Pages frontend.
+
+Public article, GitHub and YouTube reads use a reviewed, commit-pinned
+[Agent Reach](https://github.com/Panniantong/Agent-Reach) runtime. RSS and
+publisher-specific discovery remain PolyEmergence adapters, since Agent Reach
+does not provide a news-feed scheduler. The AI News Brief-derived editing,
+deduplication and persistence code remains; this is a collector migration, not a
+rename of the whole engine. See [collector operations](COLLECTOR.md).
 
 See [deployment](DEPLOY_FREE.md), [source coverage](SOURCE_COVERAGE.md) and
 [frontend conventions](POLYEMERGENCE.md) for this fork. The upstream engine

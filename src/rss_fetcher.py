@@ -74,7 +74,12 @@ OFFICIAL_HTML_INDEX_RULES = {
 OFFICIAL_HTML_INDEX_RULES.update(china_html_rules())
 
 
-class RSSFetcher:
+class PublisherSourceAdapters:
+    """Polyemergence's date-preserving official HTML and structured indexes.
+
+    These publisher-specific adapters are shared with the Agent Reach collector;
+    they are not the legacy generic RSS/browser collection engine below.
+    """
     def __init__(self, feeds_config):
         self.feeds = feeds_config
         # Load timeout from config
@@ -172,9 +177,9 @@ class RSSFetcher:
                         dt = datetime.fromisoformat(published_at_str.replace('Z', '+00:00'))
                         published_at = dt.isoformat()
                     except:
-                        published_at = datetime.now(timezone.utc).isoformat()
+                        published_at = None
                 else:
-                    published_at = datetime.now(timezone.utc).isoformat()
+                    published_at = None
                 
                 entry_data = {
                     'title': snippet.get('title', ''),
@@ -266,7 +271,7 @@ class RSSFetcher:
                 dt = datetime.fromisoformat(published_at_str.replace('Z', '+00:00'))
                 published_at = dt.isoformat()
             except Exception:
-                published_at = datetime.now(timezone.utc).isoformat()
+                published_at = None
 
             entries.append({
                 'title': paper.get('title') or item.get('title') or '',
@@ -307,13 +312,13 @@ class RSSFetcher:
                     if not title_key or not title:
                         continue
                     link = f"https://seed.bytedance.com/en/blog/{title_key}"
-                    published_ms = meta.get('PublishDate') or meta.get('UpdateTime')
+                    published_ms = meta.get('PublishDate')
                     try:
                         published_at = datetime.fromtimestamp(
                             float(published_ms) / 1000, tz=timezone.utc
                         ).isoformat()
                     except (TypeError, ValueError, OSError):
-                        published_at = datetime.now(timezone.utc).isoformat()
+                        published_at = None
                     articles[link] = {
                         'title': title,
                         'link': link,
@@ -327,7 +332,7 @@ class RSSFetcher:
             logging.warning(f"ByteDance Seed fetch failed: {exc}")
             return {'entries': [], 'error': str(exc), 'feed_config': feed_config}
 
-        entries = sorted(articles.values(), key=lambda entry: entry['published_at'], reverse=True)
+        entries = sorted(articles.values(), key=lambda entry: entry.get('published_at') or '', reverse=True)
         logging.info(f"Fetched {len(entries)} entries from {feed_config['name']}")
         return {'entries': entries, 'error': None, 'feed_config': feed_config}
 
@@ -361,14 +366,14 @@ class RSSFetcher:
                     continue
                 seen.add(link)
 
-                published_at = datetime.now(timezone.utc).isoformat()
+                published_at = None
                 date_node = article.select_one('.tc-blogpost-date')
                 if date_node:
                     raw_date = date_node.get_text(' ', strip=True)
                     try:
                         published_at = datetime.strptime(
                             raw_date, '%Y年%m月%d日'
-                        ).replace(tzinfo=timezone.utc).isoformat()
+                        ).replace(tzinfo=ZoneInfo('Asia/Shanghai')).astimezone(timezone.utc).isoformat()
                     except ValueError:
                         logging.debug(
                             "Tencent Newsroom date could not be parsed: %s", raw_date
@@ -384,7 +389,7 @@ class RSSFetcher:
                     'orig_entry': {'title': title, 'link': link},
                 })
 
-            entries.sort(key=lambda entry: entry['published_at'], reverse=True)
+            entries.sort(key=lambda entry: entry.get('published_at') or '', reverse=True)
             logging.info(
                 "Fetched %d entries from %s official newsroom",
                 len(entries), feed_config['name']
@@ -693,6 +698,9 @@ class RSSFetcher:
             logging.warning('Official HTML index failed for %s: %s', feed_config['name'], exc)
             return {'entries': [], 'error': str(exc), 'feed_config': feed_config}
 
+class RSSFetcher(PublisherSourceAdapters):
+    """Legacy collection backend, retained only for explicit operator rollback."""
+
     # Domains that require TLS fingerprint impersonation to bypass WAF
     DIFFICULT_RSS_DOMAINS = [
         'marktechpost.com',
@@ -829,12 +837,12 @@ class RSSFetcher:
                     if not has_ai:
                         continue
                 # Harmonize date
-                published_parsed = entry.get('published_parsed') or entry.get('updated_parsed')
+                published_parsed = entry.get('published_parsed')
                 if published_parsed:
                     dt = datetime.fromtimestamp(timegm(published_parsed), tz=timezone.utc)
                     published_at = dt.isoformat()
                 else:
-                    published_at = datetime.now(timezone.utc).isoformat()
+                    published_at = None
 
                 # Try to get the most detailed content from RSS
                 content_val = ''
