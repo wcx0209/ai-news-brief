@@ -67,6 +67,24 @@ Reports are retained as the `agent-reach-verification` Actions artifact.
 `refresh_only=true` on the daily workflow still only re-exports existing data.
 The health check does not consume Gemini tokens or change articles/source rows.
 
+### Verified 2026-11-15
+
+[Cloud canary 43668950017](https://github.com/wcx0209/ai-news-brief/actions/runs/43668950017)
+verified the pinned archive, actual Jina web read, GitHub API repository read,
+OpenAI RSS and official release publication dates. All **30/30 Chinese
+specialist sources** also returned dated, readable entries through the new
+collector. The catalog route audit is **123 RSS + 82 publisher adapters**
+(55 HTML indexes, 24 release JSON endpoints, HF, ByteDance and Tencent).
+This does not claim every one of the 205 sources was live-tested or published
+a fresh story; freshness and editorial relevance are separately enforced.
+
+Known live limitations: GitHub Trending returned `PLATFORM_BLOCKED`; the
+Dwarkesh channel RSS returned HTTP 404. A separate test of an already-public
+Silicon Valley 101 video also returned `PLATFORM_BLOCKED` from the YouTube
+reader. These results are explicit advisories, not successful reads. No cookie,
+browser, paid service or legacy fallback was used. Existing archive records
+remain accessible; new interviews from blocked reads are skipped.
+
 ## Explicit rollback
 
 An operator may change `collector.backend` to `legacy` and publish that config.
