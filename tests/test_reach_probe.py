@@ -159,6 +159,16 @@ class ReachProbeTests(unittest.TestCase):
         self.assertEqual(release["status"], "failed")
         self.assertEqual(release["published_release_entries"], 0)
 
+    def test_release_discovery_failure_keeps_the_actual_reason(self):
+        client, collector = MagicMock(), MagicMock()
+        client.read_web.side_effect = lambda url: envelope('web', 'jina', url)
+        client.read_github.side_effect = lambda url: envelope('github', 'github-api', url)
+        collector.parse_feed.return_value = {'entries': [], 'error': 'rss_rate_limited'}
+        with patch.dict(os.environ, {'GITHUB_ACTIONS': 'true'}), patch.object(probe, '_archived_youtube_canary', return_value=None):
+            checks = probe.probe_readers(probe.source_manifest(), collector=collector, client=client)
+        release = next(item for item in checks if item['name'] == 'official_github_release')
+        self.assertEqual(release['error_code'], 'rss_rate_limited')
+
     def test_cli_manifest_output_is_not_live_verification(self):
         with tempfile.TemporaryDirectory() as tmp, patch("socket.getaddrinfo", side_effect=AssertionError("network")):
             output = Path(tmp) / "manifest.json"

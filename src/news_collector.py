@@ -153,6 +153,9 @@ class AgentReachCollector:
                             raise ValueError("rss_invalid_redirect")
                         target = urljoin(target, location)
                         continue
+                    if response.status_code == 429 or (response.status_code == 403
+                            and response.headers.get('X-RateLimit-Remaining') == '0'):
+                        raise ValueError('rss_rate_limited')
                     response.raise_for_status()
                     content_type = response.headers.get("Content-Type", "").split(";", 1)[0].strip().lower()
                     allowed_types = ("application/json", "application/vnd.github+json") if json_endpoint else (
@@ -297,7 +300,7 @@ class AgentReachCollector:
                                               for entry in result.get("entries", [])], "feed_config": source}
             return self.parse_rss(source, self._fetch_rss(url))
         except Exception as exc:
-            code = str(exc) if str(exc) in ("collector_cloud_only", "rss_too_large", "rss_invalid_redirect", "rss_redirect_limit", "rss_timeout", "rss_response_not_xml", "github_releases_invalid_endpoint", "github_releases_invalid_redirect", "github_releases_invalid_response") else "source_discovery_failed"
+            code = str(exc) if str(exc) in ("collector_cloud_only", "rss_too_large", "rss_invalid_redirect", "rss_redirect_limit", "rss_timeout", "rss_response_not_xml", "rss_rate_limited", "github_releases_invalid_endpoint", "github_releases_invalid_redirect", "github_releases_invalid_response") else "source_discovery_failed"
             status = getattr(getattr(exc, "response", None), "status_code", None)
             if isinstance(status, int):
                 code = {401: "rss_unauthorized", 403: "rss_forbidden", 429: "rss_rate_limited"}.get(status, f"rss_http_{status}")

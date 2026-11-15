@@ -236,7 +236,7 @@ def probe_readers(manifest, *, collector=None, client=None):
             for entry in release_entries
         )
         if not release_probe["published_release_entries"]:
-            release_probe.update(status="failed", error_code="NO_DATED_OFFICIAL_RELEASE")
+            release_probe.update(status="failed", error_code=release_probe.get('error_code') or "NO_DATED_OFFICIAL_RELEASE")
         probes.append(release_probe)
         for name, url, channel, backends, method in (
             ("official_web", "https://www.anthropic.com/news", "web", {"jina", "exa"}, client.read_web),

@@ -101,6 +101,14 @@ It changes no article, source ID, publication date, or history and makes no LLM
 calls. The next regular cycle applies the usual date, relevance and Method
 gates; being retryable is not a promise of publication.
 
+The follow-up [check 43670285248](https://github.com/wcx0209/ai-news-brief/actions/runs/43670285248)
+passed the cloud offline compatibility tests and again read all 30 Chinese
+sources, but its overall online gate failed: the anonymous GitHub repository
+reader returned `RATE_LIMITED` and release discovery failed. Jina web reading
+still succeeded. No account/token or extra runner was used to evade the limit;
+the scheduled cycle remains in place. Earlier successful reads and the
+production result above do not imply continuous free-provider availability.
+
 ## Explicit rollback
 
 An operator may change `collector.backend` to `legacy` and publish that config.

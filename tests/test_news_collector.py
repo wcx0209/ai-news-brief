@@ -343,6 +343,11 @@ class PinnedTransportTests(unittest.TestCase):
             self.assertEqual(result["error"], expected)
             self.assertEqual(session.get.call_count, 1)
 
+    def test_github_style_403_with_zero_remaining_is_a_rate_limit_not_a_parse_error(self):
+        result, session, _, _ = self.run_transport([self.response(403, {'X-RateLimit-Remaining': '0'})])
+        self.assertEqual(result['error'], 'rss_rate_limited')
+        self.assertEqual(session.get.call_count, 1)
+
     def test_mixed_public_and_private_ipv6_dns_fails_before_any_connection(self):
         import source_images
         import socket
