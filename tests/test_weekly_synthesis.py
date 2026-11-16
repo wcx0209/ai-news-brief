@@ -97,6 +97,7 @@ class WeeklySynthesisTests(unittest.TestCase):
         call = MagicMock(return_value=self.result)
         report, result = generate_synthesis(self.previous, self.packet, self.catalog, call)
         self.assertEqual(call.call_count, 1)
+        self.assertEqual(call.call_args.args[1]['allowed_evidence_ids'], ['media-a', 'official-a', 'official-b'])
         self.assertEqual(result, self.result)
         self.assertIn('synthesis', report['zh'])
 

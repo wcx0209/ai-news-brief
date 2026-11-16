@@ -81,6 +81,8 @@ def build_packet(plan, issue):
               'coverage_note': 'Unselected fields are collection/selection gaps, not proof of no industry activity.',
               'main_events': [event_packet(event) for event in shortlist['main']],
               'early_signals': [event_packet(event) for event in shortlist['signals']]}
+    packet['allowed_evidence_ids'] = sorted({source_id for section in ('main_events', 'early_signals')
+                                           for event in packet[section] for source_id in event['evidence_ids']})
     if len(json.dumps(packet, ensure_ascii=False)) > 100000:
         raise ValueError('weekly_packet_exceeds_bounded_input')
     return packet

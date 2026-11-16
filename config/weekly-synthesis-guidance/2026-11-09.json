@@ -5,8 +5,8 @@
     "possible_evidence_ids": ["53150ae6-1fa2-418b-ae1b-37f3f8c286ec", "6607c23f-7de1-40d4-bc0e-1d7ee82ec973"]
   },
   "structure": {
-    "angle": "Explain the division of work among humans who define a goal/acceptance test, models that propose work, and tools that check a result. Antigravity and AlphaProof Code illustrate different checking mechanisms; the BCI study illustrates why real-world testing has different limits. Do not call different checking methods equivalent or say human work has been eliminated.",
-    "possible_evidence_ids": ["53150ae6-1fa2-418b-ae1b-37f3f8c286ec", "baea2f65-0e21-4eab-8945-94c1793ff52a", "02a763f3-f6e5-4eba-bac3-ebf0c08c79f3"]
+    "angle": "Explain the division of work among humans who define a goal/acceptance test, models that propose work, and tools that check a result. Antigravity and AlphaProof Code illustrate different checking mechanisms. Do not treat a BCI decoder as a verification tool, call different checking methods equivalent, or say human work has been eliminated.",
+    "possible_evidence_ids": ["53150ae6-1fa2-418b-ae1b-37f3f8c286ec", "baea2f65-0e21-4eab-8945-94c1793ff52a"]
   },
   "consequence": {
     "angle": "A useful cross-field question is how researchers choose what to try next before expensive experiments or simulations. AlphaGenome, the sodium-ion design rule, and climate-emulator training are different technologies, not all AI applications. Describe possible changes to screening/experiment choice/model-building, not proven medical benefit, cheaper commercial batteries, quantified cost savings or better global forecasts.",

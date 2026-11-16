@@ -43,6 +43,10 @@ If there is insufficient evidence for a connection, set support='insufficient', 
 Otherwise set support='selection_based'; this means an editorial reading of this selection, NOT established fact.
 intro/limits use the top-level evidence_ids; cite every event mentioned. All IDs must come from the supplied packet.
 Use source evidence IDs only, never event_id values or their hash suffixes.
+Only strings in allowed_evidence_ids may appear in a citation array.
+Prefer everyday titles, not phrases like 任务导向的多步复杂工作流 or 实验前筛选与候选排序策略.
+Describe the shared emphasis of announcements, not proven improvements in real-world automation.
+Do not confuse a BCI decoding algorithm with a formal proof checker or an independent validation process.
 The exact sets of citations and support status must match in Chinese and English, including top-level evidence_ids.
 Return ONLY JSON, with no other keys:
 {"zh":{"synthesis":{"intro":"...","signal":{"title":"...","text":"...","support":"selection_based|insufficient","evidence_ids":["..."]},
@@ -145,8 +149,9 @@ def attach_synthesis(previous, result, packet, catalog):
 
 
 def generate_synthesis(previous, packet, catalog, call, guidance=None):
-    evidence_components(packet, catalog) # Fail before spending a request on malformed inputs.
+    components = evidence_components(packet, catalog) # Fail before spending a request on malformed inputs.
     result = call(SYNTHESIS_PROMPT, {'evidence_packet': packet,
+                                   'allowed_evidence_ids': sorted(components),
                                    'editorial_guidance': guidance or {},
                                    'scope': 'Add only the new opening; the existing report is frozen.'},
                   'plain_language_signal_structure_consequence')
