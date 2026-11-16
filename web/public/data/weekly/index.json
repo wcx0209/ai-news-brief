@@ -1,0 +1,27 @@
+{
+  "editions": [
+    {
+      "canonical_urls": {
+        "en": "https://polyemergence.com/en/weekly/2026-11-09/",
+        "zh": "https://polyemergence.com/zh/weekly/2026-11-09/"
+      },
+      "en": {
+        "dek": "This issue covers multiagent systems in science and engineering, IBM's quantum advantage progress reports, DeepMind's cellular genetics predictions, and formal code verification tools.",
+        "title": "Polyemergence Industry Review: Multiagent Systems, IBM Quantum Reports & AI Security/Genetics Tools"
+      },
+      "id": "2026-11-09",
+      "json_url": "https://polyemergence.com/data/weekly/2026-11-09.json",
+      "modified_at": "2026-11-16T03:24:34.404003Z",
+      "published_at": "2026-11-16T03:24:34.404003Z",
+      "week_end": "2026-11-15",
+      "week_start": "2026-11-09",
+      "zh": {
+        "dek": "本期精选内容涵盖多智能体系统在科研与工程中的应用、IBM关于量子优势的进展报告、谷歌DeepMind的细胞级基因预测以及代码形式化验证工具。",
+        "title": "Polyemergence 行业观察：多智能体协作、IBM报告量子优势进展及AI安全与基因工具升级"
+      }
+    }
+  ],
+  "latest": "2026-11-09",
+  "modified_at": "2026-11-16T03:24:34.404003Z",
+  "schema_version": 1
+}

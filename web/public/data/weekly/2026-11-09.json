@@ -1,0 +1,703 @@
+{
+  "coverage": {
+    "fields": [
+      {
+        "domain": "ai",
+        "domain_labels": {
+          "en": "Artificial Intelligence",
+          "zh": "人工智能"
+        },
+        "qualified_count": 108,
+        "selected_count": 4
+      },
+      {
+        "domain": "programmable_life",
+        "domain_labels": {
+          "en": "Biotech & Programmable Life",
+          "zh": "生物技术与可编程生命"
+        },
+        "qualified_count": 27,
+        "selected_count": 1
+      },
+      {
+        "domain": "energy_storage",
+        "domain_labels": {
+          "en": "Energy & Storage",
+          "zh": "新能源与能源储存"
+        },
+        "qualified_count": 3,
+        "selected_count": 0
+      },
+      {
+        "domain": "robotics_autonomy",
+        "domain_labels": {
+          "en": "Robotics & Autonomous Systems",
+          "zh": "机器人与自主系统"
+        },
+        "qualified_count": 8,
+        "selected_count": 1
+      },
+      {
+        "domain": "quantum_technology",
+        "domain_labels": {
+          "en": "Quantum Technology",
+          "zh": "量子技术"
+        },
+        "qualified_count": 4,
+        "selected_count": 1
+      },
+      {
+        "domain": "space_economy",
+        "domain_labels": {
+          "en": "Space Economy",
+          "zh": "太空经济"
+        },
+        "qualified_count": 0,
+        "selected_count": 0
+      },
+      {
+        "domain": "advanced_materials",
+        "domain_labels": {
+          "en": "Advanced Materials & Nanotechnology",
+          "zh": "新材料与纳米技术"
+        },
+        "qualified_count": 2,
+        "selected_count": 1
+      },
+      {
+        "domain": "neurotechnology",
+        "domain_labels": {
+          "en": "Neurotechnology & Human Interfaces",
+          "zh": "神经科技与人机接口"
+        },
+        "qualified_count": 3,
+        "selected_count": 1
+      },
+      {
+        "domain": "climate_water_environment",
+        "domain_labels": {
+          "en": "Climate, Water & Environmental Engineering",
+          "zh": "气候、水与环境工程"
+        },
+        "qualified_count": 3,
+        "selected_count": 1
+      },
+      {
+        "domain": "agrifood_technology",
+        "domain_labels": {
+          "en": "Agriculture & Food Technology",
+          "zh": "农业与食品科技"
+        },
+        "qualified_count": 2,
+        "selected_count": 0
+      },
+      {
+        "domain": "advanced_manufacturing",
+        "domain_labels": {
+          "en": "Advanced Manufacturing & Industrial Infrastructure",
+          "zh": "新制造与产业基础设施"
+        },
+        "qualified_count": 4,
+        "selected_count": 0
+      }
+    ],
+    "scope": "loaded_archive_only"
+  },
+  "en": {
+    "dek": "This issue covers multiagent systems in science and engineering, IBM's quantum advantage progress reports, DeepMind's cellular genetics predictions, and formal code verification tools.",
+    "early_signals": [
+      {
+        "event_id": "weekly-4bb6fae775d86206",
+        "evidence_ids": [
+          "23a1cdb9-f44d-4841-a368-274b49cc290f",
+          "review-nvidia-official-20261112"
+        ],
+        "title": "Jensen Huang steps down as NVIDIA CEO",
+        "uncertainty": "The identity of the permanent successor and potential strategic adjustments under new leadership were unannounced in official filings.",
+        "what_changed": "According to official NVIDIA announcements and media reports, Jensen Huang has stepped down as president, CEO, and board director with immediate effect. CFO Colette Kress was appointed interim CEO, and Harvey C. Jones became board chairman while a permanent CEO search was initiated.",
+        "why_it_matters": "The departure of NVIDIA's long-standing co-founder drew close attention to the leadership transition and executive search."
+      },
+      {
+        "event_id": "weekly-db0f31b05f8c8457",
+        "evidence_ids": [
+          "86847d81-1d66-4b89-b265-6f494fa75427"
+        ],
+        "title": "MIT researchers develop synthetic data method for climate AI models",
+        "uncertainty": "The predictive boundaries of models trained this way when handling complex global climate feedback loops are not yet established.",
+        "what_changed": "MIT researchers developed a training technique utilizing optimized synthetic climate scenarios with high-frequency oscillations to train climate emulators while reducing full-scale model run requirements.",
+        "why_it_matters": "The method aims to accelerate climate emulator production and help AI adapt to unfamiliar scenarios, such as novel local pollutant control policies."
+      }
+    ],
+    "follow_up": {
+      "available": false,
+      "items": [],
+      "note": "This is the first published weekly edition; no earlier issue is available for comparison."
+    },
+    "lead": {
+      "evidence_ids": [
+        "53150ae6-1fa2-418b-ae1b-37f3f8c286ec",
+        "abc308bd-0594-49f6-a23f-a029b07bcf38",
+        "90188d30-4621-44aa-ba30-72ce8de29409",
+        "baea2f65-0e21-4eab-8945-94c1793ff52a",
+        "6607c23f-7de1-40d4-bc0e-1d7ee82ec973"
+      ],
+      "text": "This selection features frontier research and system updates, led by Google and Anthropic releasing Antigravity teamwork, Gemini 4, and Claude 5.2 with parallel generation and verification to maintain complex task accuracy. In hardware and biological computation, IBM reported quantum-advantage progress and separately introduced the Nighthawk r2 processor, while Google DeepMind announced AlphaGenome 2 for single-cell genetic predictions and AI-assisted formal verification of Signal-related code. This selection is not an independently verified industry verdict."
+    },
+    "main_events": [
+      {
+        "event_id": "weekly-11caa4234e632e78",
+        "evidence_ids": [
+          "53150ae6-1fa2-418b-ae1b-37f3f8c286ec"
+        ],
+        "title": "Google Research releases Antigravity teamwork and Gemini 4",
+        "uncertainty": "The supplied material does not establish long-term operational stability or practical compute overhead for external developers.",
+        "what_changed": "Google Research reported results from Antigravity's teamwork multiagent systems combined with Gemini 4 models, utilizing parallel generation and dedicated verifiers like Lean 4 to maintain multi-day task accuracy, and opened external access for researchers and developers.",
+        "why_it_matters": "By pairing parallel exploration with falsifier verifiers, the system addresses context loss and uncertainty in long tasks, achieving results in mathematical conjecture proofs and software rewrites."
+      },
+      {
+        "event_id": "weekly-31beed007b6e4720",
+        "evidence_ids": [
+          "abc308bd-0594-49f6-a23f-a029b07bcf38"
+        ],
+        "title": "IBM reports reaching quantum advantage in 2026 and introduces Nighthawk r2",
+        "uncertainty": "The evidence packet does not establish task definitions, strongest classical baselines, total resource accounting, or independent external reproduction details.",
+        "what_changed": "IBM announced that the research community has reached quantum advantage in 2026, introducing the Nighthawk r2 processor with 120 programmable qubits, delivering a 25x throughput gain and supporting over 7,500 quantum operations.",
+        "why_it_matters": "The report aims to showcase verifiable computations exceeding classical methods, providing expanded throughput for practical chemistry, materials, and energy grid optimizations."
+      },
+      {
+        "event_id": "weekly-dd73ccadcf289c43",
+        "evidence_ids": [
+          "90188d30-4621-44aa-ba30-72ce8de29409"
+        ],
+        "title": "Google DeepMind announces AlphaGenome 2 for cell-specific DNA prediction",
+        "uncertainty": "Commercial access is currently restricted to private preview, and clinical diagnostic performance is not established by this packet.",
+        "what_changed": "Google announced AlphaGenome 2, trained on over 107 million single-cell profiles to predict how million-letter DNA sequences behave across specific human cell types and disease states.",
+        "why_it_matters": "According to DeepMind's benchmarks, the conditional architecture identified nearly twice as many causal variants as its predecessor, helping pinpoint the cellular roots of complex diseases."
+      },
+      {
+        "event_id": "weekly-7125eead5d976f42",
+        "evidence_ids": [
+          "6607c23f-7de1-40d4-bc0e-1d7ee82ec973"
+        ],
+        "title": "Anthropic launches Claude 5.2 Fable and Mythos models",
+        "uncertainty": "Real-world exploitation risks and operational cost at scale in diverse enterprise environments require ongoing observation.",
+        "what_changed": "Anthropic released Claude Fable 5.2 and Mythos 5.2, bringing major improvements in coding, reasoning, and science. Fable 5.2 is broadly available, while Mythos 5.2 requires verification programs.",
+        "why_it_matters": "The models excel at agentic coding and formal mathematical proof generation, assisting engineers in building operating system prototypes and resolving black hole physics problems."
+      },
+      {
+        "event_id": "weekly-0b1ecfbfdf707b37",
+        "evidence_ids": [
+          "baea2f65-0e21-4eab-8945-94c1793ff52a"
+        ],
+        "title": "Google DeepMind uses AI to assist formal verification of Signal-related code",
+        "uncertainty": "The exact verified properties, underlying components, and assumption boundaries are not specified in the supplied summary.",
+        "what_changed": "Google DeepMind introduced AlphaProof Code, a multi-LLM framework that used human expertise and Gemini Carbon-powered agents to generate over six million lines of Lean code, verifying the actual code behind the Signal protocol.",
+        "why_it_matters": "This demonstrates the potential to advance safety verification from design-level specifications to compiled device code, with DeepMind reporting a shorter verification process."
+      },
+      {
+        "event_id": "weekly-5d8ca9d00f0f44dd",
+        "evidence_ids": [
+          "02a763f3-f6e5-4eba-bac3-ebf0c08c79f3"
+        ],
+        "title": "Brain-computer interface enables silent speech smart home control in clinical trial",
+        "uncertainty": "Long-term signal stability across a larger clinical patient group is not fully established by this material.",
+        "what_changed": "A study hosted on Nature's website reported that an ALS participant used an implanted ECoG BCI to control smart home devices via silently mimed speech with a 97.1% median decoding accuracy across 18 sessions.",
+        "why_it_matters": "Decoding internal speech without external visual or auditory cues demonstrates feasibility for private, autonomous device control in that specific trial setting."
+      },
+      {
+        "event_id": "weekly-4468f95c1f0c1902",
+        "evidence_ids": [
+          "0bb66fc7-bb77-459d-ba7d-8ff40c357fef"
+        ],
+        "title": "AI100 2026 report highlights embodied intelligence as grand challenge",
+        "uncertainty": "Specific timelines for commercial scale deployment across varied industrial settings are not specified.",
+        "what_changed": "The AI100 2026 report identified physical AI as a major hurdle for robotics despite generative AI growth, noting that China leads in industrial and humanoid robot production.",
+        "why_it_matters": "The report highlights the deployment gap between laboratory demos and real-world environments, underscoring the need to solve complex physical world manipulation."
+      },
+      {
+        "event_id": "weekly-5b19634a8fba1ef4",
+        "evidence_ids": [
+          "9a033e48-1add-48d7-aab8-7f689a377497"
+        ],
+        "title": "Researchers propose ionic field strength descriptor for sodium battery cathodes",
+        "uncertainty": "Validation across broader compositions and practical full-cell conditions prior to commercial deployment remains pending.",
+        "what_changed": "Researchers from Nankai University and collaborators published a study in JACS proposing an ionic field strength descriptor to quantify local disparities and design more stable O3-type sodium battery cathodes.",
+        "why_it_matters": "This shifts dopant selection from empirical trial-and-error to a quantitative design task, suppressing local coordination disorder and strain accumulation at high voltages."
+      }
+    ],
+    "next_watch": [
+      {
+        "evidence_ids": [
+          "53150ae6-1fa2-418b-ae1b-37f3f8c286ec",
+          "6607c23f-7de1-40d4-bc0e-1d7ee82ec973"
+        ],
+        "text": "Whether Antigravity teamwork and Claude 5.2 can sustain multi-day task accuracy in external research and complex engineering deployments."
+      },
+      {
+        "evidence_ids": [
+          "abc308bd-0594-49f6-a23f-a029b07bcf38"
+        ],
+        "text": "How IBM's Nighthawk r2 roadmap components demonstrate resource accounting and reproducible performance in practical operation."
+      }
+    ],
+    "synthesis": {
+      "consequence": {
+        "evidence_ids": [
+          "90188d30-4621-44aa-ba30-72ce8de29409",
+          "9a033e48-1add-48d7-aab8-7f689a377497",
+          "86847d81-1d66-4b89-b265-6f494fa75427"
+        ],
+        "support": "selection_based",
+        "text": "The reported gene-prediction, sodium-ion material-design and climate-modelling methods address different problems. They nevertheless seek to narrow what to try next or reduce repeated computation during model-building. If the methods hold up under their respective conditions, research teams could have better grounds for choosing which experiments or candidates to test first. The useful question is which step of research changes—not whether a report already delivers a mature diagnostic tool, a mass-produced battery or more accurate global climate forecasts.",
+        "title": "What may change first is what researchers try next"
+      },
+      "evidence_ids": [
+        "53150ae6-1fa2-418b-ae1b-37f3f8c286ec",
+        "6607c23f-7de1-40d4-bc0e-1d7ee82ec973",
+        "baea2f65-0e21-4eab-8945-94c1793ff52a",
+        "90188d30-4621-44aa-ba30-72ce8de29409",
+        "9a033e48-1add-48d7-aab8-7f689a377497",
+        "86847d81-1d66-4b89-b265-6f494fa75427",
+        "02a763f3-f6e5-4eba-bac3-ebf0c08c79f3"
+      ],
+      "intro": "Read together, several research and tool updates in this selection raise a shared question: beyond showing what a technology can do, how does it finish a task, how is its output checked, and which part of real work might it change?",
+      "limits": "This is an editorial reading of part of the selection, not an industry-wide measurement. Multiple company releases are not independent validation, and a benchmark or single-participant experiment does not establish general usability. Coverage this week of older research should not be presented as a breakthrough invented this week.",
+      "signal": {
+        "evidence_ids": [
+          "53150ae6-1fa2-418b-ae1b-37f3f8c286ec",
+          "6607c23f-7de1-40d4-bc0e-1d7ee82ec973"
+        ],
+        "support": "selection_based",
+        "text": "Google and Anthropic both chose to demonstrate more than answers to isolated questions. Their releases describe AI working through extended tasks such as mathematical proofs and software development. The signal worth noticing is this shared emphasis on how a task gets finished. That is an observation about these announcements and demonstrations, not evidence that companies have widely adopted the systems or that they will be equally reliable in everyday work.",
+        "title": "Not just a good answer, but a task carried through"
+      },
+      "structure": {
+        "evidence_ids": [
+          "53150ae6-1fa2-418b-ae1b-37f3f8c286ec",
+          "baea2f65-0e21-4eab-8945-94c1793ff52a"
+        ],
+        "support": "selection_based",
+        "text": "Finishing a task also involves deciding who defines the goal, who produces an output, and who checks it. Google's multiagent example splits work into separate explorations and uses dedicated checking tools. In the Signal-related code example, human experts first define what must be proved, then AI assists with formal proofs. One possible reading is that deployment may depend not only on model capability, but also on how the workflow is connected and how results are accepted.",
+        "title": "A usable system needs more than a stronger model"
+      }
+    },
+    "title": "Polyemergence Industry Review: Multiagent Systems, IBM Quantum Reports & AI Security/Genetics Tools"
+  },
+  "generated_at": "2026-11-16T01:35:51.380300Z",
+  "id": "2026-11-09",
+  "modified_at": "2026-11-16T03:24:34.404003Z",
+  "period_end": "2026-11-15T16:00:00Z",
+  "period_start": "2026-11-08T16:00:00Z",
+  "process": {
+    "ai_assisted": true,
+    "human_reviewed": false,
+    "independently_verified": false
+  },
+  "published_at": "2026-11-16T03:24:34.404003Z",
+  "schema_version": 1,
+  "sources": [
+    {
+      "archive_url_en": "https://polyemergence.com/en/archive/2026/11/11/02a763f3-f6e5-4eba-bac3-ebf0c08c79f3/",
+      "archive_url_zh": "https://polyemergence.com/zh/archive/2026/11/11/02a763f3-f6e5-4eba-bac3-ebf0c08c79f3/",
+      "date_precision": "timestamp",
+      "domain": "neurotechnology",
+      "domain_labels": {
+        "en": "Neurotechnology & Human Interfaces",
+        "zh": "神经科技与人机接口"
+      },
+      "en": {
+        "title": "Brain-computer interface lets paralyzed patients control smart home devices using silent speech"
+      },
+      "id": "02a763f3-f6e5-4eba-bac3-ebf0c08c79f3",
+      "published_at": "2026-11-11T00:00:00Z",
+      "source": "Nature Brain-Machine Interfaces",
+      "url": "https://www.nature.com/articles/s42003-026-10477-5",
+      "zh": {
+        "title": "脑机接口实现瘫痪患者用“默念”控制智能家居"
+      }
+    },
+    {
+      "archive_url_en": "https://polyemergence.com/en/archive/2026/11/11/0bb66fc7-bb77-459d-ba7d-8ff40c357fef/",
+      "archive_url_zh": "https://polyemergence.com/zh/archive/2026/11/11/0bb66fc7-bb77-459d-ba7d-8ff40c357fef/",
+      "date_precision": "timestamp",
+      "domain": "robotics_autonomy",
+      "domain_labels": {
+        "en": "Robotics & Autonomous Systems",
+        "zh": "机器人与自主系统"
+      },
+      "en": {
+        "title": "AI100 2026 report highlights embodied intelligence as a grand challenge"
+      },
+      "id": "0bb66fc7-bb77-459d-ba7d-8ff40c357fef",
+      "published_at": "2026-11-11T13:48:55Z",
+      "source": "Robohub",
+      "url": "https://robohub.org/ai100-report-released-embodied-ai-highlighted-as-grand-challenge/",
+      "zh": {
+        "title": "AI100最新报告发布：具身智能被列为核心大挑战"
+      }
+    },
+    {
+      "archive_url_en": "https://polyemergence.com/en/archive/2026/11/13/23a1cdb9-f44d-4841-a368-274b49cc290f/",
+      "archive_url_zh": "https://polyemergence.com/zh/archive/2026/11/13/23a1cdb9-f44d-4841-a368-274b49cc290f/",
+      "date_precision": "timestamp",
+      "domain": "ai",
+      "domain_labels": {
+        "en": "Artificial Intelligence",
+        "zh": "人工智能"
+      },
+      "en": {
+        "title": "Jensen Huang Steps Down as NVIDIA CEO"
+      },
+      "id": "23a1cdb9-f44d-4841-a368-274b49cc290f",
+      "published_at": "2026-11-13T09:02:39Z",
+      "source": "QbitAI 量子位",
+      "url": "https://www.qbitai.com/2026/11/509995.html",
+      "zh": {
+        "title": "黄仁勋辞职，英伟达33年首换帅"
+      }
+    },
+    {
+      "archive_url_en": "https://polyemergence.com/en/archive/2026/11/14/53150ae6-1fa2-418b-ae1b-37f3f8c286ec/",
+      "archive_url_zh": "https://polyemergence.com/zh/archive/2026/11/14/53150ae6-1fa2-418b-ae1b-37f3f8c286ec/",
+      "date_precision": "timestamp",
+      "domain": "ai",
+      "domain_labels": {
+        "en": "Artificial Intelligence",
+        "zh": "人工智能"
+      },
+      "en": {
+        "title": "Google Research releases Antigravity teamwork and Gemini 4 for scientific problem solving"
+      },
+      "id": "53150ae6-1fa2-418b-ae1b-37f3f8c286ec",
+      "published_at": "2026-11-13T20:47:18Z",
+      "source": "Google Research",
+      "url": "https://research.google/blog/advancing-science-engineering-with-antigravitys-teamwork-feature/",
+      "zh": {
+        "title": "谷歌研究院发布 Antigravity teamwork 与 Gemini 4 用于攻克科学难题"
+      }
+    },
+    {
+      "archive_url_en": "https://polyemergence.com/en/archive/2026/11/09/6607c23f-7de1-40d4-bc0e-1d7ee82ec973/",
+      "archive_url_zh": "https://polyemergence.com/zh/archive/2026/11/09/6607c23f-7de1-40d4-bc0e-1d7ee82ec973/",
+      "date_precision": "timestamp",
+      "domain": "ai",
+      "domain_labels": {
+        "en": "Artificial Intelligence",
+        "zh": "人工智能"
+      },
+      "en": {
+        "title": "Anthropic Launches Claude 5.2 Fable and Mythos Models with Advanced Coding and Scientific Capabilities"
+      },
+      "id": "6607c23f-7de1-40d4-bc0e-1d7ee82ec973",
+      "published_at": "2026-11-09T00:00:00Z",
+      "source": "Anthropic News",
+      "url": "https://www.anthropic.com/claude-fable-and-mythos-5-2",
+      "zh": {
+        "title": "Anthropic发布Claude 5.2 Fable与Mythos模型，编程与科学研究能力大幅升级"
+      }
+    },
+    {
+      "archive_url_en": "https://polyemergence.com/en/archive/2026/11/12/86847d81-1d66-4b89-b265-6f494fa75427/",
+      "archive_url_zh": "https://polyemergence.com/zh/archive/2026/11/12/86847d81-1d66-4b89-b265-6f494fa75427/",
+      "date_precision": "timestamp",
+      "domain": "climate_water_environment",
+      "domain_labels": {
+        "en": "Climate, Water & Environmental Engineering",
+        "zh": "气候、水与环境工程"
+      },
+      "en": {
+        "title": "MIT researchers develop a new training method for faster and more trustworthy climate AI models"
+      },
+      "id": "86847d81-1d66-4b89-b265-6f494fa75427",
+      "published_at": "2026-11-12T05:00:00Z",
+      "source": "MIT Climate",
+      "url": "https://news.mit.edu/2026/new-research-could-lead-faster-trustworthy-ai-models-climate-prediction-1112",
+      "zh": {
+        "title": "麻省理工学院研究人员开发出新训练方法，让气候AI模型更快更可靠"
+      }
+    },
+    {
+      "archive_url_en": "https://polyemergence.com/en/archive/2026/11/11/90188d30-4621-44aa-ba30-72ce8de29409/",
+      "archive_url_zh": "https://polyemergence.com/zh/archive/2026/11/11/90188d30-4621-44aa-ba30-72ce8de29409/",
+      "date_precision": "timestamp",
+      "domain": "programmable_life",
+      "domain_labels": {
+        "en": "Biotech & Programmable Life",
+        "zh": "生物技术与可编程生命"
+      },
+      "en": {
+        "title": "AlphaGenome 2 predicts how DNA changes affect specific human cells"
+      },
+      "id": "90188d30-4621-44aa-ba30-72ce8de29409",
+      "published_at": "2026-11-11T15:00:15Z",
+      "source": "Google DeepMind",
+      "url": "https://deepmind.google/blog/alphagenome-2-deciphering-how-cells-read-dna-to-better-understand-disease/",
+      "zh": {
+        "title": "AlphaGenome 2 能预测基因变异如何影响特定人体细胞"
+      }
+    },
+    {
+      "archive_url_en": "https://polyemergence.com/en/archive/2026/11/14/9a033e48-1add-48d7-aab8-7f689a377497/",
+      "archive_url_zh": "https://polyemergence.com/zh/archive/2026/11/14/9a033e48-1add-48d7-aab8-7f689a377497/",
+      "date_precision": "timestamp",
+      "domain": "advanced_materials",
+      "domain_labels": {
+        "en": "Advanced Materials & Nanotechnology",
+        "zh": "新材料与纳米技术"
+      },
+      "en": {
+        "title": "Researchers Find a Better Way to Design Long-Lasting Sodium Battery Cathodes"
+      },
+      "id": "9a033e48-1add-48d7-aab8-7f689a377497",
+      "published_at": "2026-11-14T10:47:00Z",
+      "source": "AZoM Materials News",
+      "url": "https://www.azom.com/news.aspx?newsID=66049",
+      "zh": {
+        "title": "南开等团队找到让钠离子电池更耐用的新设计法则"
+      }
+    },
+    {
+      "archive_url_en": "https://polyemergence.com/en/archive/2026/11/11/abc308bd-0594-49f6-a23f-a029b07bcf38/",
+      "archive_url_zh": "https://polyemergence.com/zh/archive/2026/11/11/abc308bd-0594-49f6-a23f-a029b07bcf38/",
+      "date_precision": "timestamp",
+      "domain": "quantum_technology",
+      "domain_labels": {
+        "en": "Quantum Technology",
+        "zh": "量子技术"
+      },
+      "en": {
+        "title": "IBM Announces 2026 As The Year Of Quantum Advantage And Outlines Future Roadmap"
+      },
+      "id": "abc308bd-0594-49f6-a23f-a029b07bcf38",
+      "published_at": "2026-11-11T12:00:00Z",
+      "source": "IBM Quantum",
+      "url": "https://www.ibm.com/quantum/blog/qdc-2026",
+      "zh": {
+        "title": "IBM 宣布 2026 年为量子优势元年并公布未来发展路线图"
+      }
+    },
+    {
+      "archive_url_en": "https://polyemergence.com/en/archive/2026/11/10/baea2f65-0e21-4eab-8945-94c1793ff52a/",
+      "archive_url_zh": "https://polyemergence.com/zh/archive/2026/11/10/baea2f65-0e21-4eab-8945-94c1793ff52a/",
+      "date_precision": "timestamp",
+      "domain": "ai",
+      "domain_labels": {
+        "en": "Artificial Intelligence",
+        "zh": "人工智能"
+      },
+      "en": {
+        "title": "Google DeepMind uses AI to mathematically prove Signal protocol security"
+      },
+      "id": "baea2f65-0e21-4eab-8945-94c1793ff52a",
+      "published_at": "2026-11-10T12:02:28Z",
+      "source": "Google DeepMind",
+      "url": "https://deepmind.google/blog/introducing-alphaproof-code/",
+      "zh": {
+        "title": "谷歌DeepMind用AI在数学上证明了Signal协议的安全性"
+      }
+    },
+    {
+      "archive_url_en": null,
+      "archive_url_zh": null,
+      "date_precision": "publisher_calendar_date_only",
+      "domain": "ai",
+      "domain_labels": {
+        "en": "Artificial Intelligence",
+        "zh": "人工智能"
+      },
+      "en": {
+        "title": "NVIDIA Announces CEO Transition"
+      },
+      "id": "review-nvidia-official-20261112",
+      "published_at": "2026-11-12",
+      "source": "NVIDIA Newsroom",
+      "url": "https://nvidianews.nvidia.com/news/nvidia-announces-ceo-transition",
+      "zh": {
+        "title": "NVIDIA 宣布 CEO 过渡安排"
+      }
+    }
+  ],
+  "timezone": "Asia/Singapore",
+  "week_end": "2026-11-15",
+  "week_start": "2026-11-09",
+  "zh": {
+    "dek": "本期精选内容涵盖多智能体系统在科研与工程中的应用、IBM关于量子优势的进展报告、谷歌DeepMind的细胞级基因预测以及代码形式化验证工具。",
+    "early_signals": [
+      {
+        "event_id": "weekly-4bb6fae775d86206",
+        "evidence_ids": [
+          "23a1cdb9-f44d-4841-a368-274b49cc290f",
+          "review-nvidia-official-20261112"
+        ],
+        "title": "英伟达宣布黄仁勋辞去 CEO 职务",
+        "uncertainty": "正式常任 CEO 的最终人选及上任后的战略方向尚未在官方公告中明确。",
+        "what_changed": "根据英伟达官方公告与媒体报道，黄仁勋已辞去公司总裁、CEO及董事职务，即刻生效。CFO 柯秀英出任临时 CEO，董事会已启动常任 CEO 遴选工作，同时任命 Harvey C. Jones 为董事会主席。",
+        "why_it_matters": "作为长期执掌公司的创始人离任，其后续高层重组与正式继任者人选备受全球科技和资本市场关注。"
+      },
+      {
+        "event_id": "weekly-db0f31b05f8c8457",
+        "evidence_ids": [
+          "86847d81-1d66-4b89-b265-6f494fa75427"
+        ],
+        "title": "MIT 开发基于合成数据的气候 AI 模型训练法",
+        "uncertainty": "该算法在预测更复杂、极端全球气候反馈回路时的准确边界尚未完全建立。",
+        "what_changed": "麻省理工学院开发了一种利用优化合成数据训练气候模拟器的新技术，通过在训练中引入高频波动，减少了对完整大规模模型运行的依赖。",
+        "why_it_matters": "该方法旨在大幅缩短气候模拟器的制作时间，并帮助 AI 模型更好地适应训练未曾见过的陌生场景（如局部污染物控制策略）。"
+      }
+    ],
+    "follow_up": {
+      "available": false,
+      "items": [],
+      "note": "这是首期正式周报，尚无上期周报可供回看。"
+    },
+    "lead": {
+      "evidence_ids": [
+        "53150ae6-1fa2-418b-ae1b-37f3f8c286ec",
+        "abc308bd-0594-49f6-a23f-a029b07bcf38",
+        "90188d30-4621-44aa-ba30-72ce8de29409",
+        "baea2f65-0e21-4eab-8945-94c1793ff52a",
+        "6607c23f-7de1-40d4-bc0e-1d7ee82ec973"
+      ],
+      "text": "本期精选内容聚焦多项前沿研究与系统更新：谷歌与Anthropic分别推出 Antigravity teamwork、Gemini 4 及 Claude 5.2，采用并行生成与验证来维持复杂任务的准确性。在硬件与生物计算领域，IBM 公布了 Nighthawk r2 处理器并报告达到量子优势，而谷歌 DeepMind 则发布了可预测细胞级变异的 AlphaGenome 2，并通过 AI 辅助形式化验证了 Signal 协议的相关代码。本选辑不作为独立核实的行业结论。"
+    },
+    "main_events": [
+      {
+        "event_id": "weekly-11caa4234e632e78",
+        "evidence_ids": [
+          "53150ae6-1fa2-418b-ae1b-37f3f8c286ec"
+        ],
+        "title": "谷歌研究院发布 Antigravity teamwork 多智能体系统与 Gemini 4 模型",
+        "uncertainty": "现有材料未包含外部开发者在实际生产环境中的长期稳定表现及具体计算开销。",
+        "what_changed": "谷歌研究院公布了 Antigravity teamwork 多智能体系统结合 Gemini 4 模型的技术成果，采用并行生成与专用验证器（如 Lean 4）来维持多天任务的准确性，并向外部研究人员和开发者开放。",
+        "why_it_matters": "通过将并行探索与专用 falsifier 验证器相结合，该系统试图缓解长周期任务中的上下文丢失与单模型预测不确定性，并在数学猜想证明和系统软件重写中取得应用成果。"
+      },
+      {
+        "event_id": "weekly-31beed007b6e4720",
+        "evidence_ids": [
+          "abc308bd-0594-49f6-a23f-a029b07bcf38"
+        ],
+        "title": "IBM 报告 2026 年实现量子优势并推出 Nighthawk r2 处理器",
+        "uncertainty": "现有材料未建立具体的任务定义、最强传统基准对比、完整资源核算或独立外部复现细节。",
+        "what_changed": "IBM 宣布研究界在 2026 年实现了量子优势，并推出了拥有 120 个可编程量子比特的 Nighthawk r2 处理器，吞吐量较前代提升 25 倍，支持超过 7,500 次量子操作。",
+        "why_it_matters": "该报告旨在展示运行超越传统方法且可严格验证计算的进展，为化学、材料、能源和金融领域的实际优化提供更高的数据吞吐与硬件基础。"
+      },
+      {
+        "event_id": "weekly-dd73ccadcf289c43",
+        "evidence_ids": [
+          "90188d30-4621-44aa-ba30-72ce8de29409"
+        ],
+        "title": "谷歌 DeepMind 发布 AlphaGenome 2 预测细胞级变异",
+        "uncertainty": "当前商业访问仅限私密预览，且现有材料未包含临床诊断性能数据。",
+        "what_changed": "谷歌发布了 AlphaGenome 2 基因序列模型，在超过 1.07 亿个人类和小鼠单细胞剖面上训练，能预测百万长度 DNA 序列在特定细胞状态下的基因表达和变异影响。",
+        "why_it_matters": "根据 DeepMind 的基准测试，该条件架构识别出的致病变异和定向基因效应接近前代工具的两倍，有助于研究人员定位复杂疾病的细胞根源。"
+      },
+      {
+        "event_id": "weekly-7125eead5d976f42",
+        "evidence_ids": [
+          "6607c23f-7de1-40d4-bc0e-1d7ee82ec973"
+        ],
+        "title": "Anthropic 发布 Claude 5.2 Fable 与 Mythos 模型",
+        "uncertainty": "在各企业复杂生产环境中的实际漏洞利用风险与长周期运行成本有待进一步观察。",
+        "what_changed": "Anthropic 发布了 Claude Fable 5.2 与 Mythos 5.2 模型，强化了编程、推理和科学研究能力，其中安全防护版 Fable 5.2 面向所有人开放，网络安全版 Mythos 5.2 需通过审核使用。",
+        "why_it_matters": "新模型在代理编程和形式化数学证明上表现突出，例如在测试中协助构建操作系统原型及解决物理学难题，拓展了 AI 在复杂技术工程中的应用边界。"
+      },
+      {
+        "event_id": "weekly-0b1ecfbfdf707b37",
+        "evidence_ids": [
+          "baea2f65-0e21-4eab-8945-94c1793ff52a"
+        ],
+        "title": "谷歌 DeepMind 用 AI 辅助形式化验证 Signal 协议相关代码",
+        "uncertainty": "现有材料未详细说明被验证的确切属性、具体组件以及底层假设边界。",
+        "what_changed": "谷歌 DeepMind 推出了 AlphaProof Code 系统，结合人类专家与 Gemini Carbon 驱动的智能体，生成超过六百万行 Lean 代码，在数学上验证了 Signal 协议的实际代码。",
+        "why_it_matters": "该成果展示了将安全验证从设计阶段推进到编译后的实际代码层的潜力，据 DeepMind 介绍，缩短了验证流程所需时间。"
+      },
+      {
+        "event_id": "weekly-5d8ca9d00f0f44dd",
+        "evidence_ids": [
+          "02a763f3-f6e5-4eba-bac3-ebf0c08c79f3"
+        ],
+        "title": "脑机接口临床试验实现患者默念控制智能家居",
+        "uncertainty": "该技术在更大规模临床患者群体中的信号稳定性与日常环境鲁棒性尚未从现有材料中完全建立。",
+        "what_changed": "Nature 网站刊载的一项研究显示，一名渐冻症患者通过植入式皮层电图脑机接口，在 18 次实验中，以 97.1% 的中位解码准确率用默念语音控制智能家居。",
+        "why_it_matters": "在不依赖外部视觉或声音提示的情况下对内部语音进行解码，展示了在特定试验参与者中实现私密、自主设备控制的可行性。"
+      },
+      {
+        "event_id": "weekly-4468f95c1f0c1902",
+        "evidence_ids": [
+          "0bb66fc7-bb77-459d-ba7d-8ff40c357fef"
+        ],
+        "title": "AI100 2026 报告将具身智能列为机器人核心大挑战",
+        "uncertainty": "报告提及的各项科学挑战在各垂直工业场景中实现规模化落地的具体时间表并未给出。",
+        "what_changed": "AI100 2026 报告发布，指出尽管生成式AI快速发展，具身智能依然是机器人领域的重大挑战，并提到中国在工业和人形机器人产量上处于领先地位。",
+        "why_it_matters": "报告指出了实验室演示与受控环境外现实落地之间的差距，强调了攻克长期规划和灵巧操作等物理世界复杂性的必要性。"
+      },
+      {
+        "event_id": "weekly-5b19634a8fba1ef4",
+        "evidence_ids": [
+          "9a033e48-1add-48d7-aab8-7f689a377497"
+        ],
+        "title": "南开等团队提出钠离子电池正极设计的离子场强法则",
+        "uncertainty": "在商业化全电池条件及更广泛材料组合中的普适性与长期循环寿命尚待验证。",
+        "what_changed": "南开大学等研究团队在 JACS 发表论文，提出利用离子场强差异作为定量指标来设计更耐用的 O3 型钠离子电池正极，通过降低场强不均提高高压下的结构稳定性。",
+        "why_it_matters": "该法则将正极掺杂筛选从传统盲目试错转变为可量化的设计任务，有助于减少高压充放电时的相变与应力积累。"
+      }
+    ],
+    "next_watch": [
+      {
+        "evidence_ids": [
+          "53150ae6-1fa2-418b-ae1b-37f3f8c286ec",
+          "6607c23f-7de1-40d4-bc0e-1d7ee82ec973"
+        ],
+        "text": "Antigravity teamwork 和 Claude 5.2 在外部研究与复杂工程中能否维持长周期任务的多日准确性。"
+      },
+      {
+        "evidence_ids": [
+          "abc308bd-0594-49f6-a23f-a029b07bcf38"
+        ],
+        "text": "IBM Nighthawk r2 在未来路线图中的芯片间互联与纠错组件在实际运行中的资源核算与可复现性能表现。"
+      }
+    ],
+    "synthesis": {
+      "consequence": {
+        "evidence_ids": [
+          "90188d30-4621-44aa-ba30-72ce8de29409",
+          "9a033e48-1add-48d7-aab8-7f689a377497",
+          "86847d81-1d66-4b89-b265-6f494fa75427"
+        ],
+        "support": "selection_based",
+        "text": "本期报道的基因预测、钠离子电池材料设计和气候模拟方法，解决的不是同一个问题，却都在尝试缩小下一步要试的范围，或减少建模时的反复计算。如果这些方法在各自条件下成立，研究团队可能更有依据地决定先做哪些实验、先测哪些方案。值得追问的是它改变了哪一步研究流程，而不是马上把它等同于成熟的诊断工具、量产电池或更准的全球气候预报。",
+        "title": "更先改变的，可能是研究者下一步试什么"
+      },
+      "evidence_ids": [
+        "53150ae6-1fa2-418b-ae1b-37f3f8c286ec",
+        "6607c23f-7de1-40d4-bc0e-1d7ee82ec973",
+        "baea2f65-0e21-4eab-8945-94c1793ff52a",
+        "90188d30-4621-44aa-ba30-72ce8de29409",
+        "9a033e48-1add-48d7-aab8-7f689a377497",
+        "86847d81-1d66-4b89-b265-6f494fa75427",
+        "02a763f3-f6e5-4eba-bac3-ebf0c08c79f3"
+      ],
+      "intro": "把本期几组科研和工具更新放在一起，一个共同的问题浮现出来：新技术不只要展示能做什么，还要讲清楚怎样完成任务、怎样检查结果，以及它能改变哪一步实际工作。",
+      "limits": "以上是对部分选材的编辑解读，不是全行业统计。多次厂商发布不等于独立验证，特定基准或单人实验也不等于普遍可用；本周报道的较早研究，不能被说成本周才出现的突破。",
+      "signal": {
+        "evidence_ids": [
+          "53150ae6-1fa2-418b-ae1b-37f3f8c286ec",
+          "6607c23f-7de1-40d4-bc0e-1d7ee82ec973"
+        ],
+        "support": "selection_based",
+        "text": "谷歌和 Anthropic 这两次发布，展示重点都不只是回答一个问题，而是让 AI 持续处理数学证明、代码开发这类长任务。值得留意的信号是：它们把“任务怎么做完”放到了能力展示的中心。这里看到的是发布与演示的共同侧重，还不能据此判断企业已经普遍采用，或这些系统在日常工作中同样可靠。",
+        "title": "不只看它答得好不好，也看它能不能把事情做完"
+      },
+      "structure": {
+        "evidence_ids": [
+          "53150ae6-1fa2-418b-ae1b-37f3f8c286ec",
+          "baea2f65-0e21-4eab-8945-94c1793ff52a"
+        ],
+        "support": "selection_based",
+        "text": "把任务做完，还涉及谁把目标说清楚、谁产出结果、谁检查结果。在谷歌的多智能体案例里，任务被拆开探索，并借助专用工具检验；在 Signal 相关代码的案例里，人类专家先定义要证明什么，再由 AI 辅助完成形式化证明。由此可以提出一个判断：落地的关键可能不只在模型能力，也在流程怎么接、结果怎么验收。",
+        "title": "一套能用的系统，不只是一个更强的模型"
+      }
+    },
+    "title": "Polyemergence 行业观察：多智能体协作、IBM报告量子优势进展及AI安全与基因工具升级"
+  }
+}
