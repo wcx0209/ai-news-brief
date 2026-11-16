@@ -74,7 +74,7 @@ def weekly_period(payload, locale):
 def weekly_heading(payload, locale):
     """Full readable title: publication type, actual supplied topic, period."""
     topic = weekly_topic(payload, locale)
-    period = weekly_period(payload, locale)
+    period = _compact_period(payload, locale, include_year=True)
     return (f"{WEEKLY_TYPES[locale]}: {topic} ({period})" if locale == "en"
             else f"{WEEKLY_TYPES[locale]}：{topic}（{period}）")
 
@@ -125,7 +125,7 @@ def weekly_meta_title(payload, locale):
     return prefix + short + suffix
 
 
-def _compact_period(payload, locale):
+def _compact_period(payload, locale, include_year=False):
     payload = payload if isinstance(payload, Mapping) else {}
     try:
         start = date.fromisoformat(_text(payload.get("week_start"))[:10])
@@ -135,9 +135,10 @@ def _compact_period(payload, locale):
     if locale == "zh":
         if start.year != end.year:
             return f"{start.year}年{start.month}月{start.day}日–{end.year}年{end.month}月{end.day}日"
+        year = f"{start.year}年" if include_year else ""
         if start.month != end.month:
-            return f"{start.month}月{start.day}日–{end.month}月{end.day}日"
-        return f"{start.month}月{start.day}–{end.day}日"
+            return f"{year}{start.month}月{start.day}日–{end.month}月{end.day}日"
+        return f"{year}{start.month}月{start.day}–{end.day}日"
     start_month, end_month = _MONTHS[start.month - 1], _MONTHS[end.month - 1]
     if start.year != end.year:
         return f"{start_month} {start.day}, {start.year}–{end_month} {end.day}, {end.year}"

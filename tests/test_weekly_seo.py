@@ -27,7 +27,7 @@ class WeeklySeoTests(unittest.TestCase):
         topic = "Quantum verification reports, multiagent research tools, and the conditions for reliable deployment"
         payload = {"en": {"title": topic}, "week_start": "2026-11-09", "week_end": "2026-11-15"}
         self.assertEqual(weekly_topic(payload, "en"), topic)
-        self.assertEqual(weekly_heading(payload, "en"), f"Weekly Tech News & Analysis: {topic} (2026-11-09 — 2026-11-15)")
+        self.assertEqual(weekly_heading(payload, "en"), f"Weekly Tech News & Analysis: {topic} (Nov 9–15, 2026)")
         self.assertTrue(weekly_meta_title(payload, "en").startswith("Weekly Tech News: Quantum verification reports"))
         self.assertTrue(weekly_meta_title(payload, "en").endswith(" | Nov 9–15, 2026"))
         self.assertEqual(weekly_period(payload, "en"), "2026-11-09 — 2026-11-15")
@@ -38,7 +38,8 @@ class WeeklySeoTests(unittest.TestCase):
     def test_an_existing_formatted_title_does_not_duplicate_the_same_coverage_period(self):
         payload = {"en": {"title": "Weekly Tech News & Analysis: Verification tools (2026-11-09 — 2026-11-15) | Polyemergence"}, "week_start": "2026-11-09", "week_end": "2026-11-15"}
         self.assertEqual(weekly_topic(payload, "en"), "Verification tools")
-        self.assertEqual(weekly_heading(payload, "en").count("2026-11-09"), 1)
+        self.assertEqual(weekly_heading(payload, "en").count("Nov 9–15, 2026"), 1)
+        self.assertNotIn("2026-11-09", weekly_heading(payload, "en"))
 
     def test_real_legacy_115_character_title_has_a_shorter_meta_summary_and_complete_h1(self):
         original = "Polyemergence Industry Review: Multiagent Systems, IBM Quantum Reports & AI Security/Genetics Tools"
@@ -54,6 +55,7 @@ class WeeklySeoTests(unittest.TestCase):
         self.assertIn("AI Security/Genetics Tools", weekly_heading(payload, "en"))
         self.assertIn("科技周报：", weekly_meta_title(payload, "zh"))
         self.assertTrue(weekly_meta_title(payload, "zh").endswith("｜11月9–15日"))
+        self.assertIn("2026年11月9–15日", weekly_heading(payload, "zh"))
 
     def test_long_english_meta_topics_stop_at_whole_words_and_preserve_claim_qualifiers(self):
         payload = {"en": {"title": "Reported experimental quantum verification methods for more reliable multiagent systems and deployment constraints"}, "week_start": "2026-11-09", "week_end": "2026-11-15"}

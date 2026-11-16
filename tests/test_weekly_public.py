@@ -57,7 +57,7 @@ class WeeklyPublicTests(unittest.TestCase):
             self.assertIn('hreflang="zh-Hans"', page)
             self.assertIn('hreflang="x-default"', page)
             self.assertIn(f'<meta name="description" content="{payload[locale]["dek"]}">', page)
-            self.assertIn('<link rel="stylesheet" href="/weekly.css?v=2">', page)
+            self.assertIn('<link rel="stylesheet" href="/weekly.css?v=3">', page)
 
     def test_locales_are_independent_and_reuse_existing_branding_and_navigation(self):
         payload = fixture()
@@ -180,7 +180,7 @@ class WeeklyPublicTests(unittest.TestCase):
         reader.feed(page)
         self.assertEqual(sum(tag == "h1" for tag, _ in reader.elements), 1)
         self.assertEqual([attrs.get("src") for tag, attrs in reader.elements if tag == "img"], ["/assets/logo-en-reverse.svg", "/assets/weekly/2026-11-09-en.png"])
-        self.assertEqual([attrs.get("href") for tag, attrs in reader.elements if tag == "link" and attrs.get("rel") == "stylesheet"], ["/weekly.css?v=2"])
+        self.assertEqual([attrs.get("href") for tag, attrs in reader.elements if tag == "link" and attrs.get("rel") == "stylesheet"], ["/weekly.css?v=3"])
         self.assertFalse(any(tag in {"iframe", "form", "video", "audio", "style"} for tag, _ in reader.elements))
         scripts = [attrs for tag, attrs in reader.elements if tag == "script"]
         local_analytics = [attrs for attrs in scripts if attrs.get("src") == "/analytics.js?v=2"]
@@ -296,7 +296,7 @@ class WeeklyPublicTests(unittest.TestCase):
             self.assertNotIn("行业观察", heading)
             self.assertNotIn("Polyemergence", heading)
             self.assertIn(kind.replace("&", "&amp;"), heading)
-            self.assertIn("2026-11-09 — 2026-11-15", heading)
+            self.assertIn("Nov 9–15, 2026" if locale == "en" else "2026年11月9–15日", heading)
             self.assertIn(topic.replace("&", "&amp;"), heading)
             self.assertEqual(schema(page)["headline"], weekly_heading(payload, locale))
 
@@ -363,6 +363,10 @@ class WeeklyPublicTests(unittest.TestCase):
         self.assertNotIn('href="/en/archive/fields/space_economy/"', page)
         self.assertNotIn('href="/en/archive/fields/../unsafe/"', page)
         self.assertLess(page.index('id="weekly-fields"'), page.index('id="weekly-main-events"'))
+        self.assertLess(page.index('class="weekly-contents"'), page.index('id="weekly-insights"'))
+        self.assertLess(page.index('id="weekly-insights"'), page.index('class="weekly-cover"'))
+        self.assertLess(page.index('id="weekly-insights"'), page.index('id="weekly-fields"'))
+        self.assertLess(page.index('class="weekly-cover"'), page.index('id="weekly-fields"'))
         contents = re.search(r'<nav class="weekly-contents".*?</nav>', page)[0]
         for target in re.findall(r'href="#([^"]+)"', contents):
             self.assertIn(f'id="{target}"', page)

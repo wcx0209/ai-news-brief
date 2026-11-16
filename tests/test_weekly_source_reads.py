@@ -235,7 +235,8 @@ class WeeklySourceScriptTests(unittest.TestCase):
         records = [deepcopy(selected['representative']) for selected in original['shortlist']['main']]
         packet = {'main_events': [{'evidence_ids': [row['id']]} for row in records], 'early_signals': []}
         model = MagicMock(model='offline-model', calls=[])
-        with tempfile.TemporaryDirectory(dir=ROOT / 'output') as directory, \
+        with tempfile.TemporaryDirectory() as fixture_root, \
+                patch.object(script, 'ROOT', Path(fixture_root).resolve()), \
                 patch.dict(os.environ, {'GITHUB_ACTIONS': 'true', 'WEEK_START': '2026-11-09', 'GITHUB_STEP_SUMMARY': ''}), \
                 patch.object(script, 'load_cloud_archive', return_value=[]), \
                 patch.object(script, 'prepare_records', return_value=(records, [])), \
@@ -247,7 +248,9 @@ class WeeklySourceScriptTests(unittest.TestCase):
                 patch('weekly_generation.generate_review', return_value=({'editorial_review': {}}, packet)) as generate, \
                 patch('weekly_render.render_review', return_value={'en': '<p>Review</p>', 'zh': '<p>周报</p>'}), \
                 patch('weekly_render.to_markdown', return_value='Review'):
-            self.assertEqual(script.main(['--output', directory]), 0)
+            directory = Path(fixture_root) / 'output' / 'review'
+            self.assertFalse(directory.parent.exists())
+            self.assertEqual(script.main(['--output', str(directory)]), 0)
             reads.assert_called_once()
             self.assertIs(generate.call_args.args[0], enriched)
             self.assertEqual(generate.call_count, 1)
