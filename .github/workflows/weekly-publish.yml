@@ -65,6 +65,7 @@ jobs:
           INBRIEF_LLM_MODEL_NAME: gemini-3.5-flash-lite
         run: python scripts/publish_weekly.py --generate
       - name: Refresh archive and field navigation from public data only
+        if: ${{ steps.issue.outputs.exists != 'true' }}
         run: |
           python scripts/export_archive.py --input-json web/public/data/articles.json --output web/public
           python scripts/export_domain_pages.py --output web/public

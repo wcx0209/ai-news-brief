@@ -100,6 +100,8 @@ class WeeklyReleaseTests(unittest.TestCase):
         self.assertIn("inputs.source_run_id == ''", model_steps[0]['if'])
         self.assertNotIn('INBRIEF_LLM_API_KEY', workflow['jobs']['publish'].get('env', {}))
         self.assertTrue(any('--input-json web/public/data/articles.json' in step.get('run', '') for step in steps))
+        static_refresh = next(step for step in steps if '--input-json web/public/data/articles.json' in step.get('run', ''))
+        self.assertIn("steps.issue.outputs.exists != 'true'", static_refresh['if'])
 
 
 if __name__ == '__main__':
