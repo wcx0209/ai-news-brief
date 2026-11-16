@@ -1,0 +1,46 @@
+name: Polyemergence weekly review draft
+
+on:
+  workflow_dispatch:
+    inputs:
+      week_start:
+        description: Monday in Singapore time, YYYY-MM-DD (review draft only)
+        type: string
+        required: true
+        default: "2026-11-09"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: polyemergence-weekly-review
+  cancel-in-progress: false
+
+jobs:
+  draft:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0
+        with:
+          python-version: "3.11"
+          cache: pip
+      - name: Install review-only dependencies
+        run: pip install -r requirements-weekly.txt
+      - name: Validate weekly selection, evidence and rendering offline
+        run: python -m unittest discover -s tests -p 'test_weekly_*.py' -v
+      - name: Draft from cloud archive with cloud Gemini
+        env:
+          WEEK_START: ${{ inputs.week_start }}
+          INBRIEF_SUPABASE_DB_URL: ${{ secrets.INBRIEF_SUPABASE_DB_URL }}
+          INBRIEF_LLM_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          INBRIEF_LLM_MODEL_NAME: gemini-3.5-flash-lite
+        run: python scripts/generate_weekly_review.py --output output/weekly-review
+      - name: Retain review files, never publish or commit them
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: polyemergence-weekly-review
+          path: output/weekly-review/
+          retention-days: 30
