@@ -77,7 +77,7 @@ def _score(value):
         number = float(value)
         if not math.isfinite(number):
             return 0
-        number = max(0, min(100, number))
+        number = max(0.0, min(100.0, number))
         return int(number) if number.is_integer() else number
     except (TypeError, ValueError, OverflowError):
         return 0
