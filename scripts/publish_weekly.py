@@ -134,12 +134,12 @@ def main(argv=None):
                 handle.write(f'week_start={week}\nexists={str(existing.is_file()).lower()}\n')
         print(json.dumps({'week_start': week, 'already_published': existing.is_file()}))
         return 0
-    from export_weekly import export_weeklies, load_editions
     if existing.is_file():
-        # Idempotent rerender; no DB, SDK import or API request on this path.
-        export_weeklies(public, load_editions(public))
-        print('Weekly edition already published; skipped database and model calls.')
+        # An existing issue ends the release before draft retrieval, DB/model
+        # work, rendering or writing any public file.
+        print('Weekly edition already published; skipped generation and publication.')
         return 0
+    from export_weekly import export_weeklies, load_editions
     work = ROOT / 'output/weekly-publication'
     work.mkdir(parents=True, exist_ok=True)
     if args.input:

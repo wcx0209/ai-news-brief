@@ -21,7 +21,12 @@ Only one transient provider retry is allowed, before any successful response.
 Quality failures do not trigger repeated generation to hunt for a passing draft.
 Failure stops before commit and leaves the previous public issue available;
 diagnostics remain in an Actions artifact for 30 days. A published week is
-skipped on repeat runs without database/model calls. Existing editions are not
+checked before draft retrieval/generation and skipped on repeat runs without
+database/model calls, rendering, public-file changes or another publication commit.
+The job checks out the latest target branch rather than the original event SHA,
+so a queued or re-run job sees editions already published by earlier jobs.
+The check applies to scheduled generation and manual artifact publication alike.
+Existing editions are not
 silently rewritten. Corrections require a separate explicit change preserving
 the original publication date.
 

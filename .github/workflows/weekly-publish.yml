@@ -30,7 +30,11 @@ jobs:
       WEEK_START: ${{ inputs.week_start }}
       SOURCE_RUN_ID: ${{ inputs.source_run_id }}
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - name: Check out the latest target branch, including editions published by earlier runs
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          # A queued or re-run job's event SHA can predate an earlier publication.
+          ref: ${{ github.ref_name }}
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0
         with:
           python-version: "3.11"
@@ -42,6 +46,13 @@ jobs:
       - name: Resolve complete week and avoid regenerating a published issue
         id: issue
         run: python scripts/publish_weekly.py --preflight
+      - name: Report that this weekly issue already exists
+        if: ${{ steps.issue.outputs.exists == 'true' }}
+        env:
+          ISSUE_WEEK: ${{ steps.issue.outputs.week_start }}
+        run: |
+          echo "Weekly issue $ISSUE_WEEK already exists; skipping generation and publication."
+          echo "Weekly issue $ISSUE_WEEK already exists. No database/model calls or website changes." >> "$GITHUB_STEP_SUMMARY"
       - name: Retrieve the authorized review artifact
         if: ${{ steps.issue.outputs.exists != 'true' && inputs.source_run_id != '' }}
         env:
@@ -52,12 +63,12 @@ jobs:
           esac
           gh run download "$SOURCE_RUN_ID" --repo "$GITHUB_REPOSITORY" --name polyemergence-weekly-review --dir output/weekly-publication-input
       - name: Publish the validated review artifact without database or model calls
-        if: ${{ inputs.source_run_id != '' }}
+        if: ${{ steps.issue.outputs.exists != 'true' && inputs.source_run_id != '' }}
         env:
           WEEK_START: ${{ steps.issue.outputs.week_start }}
         run: python scripts/publish_weekly.py --input output/weekly-publication-input
       - name: Generate and validate the weekly in cloud
-        if: ${{ inputs.source_run_id == '' }}
+        if: ${{ steps.issue.outputs.exists != 'true' && inputs.source_run_id == '' }}
         env:
           WEEK_START: ${{ steps.issue.outputs.week_start }}
           INBRIEF_SUPABASE_DB_URL: ${{ secrets.INBRIEF_SUPABASE_DB_URL }}
@@ -70,6 +81,7 @@ jobs:
           python scripts/export_archive.py --input-json web/public/data/articles.json --output web/public
           python scripts/export_domain_pages.py --output web/public
       - name: Commit public weekly pages and discovery files
+        if: ${{ steps.issue.outputs.exists != 'true' }}
         run: |
           git config user.name "polyemergence-bot"
           git config user.email "polyemergence-bot@users.noreply.github.com"

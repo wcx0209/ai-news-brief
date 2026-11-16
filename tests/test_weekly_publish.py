@@ -28,20 +28,28 @@ class WeeklyReleaseTests(unittest.TestCase):
                 release.main(['--generate'])
             load.assert_not_called()
 
-    def test_existing_issue_skips_cloud_generation_even_when_requested(self):
-        exporter = MagicMock()
+    def test_existing_issue_skips_generation_and_all_public_writes_in_both_modes(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             dated = root / 'web/public/data/weekly/2026-11-09.json'
             dated.parent.mkdir(parents=True)
             dated.write_text('{}')
-            with patch.object(release, 'ROOT', root), patch.object(release, 'generate_cloud') as generate, \
-                    patch.dict(os.environ, {'GITHUB_ACTIONS': 'true', 'WEEK_START': '2026-11-09',
-                                            'SOURCE_RUN_ID': '', 'GITHUB_EVENT_NAME': 'schedule'}), \
-                    patch.dict(sys.modules, {'export_weekly': exporter}):
-                self.assertEqual(release.main(['--generate']), 0)
-                generate.assert_not_called()
-                exporter.export_weeklies.assert_called_once()
+            before = dated.read_bytes(), dated.stat().st_mtime_ns
+            for arguments, run_id, event in ((['--generate'], '', 'schedule'),
+                    (['--input', 'output/does-not-exist'], '43792710068', 'workflow_dispatch')):
+                exporter = MagicMock()
+                with self.subTest(event=event), patch.object(release, 'ROOT', root), \
+                        patch.object(release, 'generate_cloud') as generate, \
+                        patch.object(release, 'load_json') as load, \
+                        patch.dict(os.environ, {'GITHUB_ACTIONS': 'true', 'WEEK_START': '2026-11-09',
+                                                'SOURCE_RUN_ID': run_id, 'GITHUB_EVENT_NAME': event}), \
+                        patch.dict(sys.modules, {'export_weekly': exporter}):
+                    self.assertEqual(release.main(arguments), 0)
+                    generate.assert_not_called()
+                    load.assert_not_called()
+                    exporter.export_weeklies.assert_not_called()
+                    self.assertEqual((dated.read_bytes(), dated.stat().st_mtime_ns), before)
+                    self.assertFalse((root / 'output').exists())
 
     def test_artifact_authorization_cannot_be_inferred_from_schedule(self):
         with patch.dict(os.environ, {'GITHUB_ACTIONS': 'true', 'WEEK_START': '2026-11-09',
@@ -94,6 +102,8 @@ class WeeklyReleaseTests(unittest.TestCase):
         self.assertEqual(workflow['on']['schedule'][0]['cron'], '0 10 * * 1')
         self.assertEqual(workflow['concurrency']['group'], 'polyemergence-daily-brief')
         steps = workflow['jobs']['publish']['steps']
+        checkout = next(step for step in steps if step.get('uses', '').startswith('actions/checkout@'))
+        self.assertEqual(checkout['with']['ref'], '${{ github.ref_name }}')
         self.assertFalse(any('continue-on-error' in step for step in steps))
         model_steps = [step for step in steps if 'INBRIEF_LLM_API_KEY' in step.get('env', {})]
         self.assertEqual(len(model_steps), 1)
@@ -102,6 +112,11 @@ class WeeklyReleaseTests(unittest.TestCase):
         self.assertTrue(any('--input-json web/public/data/articles.json' in step.get('run', '') for step in steps))
         static_refresh = next(step for step in steps if '--input-json web/public/data/articles.json' in step.get('run', ''))
         self.assertIn("steps.issue.outputs.exists != 'true'", static_refresh['if'])
+        # Both entry paths and the final push must independently honor preflight.
+        for step in steps:
+            if (step.get('name', '').startswith(('Retrieve the authorized', 'Publish the validated',
+                                                'Generate and validate', 'Commit public'))):
+                self.assertIn("steps.issue.outputs.exists != 'true'", step['if'])
 
 
 if __name__ == '__main__':
