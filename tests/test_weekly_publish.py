@@ -118,6 +118,21 @@ class WeeklyReleaseTests(unittest.TestCase):
                                                 'Generate and validate', 'Commit public'))):
                 self.assertIn("steps.issue.outputs.exists != 'true'", step['if'])
 
+    def test_presentation_refresh_has_no_model_or_database_secrets_and_guards_issue_data(self):
+        import yaml
+        source = (ROOT / '.github/workflows/weekly-render.yml').read_text()
+        workflow = yaml.load(source, Loader=yaml.BaseLoader)
+        self.assertEqual(set(workflow['on']), {'workflow_dispatch'})
+        self.assertNotIn('secrets.', source)
+        self.assertNotIn('publish_weekly.py', source)
+        steps = workflow['jobs']['render']['steps']
+        export_index = next(i for i, step in enumerate(steps) if 'export_weekly.py --output' in step.get('run', ''))
+        guard_index = next(i for i, step in enumerate(steps) if 'git diff --exit-code -- web/public/data/weekly' in step.get('run', ''))
+        push_index = next(i for i, step in enumerate(steps) if 'git push' in step.get('run', ''))
+        self.assertLess(export_index, guard_index)
+        self.assertLess(guard_index, push_index)
+        self.assertFalse(any('continue-on-error' in step for step in steps))
+
 
 if __name__ == '__main__':
     unittest.main()

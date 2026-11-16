@@ -55,6 +55,8 @@ jobs:
 
       - name: Install collector
         run: pip install -r requirements.txt
+      - name: Install Chinese typography for publication fixtures
+        run: sudo apt-get update -qq && sudo apt-get install -y --no-install-recommends fonts-noto-cjk
 
       - name: Validate official-source adapters
         run: python -m unittest discover -s tests -v

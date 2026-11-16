@@ -168,6 +168,46 @@ class WeeklySourceAndReferenceTests(unittest.TestCase):
 
 
 class WeeklyProcessAndPrivacyTests(unittest.TestCase):
+    def test_automatic_high_impact_event_needs_a_retrieved_cited_original(self):
+        for title in ('IBM reports quantum advantage', 'CEO steps down', 'Clinical results announced', '患者临床结果'):
+            report, packet, catalog = fixture()
+            for locale in ('en', 'zh'):
+                report[locale]['main_events'][0]['title'] = title
+            options = {'user_authorized': False, 'generation_metadata': {'status': 'success'}}
+            with self.subTest(title=title), self.assertRaisesRegex(ValueError, 'high_impact_original'):
+                publish(report, packet, catalog, **options)
+            # An unrelated source text cannot clear this event's gate.
+            catalog[1]['original_read'] = {'status': 'retrieved', 'source_url': catalog[1]['url'],
+                                          'excerpt': 'Public source text. ' * 30}
+            with self.assertRaisesRegex(ValueError, 'high_impact_original'):
+                publish(report, packet, catalog, **options)
+            catalog[0]['original_read'] = {'status': 'retrieved', 'source_url': catalog[0]['url'],
+                                          'excerpt': 'Public source text. ' * 30}
+            payload = publish(report, packet, catalog, **options)
+            self.assertFalse(payload['process']['independently_verified'])
+            self.assertNotIn('original_read', json.dumps(payload))
+            catalog[0]['original_read']['source_url'] = 'https://source.example/different-article'
+            with self.assertRaisesRegex(ValueError, 'high_impact_original'):
+                publish(report, packet, catalog, **options)
+
+    def test_high_impact_cannot_move_outside_event_body_to_evade_original_check(self):
+        for position in ('title', 'dek', 'lead', 'synthesis_intro', 'synthesis_signal', 'next_watch'):
+            report, packet, catalog = fixture()
+            content = report['en']
+            claim = 'The source reports quantum advantage.'
+            if position in {'title', 'dek'}:
+                content[position] = claim
+            elif position == 'lead':
+                content['lead']['text'] = claim
+            elif position == 'synthesis_intro':
+                content['synthesis']['intro'] = claim
+            elif position == 'synthesis_signal':
+                content['synthesis']['signal']['text'] = claim
+            else:
+                content['next_watch'][0]['text'] = claim
+            with self.subTest(position=position), self.assertRaisesRegex(ValueError, 'high_impact_original'):
+                publish(report, packet, catalog, user_authorized=False, generation_metadata={'status': 'success'})
+
     def test_explicit_authorization_is_not_a_claim_of_human_or_fact_review(self):
         payload = publish(generation_metadata={"status": "failed"})
         self.assertEqual(payload["process"], {"ai_assisted": True, "human_reviewed": False, "independently_verified": False})

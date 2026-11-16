@@ -11,6 +11,7 @@ from unittest.mock import patch
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 from weekly_public import render_weekly_index, render_weekly_issue
+from weekly_seo import weekly_heading
 
 
 def fixture(identifier="2026-11-09"):
@@ -56,7 +57,7 @@ class WeeklyPublicTests(unittest.TestCase):
             self.assertIn('hreflang="zh-Hans"', page)
             self.assertIn('hreflang="x-default"', page)
             self.assertIn(f'<meta name="description" content="{payload[locale]["dek"]}">', page)
-            self.assertIn('<link rel="stylesheet" href="/weekly.css?v=1">', page)
+            self.assertIn('<link rel="stylesheet" href="/weekly.css?v=2">', page)
 
     def test_locales_are_independent_and_reuse_existing_branding_and_navigation(self):
         payload = fixture()
@@ -134,7 +135,8 @@ class WeeklyPublicTests(unittest.TestCase):
         self.assertNotIn("<img src=x", page)
         self.assertIn("&lt;/script&gt;", page)
         self.assertIn("\\u003c/script\\u003e", page)
-        self.assertEqual(schema(page)["headline"], hostile)
+        self.assertEqual(schema(page)["headline"], weekly_heading(payload, "en"))
+        self.assertIn(hostile, schema(page)["headline"])
         self.assertEqual(schema(page)["description"], hostile)
         reader = Elements()
         reader.feed(page)
@@ -177,8 +179,8 @@ class WeeklyPublicTests(unittest.TestCase):
         reader = Elements()
         reader.feed(page)
         self.assertEqual(sum(tag == "h1" for tag, _ in reader.elements), 1)
-        self.assertEqual([attrs.get("src") for tag, attrs in reader.elements if tag == "img"], ["/assets/logo-en-reverse.svg"])
-        self.assertEqual([attrs.get("href") for tag, attrs in reader.elements if tag == "link" and attrs.get("rel") == "stylesheet"], ["/weekly.css?v=1"])
+        self.assertEqual([attrs.get("src") for tag, attrs in reader.elements if tag == "img"], ["/assets/logo-en-reverse.svg", "/assets/weekly/2026-11-09-en.png"])
+        self.assertEqual([attrs.get("href") for tag, attrs in reader.elements if tag == "link" and attrs.get("rel") == "stylesheet"], ["/weekly.css?v=2"])
         self.assertFalse(any(tag in {"iframe", "form", "video", "audio", "style"} for tag, _ in reader.elements))
         scripts = [attrs for tag, attrs in reader.elements if tag == "script"]
         local_analytics = [attrs for attrs in scripts if attrs.get("src") == "/analytics.js?v=2"]
@@ -274,6 +276,99 @@ class WeeklyPublicTests(unittest.TestCase):
         self.assertIn("focus-visible", css)
         self.assertNotIn("@import", css)
         self.assertNotIn("url(", css)
+
+    def test_legacy_titles_use_the_supplied_topic_once_with_type_period_and_brand_suffix(self):
+        payload = fixture()
+        payload["en"]["title"] = "Polyemergence Industry Review: Multiagent Systems, IBM Quantum Reports & AI Tools"
+        payload["zh"]["title"] = "Polyemergence 行业观察：多智能体协作、IBM量子报告与AI工具"
+        for locale, topic, kind, brand in (
+            ("en", "Multiagent Systems, IBM Quantum Reports & AI Tools", "Weekly Tech News & Analysis", "Polyemergence"),
+            ("zh", "多智能体协作、IBM量子报告与AI工具", "科技周报", "多重涌现"),
+        ):
+            page = render_weekly_issue(payload, locale)
+            title = re.search(r"<title>(.*?)</title>", page)[1]
+            heading = re.search(r"<h1>(.*?)</h1>", page)[1]
+            self.assertIn("Weekly Tech News" if locale == "en" else kind, title)
+            self.assertIn("Nov 9–15, 2026" if locale == "en" else "11月9–15日", title)
+            self.assertTrue(title.endswith(" | " + brand))
+            self.assertEqual(title.count(brand), 1)
+            self.assertNotIn("Industry Review", heading)
+            self.assertNotIn("行业观察", heading)
+            self.assertNotIn("Polyemergence", heading)
+            self.assertIn(kind.replace("&", "&amp;"), heading)
+            self.assertIn("2026-11-09 — 2026-11-15", heading)
+            self.assertIn(topic.replace("&", "&amp;"), heading)
+            self.assertEqual(schema(page)["headline"], weekly_heading(payload, locale))
+
+    def test_author_is_the_real_organization_with_visible_ai_assistance_and_existing_identity_links(self):
+        for locale in ("en", "zh"):
+            page = render_weekly_issue(fixture(), locale)
+            author = schema(page)["author"]
+            self.assertEqual(author["@type"], "Organization")
+            self.assertEqual(author["name"], "Polyemergence")
+            self.assertEqual(author["legalName"], "PolyEmergence Pte Ltd.")
+            self.assertEqual(author["sameAs"], [f"https://polyemergence.com/{locale}/standards/", f"https://polyemergence.com/{locale}/#about"])
+            byline = re.search(r'<p class="weekly-byline">(.*?)</p>', page)[1]
+            self.assertIn("Polyemergence", byline)
+            self.assertIn("PolyEmergence Pte Ltd.", byline)
+            self.assertIn("AI-assisted" if locale == "en" else "AI 辅助", byline)
+            self.assertNotIn('"@type":"Person"', page)
+
+    def test_topic_cover_is_local_issue_specific_and_used_by_all_social_and_article_metadata(self):
+        for locale in ("en", "zh"):
+            page = render_weekly_issue(fixture(), locale)
+            url = f"https://polyemergence.com/assets/weekly/2026-11-09-{locale}.png"
+            reader = Elements()
+            reader.feed(page)
+            cover = [attrs for tag, attrs in reader.elements if tag == "img" and attrs.get("src", "").startswith("/assets/weekly/")]
+            self.assertEqual(len(cover), 1)
+            self.assertEqual(cover[0]["width"], "1200")
+            self.assertEqual(cover[0]["height"], "630")
+            self.assertIn(f'<meta property="og:image" content="{url}">', page)
+            self.assertIn(f'<meta name="twitter:image" content="{url}">', page)
+            self.assertEqual(schema(page)["image"], [url])
+            self.assertNotIn("social-preview.png", page)
+            index = render_weekly_index([fixture()], locale)
+            self.assertIn(f'content="https://polyemergence.com/assets/weekly/index-{locale}.png"', index)
+            self.assertIn("Weekly Tech News &amp; Analysis" if locale == "en" else "<h1>科技周报</h1>", index)
+
+    def test_source_title_links_to_original_and_archive_anchor_names_the_specific_story(self):
+        for locale, title, label in (("en", "English source title", "Archived brief"), ("zh", "中文来源标题", "本站归档摘要")):
+            page = render_weekly_issue(fixture(), locale)
+            self.assertIn(f'<a class="weekly-source-title" href="https://publisher.example.org/source?a=1&amp;b=2" target="_blank" rel="noopener noreferrer">{title}</a>', page)
+            self.assertIn(f'href="https://polyemergence.com/{locale}/archive/source/">{label}: {title}</a>', page)
+            self.assertNotIn(">Read original</a>", page)
+            self.assertNotIn(">阅读原文</a>", page)
+
+    def test_archive_titles_do_not_turn_external_or_traversal_urls_into_site_archive_links(self):
+        for unsafe in ("https://other.example.org/en/archive/source/", "https://polyemergence.com/zh/archive/source/", "https://polyemergence.com/en/archive/%2e%2e/private/", "https://polyemergence.com/en/archive/source/?token=x"):
+            payload = fixture()
+            payload["sources"][0]["archive_url_en"] = unsafe
+            page = render_weekly_issue(payload, "en")
+            self.assertNotIn(f'href="{unsafe}"', page)
+            self.assertIn("Archive link unavailable or unsafe", page)
+
+    def test_contents_targets_exist_and_only_selected_fields_get_contextual_archive_links_before_events(self):
+        payload = fixture()
+        payload["coverage"]["fields"].extend([
+            {"domain": "quantum_technology", "domain_labels": {"en": "Quantum Technology"}, "selected_count": 1},
+            {"domain": "energy_storage", "domain_labels": {"en": "Energy & Storage"}, "selected_count": 0},
+            {"domain": "../unsafe", "selected_count": 2},
+            {"domain": "space_economy", "selected_count": True},
+        ])
+        page = render_weekly_issue(payload, "en")
+        self.assertIn('href="/en/archive/fields/ai/">Artificial Intelligence archive</a>', page)
+        self.assertIn('href="/en/archive/fields/quantum_technology/">Quantum Technology archive</a>', page)
+        self.assertNotIn('href="/en/archive/fields/energy_storage/"', page)
+        self.assertNotIn('href="/en/archive/fields/space_economy/"', page)
+        self.assertNotIn('href="/en/archive/fields/../unsafe/"', page)
+        self.assertLess(page.index('id="weekly-fields"'), page.index('id="weekly-main-events"'))
+        contents = re.search(r'<nav class="weekly-contents".*?</nav>', page)[0]
+        for target in re.findall(r'href="#([^"]+)"', contents):
+            self.assertIn(f'id="{target}"', page)
+        self.assertIn('href="#weekly-insights"', contents)
+        self.assertIn('href="#weekly-main-events"', contents)
+        self.assertIn('href="#weekly-signals"', contents)
 
 
 if __name__ == "__main__":

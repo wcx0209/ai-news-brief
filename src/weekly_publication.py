@@ -11,6 +11,7 @@ from urllib.parse import parse_qsl, unquote, urlsplit
 from zoneinfo import ZoneInfo
 
 from source_images import normalize_source_url
+from reach_content import same_article_url
 from weekly_generation import validate_draft
 from weekly_synthesis import DIMENSIONS, evidence_components, validate_synthesis
 
@@ -25,6 +26,9 @@ _EMAIL = re.compile(r"[\w.+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}")
 _TOKEN = re.compile(r"\b(?:AIza[A-Za-z0-9_-]{25,}|sk-(?:proj-)?[A-Za-z0-9_-]{20,})\b")
 _CREDENTIAL_KEYS = {"token", "access_token", "api_key", "apikey", "key", "password", "secret",
                     "authorization", "auth", "sig", "signature", "email"}
+_HIGH_IMPACT = re.compile(
+    r'\b(?:CEO|chief executive|quantum advantage|clinical|diagnos\w*|treat\w*|cure\w*|patients?)\b'
+    r'|量子优势|临床|诊断|治疗|患者|辞职|辞去|离任', re.IGNORECASE)
 
 
 def _fail(reason):
@@ -176,6 +180,45 @@ def _automatic_gate(report, metadata):
         _audit_clean(review.get("audit"))
 
 
+def _require_original_for_high_impact(report, catalog):
+    """Source text must be available for sensitive automatic-publication claims.
+
+    A successful read establishes what a cited publisher says, not independent
+    truth. The metadata comes from the cloud reader, never the generated prose.
+    """
+    rows = {row.get('id'): row for row in catalog}
+    def check(text, references):
+        if not _HIGH_IMPACT.search(text):
+            return
+        for identifier in references:
+            row = rows.get(identifier, {})
+            read = row.get('original_read') or {}
+            if (isinstance(read, dict) and read.get('status') == 'retrieved'
+                    and isinstance(read.get('excerpt'), str) and len(read['excerpt'].strip()) >= 300
+                    and same_article_url(row.get('url'), read.get('source_url'))):
+                return
+        _fail('high_impact_original_source_unavailable')
+
+    for locale in ('en', 'zh'):
+        content = report[locale]
+        issue_references = set()
+        for section in ('main_events', 'early_signals'):
+            for event in content[section]:
+                references = event['evidence_ids']
+                issue_references.update(references)
+                check(' '.join(str(event.get(key, '')) for key in (
+                    'title', 'what_changed', 'why_it_matters', 'uncertainty')), references)
+        check(content['title'] + ' ' + content['dek'], issue_references)
+        check(content['lead']['text'], content['lead']['evidence_ids'])
+        synthesis = content['synthesis']
+        check(synthesis['intro'] + ' ' + synthesis['limits'], synthesis['evidence_ids'])
+        for dimension in DIMENSIONS:
+            part = synthesis[dimension]
+            check(part['title'] + ' ' + part['text'], part['evidence_ids'])
+        for point in content['next_watch']:
+            check(point['text'], point['evidence_ids'])
+
+
 def _no_false_verification(report):
     for mapping in (report, report.get("issue"), report.get("editorial_review"), report.get("process")):
         if not isinstance(mapping, dict):
@@ -297,6 +340,8 @@ def prepare_publication(report, packet, catalog, *, published_at, prior=None,
     if any(not isinstance(report.get(locale), dict) or "synthesis" not in report[locale] for locale in ("en", "zh")):
         _fail("synthesis_required")
     validate_draft(report, packet, catalog)
+    if not user_authorized:
+        _require_original_for_high_impact(report, catalog)
     validate_synthesis({locale: {"synthesis": report[locale]["synthesis"]} for locale in ("en", "zh")}, packet, catalog)
     allowed = set(components)
     locales = {locale: _locale(report[locale], allowed) for locale in ("en", "zh")}

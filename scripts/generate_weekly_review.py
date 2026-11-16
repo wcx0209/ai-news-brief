@@ -2,6 +2,7 @@
 """Cloud-only weekly REVIEW artifact. No collection, DB writes or publication."""
 
 import argparse
+from copy import deepcopy
 from datetime import date, datetime, time, timedelta, timezone
 import json
 import os
@@ -151,6 +152,7 @@ def main(argv=None):
         from weekly_editorial import build_weekly_plan
         from weekly_generation import CloudGemini, generate_review
         from weekly_render import render_review, to_markdown
+        from weekly_source_reads import enrich_selected_sources
         rows = load_cloud_archive(issue)
         records, rejected = prepare_records(rows, known_archive_urls())
         plan = build_weekly_plan(records, start_utc=issue['start'], end_utc=issue['end'])
@@ -160,13 +162,25 @@ def main(argv=None):
                           selected_main=len(plan['shortlist']['main']), selected_signals=len(plan['shortlist']['signals']))
         if len(plan['shortlist']['main']) < 3:
             raise ValueError('not_enough_qualified_independent_events_for_weekly_review')
+        plan, source_read_audit = enrich_selected_sources(plan)
+        save('source-read-audit.json', source_read_audit)
+        generation['original_source_reads'] = {
+            key: source_read_audit[key] for key in (
+                'requested_unique_urls', 'retrieved_unique_urls', 'unavailable_unique_urls')}
         model = CloudGemini()
         generation['model'] = model.model
         generation['calls'] = model.calls
         report, packet = generate_review(plan, issue, model)
         report['coverage'] = render_coverage(plan)
         selected_ids = {item for section in ('main_events', 'early_signals') for event in packet[section] for item in event['evidence_ids']}
-        catalog = [record for record in records if record['id'] in selected_ids]
+        source_reads = {row['id']: row['original_read']
+                        for section in ('main', 'signals') for event in plan['shortlist'][section]
+                        for row in (event.get('support') or [event['representative']])
+                        if 'original_read' in row}
+        catalog = [deepcopy(record) for record in records if record['id'] in selected_ids]
+        for record in catalog:
+            if record['id'] in source_reads:
+                record['original_read'] = deepcopy(source_reads[record['id']])
         save('source-catalog.json', catalog)
         save('evidence-packet.json', packet)
         save('weekly-review.json', report)
@@ -198,7 +212,8 @@ def main(argv=None):
             with open(summary, 'a', encoding='utf-8') as handle:
                 handle.write('## Weekly review artifact\n\n'
                              f"Status: `{generation['status']}`. Cloud database read-only; "
-                             'cloud Gemini only. No collection, article writes, website publishing, email or schedule changes. '
+                             'bounded anonymous original-source reads and cloud Gemini only. '
+                             'No source discovery, article writes, website publishing, email or schedule changes. '
                              'The report text is kept in the review artifact, not this public job summary.\n')
 
 

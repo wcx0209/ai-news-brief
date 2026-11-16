@@ -20,6 +20,18 @@ body.weekly-public{--weekly-ink:#171717;--weekly-muted:#6b6861;--weekly-line:#d6
 .weekly-eyebrow{margin:0 0 13px;color:#a13f1e;font-size:11px;font-weight:800;letter-spacing:.07em}
 .weekly-issue-header h1,.weekly-index-header h1{max-width:960px;margin:0 0 22px;font-size:clamp(36px,5.2vw,56px);font-weight:800;line-height:1.18;letter-spacing:-.045em;text-wrap:balance;overflow-wrap:anywhere}
 .weekly-dek{max-width:890px;margin:0;font-size:19px;line-height:1.8;color:#49463f;overflow-wrap:anywhere}
+.weekly-byline{margin:0 0 19px;font-size:12px;line-height:1.8;color:var(--weekly-muted);overflow-wrap:anywhere}
+.weekly-cover{margin:28px 0 0;overflow:hidden;border:1px solid var(--weekly-line);background:#eeece6}
+.weekly-cover img{display:block;width:100%;height:auto;aspect-ratio:1200/630;object-fit:contain}
+.weekly-fields{margin:28px 0 0;padding:20px 0;border-top:1px solid var(--weekly-line);border-bottom:1px solid var(--weekly-line)}
+.weekly-fields h2,.weekly-contents h2{margin:0 0 8px;font-size:15px;line-height:1.5}
+.weekly-fields>p{margin:0 0 10px;font-size:12px;color:var(--weekly-muted)}
+.weekly-field-links{display:flex;flex-wrap:wrap;gap:7px 19px}
+.weekly-field-links a{display:inline-flex;align-items:center;min-height:36px;font-size:12px;font-weight:650}
+.weekly-contents{margin:24px 0;padding:18px 21px;border:1px solid var(--weekly-line)}
+.weekly-contents ol{display:flex;flex-wrap:wrap;gap:5px 25px;margin:0;padding-left:21px;font-size:12px}
+.weekly-contents a{display:inline-flex;align-items:center;min-height:36px}
+.weekly-public section[id]{scroll-margin-top:20px}
 .weekly-issue-meta{display:flex;flex-wrap:wrap;gap:7px 30px;margin:26px 0 0;padding:17px 0;border-top:1px solid var(--weekly-line);border-bottom:1px solid var(--weekly-line);font-size:11px;color:var(--weekly-muted)}
 .weekly-issue-meta p{margin:0;overflow-wrap:anywhere}
 .weekly-issue-meta strong{font-weight:650;color:#504c45}

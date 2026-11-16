@@ -58,7 +58,7 @@ class WeeklyExportTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             output = Path(directory)
             paths = exporter.export_weeklies(output, [payload])
-            self.assertEqual(len(paths), 9)
+            self.assertEqual(len(paths), 13)
             self.assertTrue(all(path.is_file() for path in paths))
             manifest = json.loads((output / "data/weekly/index.json").read_text())
             self.assertEqual(manifest["latest"], payload["id"])
@@ -72,7 +72,7 @@ class WeeklyExportTests(unittest.TestCase):
                 self.assertIn('hreflang="zh-Hans" href="https://polyemergence.com/zh/weekly/2026-11-09/"', html)
                 self.assertNotIn("<signal>", html)
                 channel = ET.parse(output / f"weekly-{locale}.xml").getroot().find("channel")
-                self.assertEqual(channel.findtext("item/title"), payload[locale]["title"])
+                self.assertEqual(channel.findtext("item/title"), exporter.weekly_heading(payload, locale))
                 self.assertEqual(channel.findtext("item/description"), payload[locale]["dek"])
                 self.assertEqual(parsedate_to_datetime(channel.findtext("item/pubDate")), exporter._timestamp(payload["published_at"]))
                 self.assertEqual(parsedate_to_datetime(channel.findtext("lastBuildDate")), exporter._timestamp(payload["modified_at"]))
@@ -98,7 +98,7 @@ class WeeklyExportTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             output = Path(directory)
             paths = exporter.export_weeklies(output, [payload])
-            self.assertTrue(all(secret not in path.read_text() for path in paths))
+            self.assertTrue(all(secret.encode() not in path.read_bytes() for path in paths))
             self.assertEqual(json.loads((output / "data/weekly/2026-11-09.json").read_text()), fixture())
         self.assertEqual(payload, original)
 
@@ -213,6 +213,34 @@ class WeeklyExportTests(unittest.TestCase):
                         writer.assert_not_called()
                     self.assertEqual(list(output.iterdir()), [])
 
+    def test_cover_failures_happen_before_any_file_or_directory_is_changed(self):
+        with tempfile.TemporaryDirectory() as directory:
+            output = Path(directory)
+            # The fourth card is the last index cover, after issue HTML/PNGs have rendered.
+            with patch.object(exporter, "render_weekly_cover", side_effect=[b"one", b"two", b"three", RuntimeError("Missing CJK font")]), \
+                    patch.object(exporter, "_atomic_write") as writer:
+                with self.assertRaisesRegex(RuntimeError, "Missing CJK"):
+                    exporter.export_weeklies(output, [fixture()])
+                writer.assert_not_called()
+            self.assertEqual(list(output.iterdir()), [])
+
+    def test_local_cover_paths_are_exported_without_changing_public_json(self):
+        payload = fixture()
+        original = deepcopy(payload)
+        with tempfile.TemporaryDirectory() as directory:
+            output = Path(directory)
+            exporter.export_weeklies(output, [payload])
+            for locale in ("en", "zh"):
+                for identifier in (None, payload["id"]):
+                    path = output / exporter.weekly_cover_path(identifier, locale).lstrip("/")
+                    self.assertTrue(path.read_bytes().startswith(b"\x89PNG\r\n\x1a\n"))
+                html = (output / locale / "weekly" / payload["id"] / "index.html").read_text()
+                self.assertIn(exporter.weekly_cover_path(payload["id"], locale), html)
+            before = (output / "data/weekly/2026-11-09.json").read_bytes()
+            exporter.export_weeklies(output, exporter.load_editions(output))
+            self.assertEqual((output / "data/weekly/2026-11-09.json").read_bytes(), before)
+        self.assertEqual(payload, original)
+
     def test_filename_mismatch_and_symlink_escape_fail_closed(self):
         with tempfile.TemporaryDirectory() as directory, tempfile.TemporaryDirectory() as elsewhere:
             output = Path(directory)
@@ -233,7 +261,7 @@ class WeeklyExportTests(unittest.TestCase):
     def test_empty_export_is_honest_and_has_no_invented_dates(self):
         with tempfile.TemporaryDirectory() as directory:
             output = Path(directory)
-            self.assertEqual(len(exporter.export_weeklies(output, [])), 6)
+            self.assertEqual(len(exporter.export_weeklies(output, [])), 8)
             manifest = json.loads((output / "data/weekly/index.json").read_text())
             self.assertIsNone(manifest["latest"])
             self.assertIsNone(manifest["modified_at"])

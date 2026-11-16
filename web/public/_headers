@@ -66,3 +66,6 @@
 
 /weekly-*.xml
   Cache-Control: no-cache, must-revalidate
+
+/assets/weekly/*
+  Cache-Control: no-cache, must-revalidate

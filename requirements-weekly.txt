@@ -1,5 +1,9 @@
-# Drafting only: no collector, browser, embedding model or local LLM runtime.
+# Cloud weekly drafting, bounded original-source reads and static covers.
 openai>=1.0.0
 psycopg2-binary>=2.9.0
 python-dotenv>=1.0.0
 pyyaml>=6.0
+Pillow>=12.0.0
+agent-reach @ https://github.com/Panniantong/Agent-Reach/archive/c70ae6da5d39bc90e09ad2ae0575ccc89f31e284.zip
+yt-dlp[default]==2026.8.19
+requests==2.32.5

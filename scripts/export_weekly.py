@@ -17,6 +17,8 @@ from xml.etree import ElementTree as ET
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 from weekly_public import COPY, SITE, render_weekly_index, render_weekly_issue
+from weekly_covers import render_weekly_cover
+from weekly_seo import weekly_cover_path, weekly_heading
 
 
 SGT = timezone(timedelta(hours=8))
@@ -176,7 +178,7 @@ def _rss(editions, locale):
         ET.SubElement(channel, "lastBuildDate").text = format_datetime(_timestamp(editions[0]["modified_at"]), usegmt=True)
     for payload in editions:
         item = ET.SubElement(channel, "item")
-        for key, value in (("title", payload[locale]["title"]), ("link", _canonical(locale, payload["id"])),
+        for key, value in (("title", weekly_heading(payload, locale)), ("link", _canonical(locale, payload["id"])),
                            ("description", payload[locale]["dek"]),
                            ("pubDate", format_datetime(_timestamp(payload["published_at"]), usegmt=True))):
             ET.SubElement(item, key).text = value
@@ -255,11 +257,13 @@ def export_weeklies(output: Path, payloads: list[dict], *, allow_corrections=Fal
             page = render_weekly_issue(payload, locale)
             _check_page(page, locale, payload["id"])
             artifacts[f'{locale}/weekly/{payload["id"]}/index.html'] = page.encode("utf-8")
+            artifacts[weekly_cover_path(payload["id"], locale).lstrip("/")] = render_weekly_cover(payload, locale)
     for locale in ("en", "zh"):
         page = render_weekly_index(editions, locale)
         _check_page(page, locale)
         artifacts[f"{locale}/weekly/index.html"] = page.encode("utf-8")
         artifacts[f"weekly-{locale}.xml"] = _rss(editions, locale)
+        artifacts[weekly_cover_path(None, locale).lstrip("/")] = render_weekly_cover(None, locale)
     # Validate every destination before the first file or directory is changed.
     destinations = [(_target(output, name), content) for name, content in sorted(artifacts.items())]
     for path, content in destinations:

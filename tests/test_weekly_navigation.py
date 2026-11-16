@@ -136,7 +136,7 @@ class WeeklyNavigationTests(unittest.TestCase):
     @unittest.skipUnless(shutil.which("node"), "Node is needed for the service-worker fixture")
     def test_pwa_fetches_weekly_pages_and_styles_from_network_before_cache(self):
         source = (ROOT / "web/public/sw.js").read_text()
-        self.assertIn('CACHE_NAME = "polyemergence-v18"', source)
+        self.assertIn('CACHE_NAME = "polyemergence-v19"', source)
         script = r'''const vm=require('node:vm'),assert=require('node:assert/strict');
 const listeners={},fetches=[];
 const cache={put:async()=>{},match:async()=>{throw new Error('cache used before network')}};
@@ -145,10 +145,10 @@ const context={URL,Request:class{constructor(request,options){this.url=request.u
  caches:{open:async()=>cache,match:async()=>{throw new Error('cache-first route')}},
  fetch:async request=>{fetches.push(request);return{ok:true,clone(){return this}}}};
 vm.runInNewContext(SOURCE,context);
-(async()=>{for(const [path,mode] of [['/en/weekly/','navigate'],['/zh/weekly/2026-11-09/','navigate'],['/weekly.css?v=1','cors'],['/weekly.css?v=2','cors']]){
+(async()=>{for(const [path,mode] of [['/en/weekly/','navigate'],['/zh/weekly/2026-11-09/','navigate'],['/weekly.css?v=1','cors'],['/weekly.css?v=2','cors'],['/assets/weekly/index-en.png','cors'],['/assets/weekly/2026-11-09-zh.png','cors']]){
  let response;listeners.fetch({request:{method:'GET',mode,url:'https://polyemergence.com'+path},respondWith:value=>response=value});
  assert.ok(response);await response;assert.equal(fetches.at(-1).options.cache,'no-cache');}
- assert.equal(fetches.length,4);})().catch(error=>{console.error(error);process.exitCode=1});'''.replace("SOURCE", json.dumps(source))
+ assert.equal(fetches.length,6);})().catch(error=>{console.error(error);process.exitCode=1});'''.replace("SOURCE", json.dumps(source))
         subprocess.run(["node", "-e", script], check=True, capture_output=True, text=True)
 
 

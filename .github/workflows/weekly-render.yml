@@ -1,0 +1,50 @@
+name: Polyemergence weekly presentation refresh
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: polyemergence-daily-brief
+  cancel-in-progress: false
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.ref_name }}
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0
+        with:
+          python-version: "3.11"
+      - name: Install static typography only
+        run: |
+          pip install 'Pillow>=12.0.0'
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends fonts-noto-cjk
+      - name: Validate the public renderer offline
+        run: |
+          python -m unittest discover -s tests -p test_weekly_public.py -v
+          python -m unittest discover -s tests -p test_weekly_seo.py -v
+          python -m unittest discover -s tests -p test_weekly_covers.py -v
+          python -m unittest discover -s tests -p test_weekly_export.py -v
+      - name: Refresh existing presentation without generating or republishing any issue
+        run: python scripts/export_weekly.py --output web/public
+      - name: Verify edition data and publication dates remain unchanged
+        run: git diff --exit-code -- web/public/data/weekly
+      - name: Publish presentation and cover changes
+        run: |
+          git config user.name "polyemergence-bot"
+          git config user.email "polyemergence-bot@users.noreply.github.com"
+          git add web/public/en/weekly web/public/zh/weekly web/public/assets/weekly web/public/weekly-en.xml web/public/weekly-zh.xml web/public/weekly-sitemap.xml
+          if git diff --cached --quiet; then
+            echo "No presentation changes"
+          else
+            git commit -m "design: refresh weekly SEO and reading presentation"
+            git pull --rebase origin "$GITHUB_REF_NAME"
+            git push
+          fi

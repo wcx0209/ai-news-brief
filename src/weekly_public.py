@@ -5,8 +5,11 @@ from datetime import date, datetime, timedelta, timezone
 from html import escape
 import json
 import re
+from urllib.parse import unquote, urlsplit
 
 from source_images import normalize_source_url
+from weekly_editorial import REGISTERED_DOMAINS
+from weekly_seo import weekly_cover_path, weekly_heading, weekly_meta_title, weekly_topic
 
 
 SITE = "https://polyemergence.com"
@@ -15,8 +18,8 @@ COPY = {
     "en": {
         "lang": "en", "brand": "Polyemergence", "home": "Fields", "weekly": "Weekly", "archive": "Archive", "method": "Method", "feedback": "Feedback",
         "skip": "Skip to content", "navigation": "Primary navigation", "language": "Change language",
-        "index_title": "The Polyemergence Weekly", "index_dek": "Explore our weekly editions on emerging technologies, with editorial interpretation, original sources and uncertainty kept in view.",
-        "issue_title": "Polyemergence Weekly", "ai": "AI-assisted weekly", "period": "Coverage period",
+        "index_title": "Weekly Tech News & Analysis", "index_dek": "Explore our weekly editions on emerging technologies, with editorial interpretation, original sources and uncertainty kept in view.",
+        "issue_title": "Weekly Tech News & Analysis", "ai": "AI-assisted weekly", "period": "Coverage period",
         "published": "Weekly edition published", "modified": "Updated", "timezone": "Time zone",
         "latest": "Latest edition", "history": "Earlier editions", "read": "Read this edition", "all": "All weekly editions",
         "no_editions": "No weekly editions have been published here yet.", "no_history": "This is the first available edition.",
@@ -38,12 +41,13 @@ COPY = {
         "coverage_note": "These counts describe the supplied selection, not industry activity or momentum.",
         "process": "How this was produced", "process_note": "AI-assisted synthesis based on existing news summaries. This page does not claim human editorial review or independent fact-checking. Reported facts remain attributed to the linked sources; interpretations and uncertainty are identified separately.",
         "publisher": "Published by PolyEmergence Pte Ltd., Singapore.", "standards": "Editorial standards", "corrections": "Corrections",
+        "by": "By", "contents": "In this edition", "fields": "Selected fields", "fields_note": "Browse the source archives for the fields selected in this edition:", "field_archive": "archive", "cover": "Edition topic cover",
     },
     "zh": {
         "lang": "zh-Hans", "brand": "多重涌现", "home": "领域", "weekly": "周报", "archive": "归档", "method": "方法", "feedback": "反馈",
         "skip": "跳到正文", "navigation": "主导航", "language": "切换语言",
-        "index_title": "多重涌现科技周报", "index_dek": "按周梳理新兴科技进展，保留编辑解读、原始出处与尚未确定的边界。",
-        "issue_title": "多重涌现科技周报", "ai": "AI 辅助周报", "period": "选材周期",
+        "index_title": "科技周报", "index_dek": "按周梳理新兴科技进展，保留编辑解读、原始出处与尚未确定的边界。",
+        "issue_title": "科技周报", "ai": "AI 辅助周报", "period": "选材周期",
         "published": "周报发布时间", "modified": "更新于", "timezone": "时区",
         "latest": "最新一期", "history": "往期周报", "read": "阅读本期", "all": "全部周报",
         "no_editions": "这里暂未发布周报。", "no_history": "这是目前可阅读的第一期。",
@@ -65,6 +69,7 @@ COPY = {
         "coverage_note": "这些计数仅描述本期选材，不代表行业热度或发展速度。",
         "process": "制作与核验说明", "process_note": "本周报使用 AI 辅助综合已有新闻摘要，不声称已经过人工编辑审阅或独立事实核查。事实摘要保留来源归属，编辑判断与不确定性分别列明；请通过所列原文核实。",
         "publisher": "发布主体：PolyEmergence Pte Ltd.，新加坡。", "standards": "编辑标准", "corrections": "纠错记录",
+        "by": "作者机构", "contents": "本期目录", "fields": "本期入选领域", "fields_note": "继续浏览本期入选领域的来源归档：", "field_archive": "归档", "cover": "本期主题封面",
     },
 }
 
@@ -153,6 +158,18 @@ def _evidence(value):
     return list(dict.fromkeys(identifier for raw in value if (identifier := _text(raw)))) if isinstance(value, (list, tuple)) else []
 
 
+def _archive_url(value, locale):
+    url = normalize_source_url(value)
+    if not url:
+        return None
+    parsed = urlsplit(url)
+    if (parsed.scheme != "https" or parsed.netloc != "polyemergence.com"
+            or not parsed.path.startswith(f"/{locale}/archive/") or parsed.query
+            or any(part in {".", ".."} for part in unquote(parsed.path).split("/"))):
+        return None
+    return url
+
+
 def _source_notes(ids, sources, locale, interpretation=False):
     c = COPY[locale]
     rows = []
@@ -163,14 +180,16 @@ def _source_notes(ids, sources, locale, interpretation=False):
             continue
         title = _text(_obj(row.get(locale)).get("title"), c["untitled"])
         domain = _text(_obj(row.get("domain_labels")).get(locale), _text(row.get("domain"), c["missing"]))
-        links = []
-        for key, label, missing in (("url", "original", "unsafe_original"), ("archive_url_" + locale, "archived", "unsafe_archive")):
-            raw_url = row.get(key)
-            url = normalize_source_url(raw_url)
-            absent_archive = key.startswith("archive_url_") and (raw_url is None or isinstance(raw_url, str) and not raw_url.strip())
-            note = c["supplement_no_archive"] if absent_archive else c[missing]
-            links.append(f'<a href="{_esc(url)}" target="_blank" rel="noopener noreferrer">{c[label]}</a>' if url else f'<span class="weekly-missing">{note}</span>')
-        rows.append(f'<li><span class="weekly-source-title">{_esc(title)}</span><span class="weekly-source-meta">{c["source"]}: {_esc(_text(row.get("source"), c["missing"]))} · {c["source_published"]}: {_esc(_source_time(row, locale))} · {c["domain"]}: {_esc(domain)}</span><div class="weekly-source-links">{"".join(links)}</div></li>')
+        original = normalize_source_url(row.get("url"))
+        source_title = (f'<a class="weekly-source-title" href="{_esc(original)}" target="_blank" rel="noopener noreferrer">{_esc(title)}</a>'
+                        if original else f'<span class="weekly-source-title">{_esc(title)}</span>')
+        links = [] if original else [f'<span class="weekly-missing">{c["unsafe_original"]}</span>']
+        raw_archive = row.get("archive_url_" + locale)
+        archive = _archive_url(raw_archive, locale)
+        absent_archive = raw_archive is None or isinstance(raw_archive, str) and not raw_archive.strip()
+        note = c["supplement_no_archive"] if absent_archive else c["unsafe_archive"]
+        links.append(f'<a href="{_esc(archive)}">{c["archived"]}: {_esc(title)}</a>' if archive else f'<span class="weekly-missing">{note}</span>')
+        rows.append(f'<li>{source_title}<span class="weekly-source-meta">{c["source"]}: {_esc(_text(row.get("source"), c["missing"]))} · {c["source_published"]}: {_esc(_source_time(row, locale))} · {c["domain"]}: {_esc(domain)}</span><div class="weekly-source-links">{"".join(links)}</div></li>')
     body = '<ol>' + "".join(rows) + '</ol>' if rows else f'<p class="weekly-missing">{c["no_sources"]}</p>'
     summary = c["interpretation_sources"] if interpretation else c["sources"]
     return f'<details class="weekly-sources"><summary>{summary}</summary>{body}</details>'
@@ -214,15 +233,56 @@ def _coverage(payload, locale):
     return f'<details class="weekly-coverage"><summary>{c["coverage"]}</summary><p class="weekly-section-note">{c["coverage_note"]}</p><div class="weekly-table-wrap"><table><thead><tr><th scope="col">{c["domain"]}</th><th scope="col">{c["qualified"]}</th><th scope="col">{c["selected"]}</th></tr></thead><tbody>{"".join(rows)}</tbody></table></div></details>'
 
 
+def _byline(locale):
+    c = COPY[locale]
+    return f'<p class="weekly-byline">{c["by"]} <a href="/{locale}/#about">Polyemergence</a> · PolyEmergence Pte Ltd. · {c["ai"]} · <a href="/{locale}/standards/">{c["standards"]}</a></p>'
+
+
+def _selected_fields(payload, locale):
+    """Link only selected, registered fields; counts never imply momentum."""
+    c = COPY[locale]
+    coverage = payload.get("coverage")
+    fields = _rows(_obj(coverage).get("fields")) if isinstance(coverage, Mapping) else _rows(coverage)
+    links, seen = [], set()
+    for field in fields:
+        domain, selected = field.get("domain"), field.get("selected_count")
+        if (domain not in REGISTERED_DOMAINS or domain in seen or not isinstance(selected, int)
+                or isinstance(selected, bool) or selected <= 0):
+            continue
+        seen.add(domain)
+        label = _text(_obj(field.get("domain_labels")).get(locale), domain)
+        links.append(f'<a href="/{locale}/archive/fields/{domain}/">{_esc(label)} {c["field_archive"]}</a>')
+    return (f'<section class="weekly-fields" id="weekly-fields" aria-labelledby="weekly-fields-title"><h2 id="weekly-fields-title">{c["fields"]}</h2><p>{c["fields_note"]}</p><div class="weekly-field-links">{"".join(links)}</div></section>'
+            if links else "")
+
+
+def _contents(content, locale):
+    c = COPY[locale]
+    sections = [("weekly-insights", "synthesis")]
+    if _text(_obj(content.get("lead")).get("text")):
+        sections.append(("weekly-selection", "lead"))
+    sections.extend((("weekly-main-events", "main"), ("weekly-signals", "signals")))
+    if _rows(content.get("next_watch")):
+        sections.append(("weekly-next-watch", "watch"))
+    sections.append(("weekly-follow-up", "follow"))
+    links = "".join(f'<li><a href="#{identifier}">{c[label]}</a></li>' for identifier, label in sections)
+    return f'<nav class="weekly-contents" aria-label="{c["contents"]}"><h2>{c["contents"]}</h2><ol>{links}</ol></nav>'
+
+
+def _cover(identifier, locale, topic):
+    return f'<figure class="weekly-cover"><img src="{weekly_cover_path(identifier, locale)}" alt="{COPY[locale]["cover"]}: {_esc(topic)}" width="1200" height="630" decoding="async"></figure>'
+
+
 def _shell(locale, title, description, body, schema, identifier=None):
     c = COPY[locale]
     other = "zh" if locale == "en" else "en"
     canonical = SITE + _path(locale, identifier)
     alternate = SITE + _path(other, identifier)
     logo = f"/assets/logo-{locale}-reverse.svg"
+    cover = SITE + weekly_cover_path(identifier, locale)
     nav = f'<nav class="weekly-nav" aria-label="{c["navigation"]}"><a href="/{locale}/#fields">{c["home"]}</a><a href="/{locale}/weekly/" aria-current="page">{c["weekly"]}</a><a href="/{locale}/archive/">{c["archive"]}</a><a href="/{locale}/#about">{c["method"]}</a><a href="/{locale}/#feedback">{c["feedback"]}</a></nav>'
     return f'''<!doctype html>
-<html lang="{c['lang']}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>{_esc(title)} | {_esc(c['brand'])}</title><meta name="description" content="{_esc(description)}"><meta name="robots" content="index,follow,max-snippet:-1,max-image-preview:large"><link rel="canonical" href="{canonical}"><link rel="alternate" hreflang="en" href="{SITE + _path('en', identifier)}"><link rel="alternate" hreflang="zh-Hans" href="{SITE + _path('zh', identifier)}"><link rel="alternate" hreflang="x-default" href="{SITE + _path('en', identifier)}"><meta property="og:type" content="{'article' if identifier else 'website'}"><meta property="og:site_name" content="Polyemergence"><meta property="og:title" content="{_esc(title)}"><meta property="og:description" content="{_esc(description)}"><meta property="og:url" content="{canonical}"><meta property="og:locale" content="{'zh_CN' if locale == 'zh' else 'en_US'}"><meta property="og:image" content="{SITE}/assets/social-preview.png"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="{_esc(title)}"><meta name="twitter:description" content="{_esc(description)}"><meta name="twitter:image" content="{SITE}/assets/social-preview.png"><link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="/weekly.css?v=1"><script defer src="/analytics.js?v=2"></script><script type="application/ld+json">{_json_ld(schema)}</script></head>
+<html lang="{c['lang']}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>{_esc(title)} | {_esc(c['brand'])}</title><meta name="description" content="{_esc(description)}"><meta name="robots" content="index,follow,max-snippet:-1,max-image-preview:large"><link rel="canonical" href="{canonical}"><link rel="alternate" hreflang="en" href="{SITE + _path('en', identifier)}"><link rel="alternate" hreflang="zh-Hans" href="{SITE + _path('zh', identifier)}"><link rel="alternate" hreflang="x-default" href="{SITE + _path('en', identifier)}"><meta property="og:type" content="{'article' if identifier else 'website'}"><meta property="og:site_name" content="Polyemergence"><meta property="og:title" content="{_esc(title)}"><meta property="og:description" content="{_esc(description)}"><meta property="og:url" content="{canonical}"><meta property="og:locale" content="{'zh_CN' if locale == 'zh' else 'en_US'}"><meta property="og:image" content="{cover}"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta property="og:image:alt" content="{_esc(title)}"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="{_esc(title)}"><meta name="twitter:description" content="{_esc(description)}"><meta name="twitter:image" content="{cover}"><meta name="twitter:image:alt" content="{_esc(title)}"><link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="/weekly.css?v=2"><script defer src="/analytics.js?v=2"></script><script type="application/ld+json">{_json_ld(schema)}</script></head>
 <body class="weekly-public"><a class="weekly-skip" href="#main">{c['skip']}</a><header class="weekly-header"><a class="weekly-brand" href="/{locale}/" aria-label="{_esc(c['brand'])}"><img src="{logo}" alt="{_esc(c['brand'])}" width="420" height="70"></a>{nav}<a class="weekly-language" href="{alternate}" hreflang="{COPY[other]['lang']}" aria-label="{c['language']}">{'中' if other == 'zh' else 'EN'}</a></header>
 <main id="main" class="weekly-main">{body}</main><footer class="weekly-footer"><p>{c['publisher']}</p><p><a href="/{locale}/standards/">{c['standards']}</a> · <a href="/{locale}/corrections/">{c['corrections']}</a> · <a href="/{locale}/weekly/">{c['all']}</a></p></footer></body></html>'''
 
@@ -234,34 +294,35 @@ def render_weekly_issue(payload, locale):
     identifier = _edition_id(payload.get("id"))
     c, content = COPY[locale], _obj(payload.get(locale))
     sources = _sources_index(payload)
-    title = _text(content.get("title"), c["issue_title"])
+    title = weekly_heading(payload, locale)
     description = _text(content.get("dek"))
     published = _timestamp(payload.get("published_at"))
     modified = _timestamp(payload.get("modified_at"))
     metadata = f'<p><strong>{c["period"]}</strong> {_esc(_period(payload, locale))} · {_esc(_text(payload.get("timezone"), c["missing"]))}</p><p><strong>{c["published"]}</strong> {_esc(_time(payload.get("published_at"), locale))}</p>'
     if modified and published and modified > published:
         metadata += f'<p><strong>{c["modified"]}</strong> {_esc(_time(payload.get("modified_at"), locale))}</p>'
-    intro = f'<nav class="weekly-breadcrumb"><a href="/{locale}/weekly/">← {c["all"]}</a></nav><header class="weekly-issue-header"><p class="weekly-eyebrow">{c["ai"]}</p><h1>{_esc(title)}</h1><p class="weekly-dek">{_esc(description)}</p><div class="weekly-issue-meta">{metadata}</div></header>'
-    body = [intro, _synthesis(content, sources, locale)]
+    intro = f'<nav class="weekly-breadcrumb"><a href="/{locale}/weekly/">← {c["all"]}</a></nav><header class="weekly-issue-header"><p class="weekly-eyebrow">{c["ai"]}</p><h1>{_esc(title)}</h1>{_byline(locale)}<p class="weekly-dek">{_esc(description)}</p><div class="weekly-issue-meta">{metadata}</div></header>'
+    body = [intro, _cover(identifier, locale, weekly_topic(payload, locale)), _selected_fields(payload, locale), _contents(content, locale), _synthesis(content, sources, locale)]
     lead = _obj(content.get("lead"))
     if _text(lead.get("text")):
-        body.append(f'<section class="weekly-section"><h2>{c["lead"]}</h2><p class="weekly-lead">{_esc(lead["text"])}</p>{_source_notes(lead.get("evidence_ids"), sources, locale)}</section>')
+        body.append(f'<section class="weekly-section" id="weekly-selection"><h2>{c["lead"]}</h2><p class="weekly-lead">{_esc(lead["text"])}</p>{_source_notes(lead.get("evidence_ids"), sources, locale)}</section>')
     for key, label in (("main_events", "main"), ("early_signals", "signals")):
         rows = _rows(content.get(key))
         note = f'<p class="weekly-section-note">{c["signals_note"]}</p>' if key == "early_signals" else ""
         items = "".join(_event(row, sources, locale) for row in rows) if rows else f'<p class="weekly-missing">{c["empty"]}</p>'
-        body.append(f'<section class="weekly-section"><h2>{c[label]}</h2>{note}{items}</section>')
+        section_id = "weekly-main-events" if key == "main_events" else "weekly-signals"
+        body.append(f'<section class="weekly-section" id="{section_id}"><h2>{c[label]}</h2>{note}{items}</section>')
     watch = _rows(content.get("next_watch"))
     if watch:
         items = "".join(f'<li><p>{_esc(_text(row.get("text"), c["missing"]))}</p>{_source_notes(row.get("evidence_ids"), sources, locale)}</li>' for row in watch)
-        body.append(f'<section class="weekly-section"><h2>{c["watch"]}</h2><ol class="weekly-watch">{items}</ol></section>')
+        body.append(f'<section class="weekly-section" id="weekly-next-watch"><h2>{c["watch"]}</h2><ol class="weekly-watch">{items}</ol></section>')
     follow = _obj(content.get("follow_up"))
     available = follow.get("available")
     label = c["follow_available"] if available is True else c["follow_unavailable"] if available is False else c["follow_unknown"]
     follow_items = "".join(_event(row, sources, locale) for row in _rows(follow.get("items"))) if available is True else ""
-    body.append(f'<section class="weekly-section weekly-follow"><h2>{c["follow"]}</h2><p class="weekly-section-note">{label}</p><p>{_esc(_text(follow.get("note"), c["missing"]))}</p>{follow_items}</section>')
+    body.append(f'<section class="weekly-section weekly-follow" id="weekly-follow-up"><h2>{c["follow"]}</h2><p class="weekly-section-note">{label}</p><p>{_esc(_text(follow.get("note"), c["missing"]))}</p>{follow_items}</section>')
     body.extend([_coverage(payload, locale), f'<details class="weekly-process"><summary>{c["process"]}</summary><p>{c["process_note"]}</p></details>'])
-    schema = {"@context": "https://schema.org", "@type": "Article", "@id": SITE + _path(locale, identifier) + "#article", "url": SITE + _path(locale, identifier), "mainEntityOfPage": SITE + _path(locale, identifier), "headline": title, "description": description, "inLanguage": c["lang"], "articleSection": c["weekly"], "publisher": {"@type": "Organization", "name": "PolyEmergence Pte Ltd.", "url": SITE, "logo": {"@type": "ImageObject", "url": SITE + "/assets/logo-en.svg"}}, "image": [SITE + "/assets/social-preview.png"]}
+    schema = {"@context": "https://schema.org", "@type": "Article", "@id": SITE + _path(locale, identifier) + "#article", "url": SITE + _path(locale, identifier), "mainEntityOfPage": SITE + _path(locale, identifier), "headline": title, "description": description, "inLanguage": c["lang"], "articleSection": c["weekly"], "author": {"@type": "Organization", "name": "Polyemergence", "legalName": "PolyEmergence Pte Ltd.", "url": SITE + f"/{locale}/#about", "sameAs": [SITE + f"/{locale}/standards/", SITE + f"/{locale}/#about"]}, "publisher": {"@type": "Organization", "name": "PolyEmergence Pte Ltd.", "url": SITE, "logo": {"@type": "ImageObject", "url": SITE + "/assets/logo-en.svg"}}, "image": [SITE + weekly_cover_path(identifier, locale)]}
     if published:
         schema["datePublished"] = published.isoformat()
     if modified and (not published or modified >= published):
@@ -269,7 +330,7 @@ def render_weekly_issue(payload, locale):
     citations = list(dict.fromkeys(url for row in sources.values() if (url := normalize_source_url(row.get("url")))))
     if citations:
         schema["citation"] = citations
-    return _shell(locale, title, description, "".join(body), schema, identifier)
+    return _shell(locale, weekly_meta_title(payload, locale), description, "".join(body), schema, identifier)
 
 
 def render_weekly_index(editions, locale):
@@ -284,19 +345,19 @@ def render_weekly_index(editions, locale):
         if identifier not in known:
             known[identifier] = payload
     ordered = [known[identifier] for identifier in sorted(known, reverse=True)]
-    body = [f'<header class="weekly-index-header"><p class="weekly-eyebrow">{c["ai"]}</p><h1>{c["index_title"]}</h1><p class="weekly-dek">{c["index_dek"]}</p></header>']
+    body = [f'<header class="weekly-index-header"><p class="weekly-eyebrow">{c["ai"]}</p><h1>{_esc(c["index_title"])}</h1>{_byline(locale)}<p class="weekly-dek">{c["index_dek"]}</p></header>']
     cards = []
     for index, payload in enumerate(ordered):
         content = _obj(payload.get(locale))
         identifier = _edition_id(payload["id"])
         heading = "h2" if index == 0 else "h3"
         latest = f'<p class="weekly-eyebrow">{c["latest"]}</p>' if index == 0 else ""
-        cards.append(f'<article class="weekly-edition-card{" is-latest" if index == 0 else ""}">{latest}<p class="weekly-edition-period">{_esc(_period(payload, locale))}</p><{heading}><a href="{_path(locale, identifier)}">{_esc(_text(content.get("title"), c["issue_title"]))}</a></{heading}><p>{_esc(_text(content.get("dek"), c["missing"]))}</p><p class="weekly-index-published">{c["published"]}: {_esc(_time(payload.get("published_at"), locale))}</p><a class="weekly-read-link" href="{_path(locale, identifier)}">{c["read"]} →</a></article>')
+        cards.append(f'<article class="weekly-edition-card{" is-latest" if index == 0 else ""}">{latest}<p class="weekly-edition-period">{_esc(_period(payload, locale))}</p><{heading}><a href="{_path(locale, identifier)}">{_esc(weekly_heading(payload, locale))}</a></{heading}><p>{_esc(_text(content.get("dek"), c["missing"]))}</p><p class="weekly-index-published">{c["published"]}: {_esc(_time(payload.get("published_at"), locale))}</p><a class="weekly-read-link" href="{_path(locale, identifier)}">{c["read"]} →</a></article>')
     if cards:
         body.append(cards[0])
         history = "".join(cards[1:]) if len(cards) > 1 else f'<p class="weekly-section-note">{c["no_history"]}</p>'
         body.append(f'<section class="weekly-section"><h2>{c["history"]}</h2><div class="weekly-history">{history}</div></section>')
     else:
         body.append(f'<p class="weekly-empty">{c["no_editions"]}</p>')
-    schema = {"@context": "https://schema.org", "@type": "CollectionPage", "name": c["index_title"], "description": c["index_dek"], "url": SITE + _path(locale), "inLanguage": c["lang"], "mainEntity": {"@type": "ItemList", "numberOfItems": len(ordered), "itemListElement": [{"@type": "ListItem", "position": index + 1, "url": SITE + _path(locale, payload["id"]), "name": _text(_obj(payload.get(locale)).get("title"), c["issue_title"])} for index, payload in enumerate(ordered)]}}
+    schema = {"@context": "https://schema.org", "@type": "CollectionPage", "name": c["index_title"], "description": c["index_dek"], "url": SITE + _path(locale), "inLanguage": c["lang"], "image": [SITE + weekly_cover_path(None, locale)], "mainEntity": {"@type": "ItemList", "numberOfItems": len(ordered), "itemListElement": [{"@type": "ListItem", "position": index + 1, "url": SITE + _path(locale, payload["id"]), "name": weekly_heading(payload, locale)} for index, payload in enumerate(ordered)]}}
     return _shell(locale, c["index_title"], c["index_dek"], "".join(body), schema)
