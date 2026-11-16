@@ -1,6 +1,6 @@
 const COPY = {
   en: {
-    brand: "POLYEMERGENCE", navNews: "Fields", navSignals: "Signals", navArchive: "Archive", navInsight: "Method", navFeedback: "Feedback",
+    brand: "POLYEMERGENCE", navNews: "Fields", navSignals: "Signals", navWeekly: "Weekly", navArchive: "Archive", navInsight: "Method", navFeedback: "Feedback",
     edition: "GLOBAL EDITION", latest: "LATEST INTELLIGENCE",
     seoTitle: "Emerging Technology News & Foresight | Polyemergence",
     seoDescription: "Daily intelligence on AI, programmable life, energy, robotics, quantum, space, materials, neurotechnology, climate, agrifood, and advanced manufacturing.",
@@ -42,7 +42,7 @@ const COPY = {
     footer: "Independent intelligence on emerging technologies and the systems they reshape."
   },
   zh: {
-    brand: "多重涌现", navNews: "领域", navSignals: "信号", navArchive: "归档", navInsight: "方法", navFeedback: "反馈",
+    brand: "多重涌现", navNews: "领域", navSignals: "信号", navWeekly: "周报", navArchive: "归档", navInsight: "方法", navFeedback: "反馈",
     edition: "全球版", latest: "最新情报",
     seoTitle: "前沿科技新闻与未来趋势｜多重涌现 Polyemergence",
     seoDescription: "每日追踪人工智能、可编程生命、能源、机器人、量子、太空、新材料、神经科技、气候、农业食品与新制造。",
@@ -87,6 +87,7 @@ const COPY = {
 
 const routeLocale = location.pathname.split("/").filter(Boolean)[0];
 const routeField = location.pathname.match(/^\/(?:en|zh)\/fields\/([^/]+)\/?$/)?.[1] || null;
+const routeWeekly = location.pathname.match(/^\/(?:en|zh)(\/weekly(?:\/\d{4}-\d{2}-\d{2})?\/?)$/)?.[1] || null;
 const routeTechNews = /^\/(?:en|zh)\/tech-news\/?$/.test(location.pathname) || document.documentElement.dataset?.page === "tech-news" || Boolean(document.body?.classList.contains?.("is-tech-news-page"));
 const state = {
   locale: routeLocale === "zh" ? "zh" : routeLocale === "en" ? "en" : (navigator.language.startsWith("zh") ? "zh" : "en"),
@@ -1293,11 +1294,12 @@ function fieldFromUrl() {
 
 function updateFieldLinks() {
   $$('[data-locale-button]').forEach(link => {
-    const target = new URL(routeTechNews ? `/${link.dataset.localeButton}/tech-news/` : state.domain ? `/${link.dataset.localeButton}/fields/${state.domain}/` : `/${link.dataset.localeButton}/`, location.origin);
+    const target = new URL(routeWeekly ? `/${link.dataset.localeButton}${routeWeekly.replace(/\/?$/, "/")}` : routeTechNews ? `/${link.dataset.localeButton}/tech-news/` : state.domain ? `/${link.dataset.localeButton}/fields/${state.domain}/` : `/${link.dataset.localeButton}/`, location.origin);
     target.hash = location.hash === "#brief" && !state.domain ? "#fields" : location.hash;
     link.href = `${target.pathname}${target.search}${target.hash}`;
   });
   $$('[data-fields-link]').forEach(link => { link.href = `/${state.locale}/#fields`; });
+  $$('[data-weekly-link]').forEach(link => { link.href = `/${state.locale}/weekly/`; });
 }
 
 window.addEventListener("popstate", () => {

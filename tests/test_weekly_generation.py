@@ -114,15 +114,96 @@ class WeeklyGenerationTests(unittest.TestCase):
         self.assertEqual(report['issue']['status'], 'DRAFT')
         self.assertFalse(report['editorial_review']['independently_verified'])
         self.assertFalse(report['zh']['follow_up']['available'])
+        self.assertEqual(report['zh']['follow_up']['note'], '本期未作与上期的逐项对照。')
+        self.assertNotIn('first', report['en']['follow_up']['note'])
+        self.assertNotIn('No previous weekly issue exists', generation.SYSTEM_PROMPT)
+        self.assertNotIn('post_revision_audit', report['editorial_review'])
 
     def test_high_audit_issue_allows_only_one_bounded_revision(self):
         audit = {'issues': [{'severity': 'high', 'event_id': 'event-1', 'evidence_ids': ['source-1'],
                              'detail_zh': '缺少归因', 'detail_en': 'Attribute the claim.'}]}
-        call = MagicMock(side_effect=[draft(self.packet), audit, draft(self.packet)])
+        call = MagicMock(side_effect=[draft(self.packet), audit, draft(self.packet), {'issues': []}])
         report, _ = generation.generate_review(plan(), self.issue, call)
-        self.assertEqual(call.call_count, 3)
+        self.assertEqual(call.call_count, 4)
+        self.assertEqual([request.args[2] for request in call.call_args_list],
+                         ['draft', 'automated_editorial_check', 'bounded_revision', 'post_revision_editorial_check'])
         self.assertTrue(report['editorial_review']['revision_made'])
         self.assertFalse(report['editorial_review']['independently_verified'])
+        self.assertEqual(report['editorial_review']['audit'], audit)
+        self.assertEqual(report['editorial_review']['post_revision_audit'], {'issues': []})
+
+    def test_medium_also_gets_one_revision_and_a_clean_current_audit(self):
+        audit = {'issues': [{'severity': 'medium', 'event_id': 'synthesis.structure', 'evidence_ids': ['source-1', 'source-2'],
+                             'detail_zh': '机制推断缺少条件。', 'detail_en': 'State the mechanism condition.'}]}
+        call = MagicMock(side_effect=[draft(self.packet), audit, draft(self.packet), {'issues': []}])
+        report, _ = generation.generate_review(plan(), self.issue, call)
+        self.assertEqual(call.call_count, 4)
+        self.assertTrue(report['editorial_review']['revision_made'])
+        self.assertEqual(report['editorial_review']['post_revision_audit']['issues'], [])
+
+    def test_unresolved_post_revision_issue_is_returned_for_publication_gate_to_block(self):
+        from weekly_publication import prepare_publication
+        audit = {'issues': [{'severity': 'high', 'event_id': 'event-1', 'evidence_ids': ['source-1'],
+                             'detail_zh': '仍有无依据的断言。', 'detail_en': 'An unsupported assertion remains.'}]}
+        call = MagicMock(side_effect=[draft(self.packet), audit, draft(self.packet), audit])
+        report, packet = generation.generate_review(plan(), self.issue, call)
+        report['issue']['generated_at'] = '2026-11-16T02:00:00Z'
+        catalog = [event['representative'] for event in plan()['shortlist']['main']]
+        with self.assertRaisesRegex(ValueError, 'unresolved_editorial_issue'):
+            prepare_publication(report, packet, catalog, published_at='2026-11-16T10:00:00Z',
+                                generation_metadata={'status': 'success'}, now='2026-11-16T12:00:00Z')
+        self.assertEqual(call.call_count, 4)  # No unbounded fifth repair loop.
+
+    def test_invalid_post_review_and_revision_without_synthesis_are_rejected(self):
+        audit = {'issues': [{'severity': 'high', 'event_id': 'event-1', 'evidence_ids': ['source-1'],
+                             'detail_zh': '需归因', 'detail_en': 'Needs attribution.'}]}
+        bad_post = {'issues': [{'severity': 'medium', 'event_id': 'not-an-event', 'evidence_ids': ['source-1'],
+                                'detail_zh': '错误事件', 'detail_en': 'Invalid event.'}]}
+        call = MagicMock(side_effect=[draft(self.packet), audit, draft(self.packet), bad_post])
+        with self.assertRaisesRegex(ValueError, 'invalid_automated_review_issue'):
+            generation.generate_review(plan(), self.issue, call)
+        revised = draft(self.packet)
+        for locale in ('zh', 'en'):
+            revised[locale].pop('synthesis')
+        call = MagicMock(side_effect=[draft(self.packet), audit, revised])
+        with self.assertRaisesRegex(ValueError, 'synthesis_required'):
+            generation.generate_review(plan(), self.issue, call)
+        self.assertEqual(call.call_count, 3)
+
+    def test_cloud_client_has_a_four_attempt_cap_and_no_sdk_retries(self):
+        sdk = MagicMock()
+        response = MagicMock()
+        response.usage.prompt_tokens, response.usage.completion_tokens, response.usage.total_tokens = 10, 20, 30
+        response.choices[0].finish_reason = 'stop'
+        response.choices[0].message.content = '{}'
+        sdk.OpenAI.return_value.chat.completions.create.return_value = response
+        with patch.dict(os.environ, {'GITHUB_ACTIONS': 'true', 'INBRIEF_LLM_API_KEY': 'offline-fixture-only'}), \
+                patch.dict(sys.modules, {'openai': sdk}), patch.object(generation.time, 'sleep'), \
+                patch.object(generation.time, 'monotonic', return_value=1000):
+            client = generation.CloudGemini()
+            for index in range(4):
+                self.assertEqual(client('fixture', {}, 'attempt-' + str(index)), {})
+            with self.assertRaisesRegex(RuntimeError, 'call_budget_exhausted'):
+                client('fixture', {}, 'fifth-is-forbidden')
+        self.assertEqual(sdk.OpenAI.call_args.kwargs['max_retries'], 0)
+        self.assertEqual(sdk.OpenAI.return_value.chat.completions.create.call_count, 4)
+        self.assertEqual(len(client.calls), 4)
+        self.assertEqual(sum(item['usage']['total_tokens'] for item in client.calls), 120)
+
+    def test_failed_cloud_attempts_also_use_the_four_attempt_budget(self):
+        sdk = MagicMock()
+        sdk.OpenAI.return_value.chat.completions.create.side_effect = TimeoutError('offline timeout')
+        with patch.dict(os.environ, {'GITHUB_ACTIONS': 'true', 'INBRIEF_LLM_API_KEY': 'offline-fixture-only'}), \
+                patch.dict(sys.modules, {'openai': sdk}), patch.object(generation.time, 'sleep'), \
+                patch.object(generation.time, 'monotonic', return_value=1000):
+            client = generation.CloudGemini()
+            for index in range(4):
+                with self.assertRaises(TimeoutError):
+                    client('fixture', {}, 'failed-' + str(index))
+            with self.assertRaisesRegex(RuntimeError, 'call_budget_exhausted'):
+                client('fixture', {}, 'fifth-is-forbidden')
+        self.assertEqual(len(client.calls), 4)
+        self.assertEqual(sdk.OpenAI.return_value.chat.completions.create.call_count, 4)
 
     def test_readonly_sql_and_window_are_parameterized(self):
         driver = MagicMock()

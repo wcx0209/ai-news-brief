@@ -1,0 +1,90 @@
+name: Polyemergence weekly publication
+
+on:
+  schedule:
+    - cron: "0 10 * * 1" # Monday 18:00 Singapore, previous complete SGT week
+  workflow_dispatch:
+    inputs:
+      week_start:
+        description: Completed Monday in Singapore, YYYY-MM-DD; blank uses previous week
+        type: string
+        default: ""
+      source_run_id:
+        description: Publish a reviewed weekly-review artifact from this run; blank generates in cloud
+        type: string
+        default: ""
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: polyemergence-daily-brief
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      WEEK_START: ${{ inputs.week_start }}
+      SOURCE_RUN_ID: ${{ inputs.source_run_id }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0
+        with:
+          python-version: "3.11"
+          cache: pip
+      - name: Install weekly dependencies
+        run: pip install -r requirements-weekly.txt
+      - name: Validate weekly publication offline
+        run: python -m unittest discover -s tests -p 'test_weekly_*.py' -v
+      - name: Resolve complete week and avoid regenerating a published issue
+        id: issue
+        run: python scripts/publish_weekly.py --preflight
+      - name: Retrieve the authorized review artifact
+        if: ${{ steps.issue.outputs.exists != 'true' && inputs.source_run_id != '' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          case "$SOURCE_RUN_ID" in
+            ''|*[!0-9]*) echo "A numeric review run ID is required"; exit 1 ;;
+          esac
+          gh run download "$SOURCE_RUN_ID" --repo "$GITHUB_REPOSITORY" --name polyemergence-weekly-review --dir output/weekly-publication-input
+      - name: Publish the validated review artifact without database or model calls
+        if: ${{ inputs.source_run_id != '' }}
+        env:
+          WEEK_START: ${{ steps.issue.outputs.week_start }}
+        run: python scripts/publish_weekly.py --input output/weekly-publication-input
+      - name: Generate and validate the weekly in cloud
+        if: ${{ inputs.source_run_id == '' }}
+        env:
+          WEEK_START: ${{ steps.issue.outputs.week_start }}
+          INBRIEF_SUPABASE_DB_URL: ${{ secrets.INBRIEF_SUPABASE_DB_URL }}
+          INBRIEF_LLM_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          INBRIEF_LLM_MODEL_NAME: gemini-3.5-flash-lite
+        run: python scripts/publish_weekly.py --generate
+      - name: Refresh archive and field navigation from public data only
+        run: |
+          python scripts/export_archive.py --input-json web/public/data/articles.json --output web/public
+          python scripts/export_domain_pages.py --output web/public
+      - name: Commit public weekly pages and discovery files
+        run: |
+          git config user.name "polyemergence-bot"
+          git config user.email "polyemergence-bot@users.noreply.github.com"
+          git add web/public
+          if git diff --cached --quiet; then
+            echo "No public changes"
+          else
+            git commit -m "publish: Polyemergence weekly ${{ steps.issue.outputs.week_start }}"
+            git pull --rebase origin "$GITHUB_REF_NAME"
+            git push
+          fi
+      - name: Retain generation and release diagnostics outside the website
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: polyemergence-weekly-publication
+          path: output/weekly-publication/
+          if-no-files-found: ignore
+          retention-days: 30

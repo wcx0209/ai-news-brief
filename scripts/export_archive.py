@@ -726,6 +726,8 @@ def json_ld(value):
 
 def page_shell(locale, title, description, canonical, alternate, body, structured=None, og_type="website"):
     c = COPY[locale]
+    weekly_label = "Weekly" if locale == "en" else "周报"
+    feedback_label = "Feedback" if locale == "en" else "反馈"
     logo = f"logo-{locale}-reverse.svg"
     other = "zh" if locale == "en" else "en"
     structured_html = f'<script type="application/ld+json">{json_ld(structured)}</script>' if structured else ""
@@ -754,9 +756,9 @@ def page_shell(locale, title, description, canonical, alternate, body, structure
 <meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="{esc(title)}"><meta name="twitter:description" content="{esc(description)}"><meta name="twitter:image" content="{SITE}/assets/social-preview.png">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="/styles.css?v=20261114-2"><link rel="stylesheet" href="/archive.css?v=11">{media_script}{structured_html}</head>
 <body{body_class}><header class="site-header"><a class="brand" href="/{locale}/" aria-label="{esc(c['brand'])}"><img src="/assets/{logo}" alt="{esc(c['brand'])}" width="420" height="70"></a>
-<nav class="desktop-nav" aria-label="{'Primary' if locale == 'en' else '主导航'}"><a href="/{locale}/#fields"{fields_current}>{esc(c['fields'])}</a><a href="/{locale}/archive/"{archive_current}>{esc(c['archive'])}</a><a href="/{locale}/#about">{esc(c['method'])}</a></nav>
+<nav class="desktop-nav" aria-label="{'Primary' if locale == 'en' else '主导航'}"><a href="/{locale}/#fields"{fields_current}>{esc(c['fields'])}</a><a href="/{locale}/weekly/">{weekly_label}</a><a href="/{locale}/archive/"{archive_current}>{esc(c['archive'])}</a><a href="/{locale}/#about">{esc(c['method'])}</a><a href="/{locale}/#feedback">{feedback_label}</a></nav>
 <div class="header-tools"><span class="edition">{esc(c['edition'])}</span><div class="language-switch"><a data-archive-locale href="{esc(alternate)}" hreflang="{COPY[other]['lang']}">{'中' if other == 'zh' else 'EN'}</a><span>|</span><a href="{esc(canonical)}" aria-current="page">{'中' if locale == 'zh' else 'EN'}</a></div></div></header>
-<main class="archive-main">{body}</main><footer><div class="footer-brand"><img src="/assets/{logo}" alt="{esc(c['brand'])}" width="360"></div><div class="footer-copy"><p>{esc(c['footer'])}</p><p class="company-note">{esc(c['company'])}</p><p class="footer-meta">{esc(c['fields'])}</p><nav class="footer-topics" aria-label="{esc(c['fields'])}">{field_links}</nav><p class="footer-meta">{esc(c['angles'])}</p><nav class="footer-topics" aria-label="{esc(c['angles'])}">{topic_links}</nav><p class="footer-meta"><a href="/{locale}/standards/">{esc(c['standards'])}</a> · <a href="/{locale}/corrections/">{esc(c['corrections'])}</a> · <a href="/feed-{locale}.xml">{esc(c['feed'])}</a> · <a href="/developers/">API / MCP</a></p></div></footer></body></html>'''
+<main class="archive-main">{body}</main><footer><div class="footer-brand"><img src="/assets/{logo}" alt="{esc(c['brand'])}" width="360"></div><div class="footer-copy"><p>{esc(c['footer'])}</p><p class="company-note">{esc(c['company'])}</p><p class="footer-meta">{esc(c['fields'])}</p><nav class="footer-topics" aria-label="{esc(c['fields'])}">{field_links}</nav><p class="footer-meta">{esc(c['angles'])}</p><nav class="footer-topics" aria-label="{esc(c['angles'])}">{topic_links}</nav><p class="footer-meta"><a href="/{locale}/weekly/">{weekly_label}</a> · <a href="/{locale}/standards/">{esc(c['standards'])}</a> · <a href="/{locale}/corrections/">{esc(c['corrections'])}</a> · <a href="/feed-{locale}.xml">{esc(c['feed'])}</a> · <a href="/developers/">API / MCP</a></p></div></footer></body></html>'''
 
 
 def editorial_analysis(record, locale):

@@ -5,3 +5,4 @@ Sitemap: https://polyemergence.com/sitemap.xml
 Sitemap: https://polyemergence.com/archive-sitemap.xml
 Sitemap: https://polyemergence.com/news-sitemap.xml
 Sitemap: https://polyemergence.com/field-sitemap.xml
+Sitemap: https://polyemergence.com/weekly-sitemap.xml

@@ -60,3 +60,9 @@
 
 /field-sitemap.xml
   Cache-Control: no-cache, must-revalidate
+
+/weekly.css
+  Cache-Control: no-cache, must-revalidate
+
+/weekly-*.xml
+  Cache-Control: no-cache, must-revalidate

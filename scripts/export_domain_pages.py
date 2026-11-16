@@ -487,6 +487,9 @@ def render_domain_links(locale, domains):
 
 def sync_home_navigation(shell, locale, domains):
     """Keep crawlable homepage links in step with the data-driven field registry."""
+    # Weekly is a standalone locale route, not a field-selection hash target.
+    shell = re.sub(r'<a\b[^>]*\bdata-weekly-link\b[^>]*>',
+                   lambda m: re.sub(r'href="[^"]*"', f'href="/{locale}/weekly/"', m[0]), shell)
     cards = "".join(
         f'<a class="field-card" href="{field_path(locale, d["id"])}#brief">'
         f'<span class="field-card-top"><span class="field-number">{index:02d}</span>'
