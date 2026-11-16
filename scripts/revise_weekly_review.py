@@ -31,6 +31,17 @@ def prepare_revision(packet, catalog, corrections):
     return packet, catalog
 
 
+def require_supplemental_citations(draft, packet, corrections):
+    for source in corrections.get('supplemental_sources', []):
+        event = next(event for section in ('main_events', 'early_signals') for event in packet[section]
+                     if source['target_evidence_id'] in event['evidence_ids'])
+        for locale in ('zh', 'en'):
+            revised = next(item for section in ('main_events', 'early_signals') for item in draft[locale][section]
+                           if item['event_id'] == event['event_id'])
+            if source['id'] not in revised['evidence_ids']:
+                raise ValueError('weekly_revision_missing_required_official_citation')
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--input', required=True)
@@ -64,7 +75,8 @@ def main(argv=None):
         if os.environ.get('SOURCE_RUN_ID') != corrections['source_run_id']:
             raise ValueError('weekly_revision_source_run_mismatch')
         prior = load(source, 'generation-metadata.json')
-        if len(prior.get('calls', [])) >= 3:
+        prior_count = prior.get('total_cloud_llm_calls_including_initial', len(prior.get('calls', [])))
+        if prior_count >= 3 or previous.get('editorial_review', {}).get('revision_made'):
             raise ValueError('weekly_total_cloud_call_budget_exhausted')
         packet, catalog = prepare_revision(load(source, 'evidence-packet.json'), load(source, 'source-catalog.json'), corrections)
         model = CloudGemini()
@@ -74,6 +86,7 @@ def main(argv=None):
                        'previous_draft': {locale: previous[locale] for locale in ('zh', 'en')},
                        'preflight_corrections': corrections['instructions']}, 'preflight_editorial_revision')
         validate_draft(draft, packet)
+        require_supplemental_citations(draft, packet, corrections)
         report = deepcopy(previous)
         report.update(draft)
         report['issue'].update(status='DRAFT', generated_at=datetime.now(timezone.utc).isoformat())
@@ -96,9 +109,13 @@ def main(argv=None):
         metadata['status'] = 'revised_draft_ready_for_human_review'
         metadata['current_usage'] = {name: sum(call.get('usage', {}).get(name) or 0 for call in model.calls)
                                      for name in ('input_tokens', 'output_tokens', 'total_tokens')}
-        metadata['cumulative_usage'] = {name: metadata['current_usage'][name] + prior.get('actual_usage', {}).get(name, 0)
+        prior_usage = prior.get('cumulative_usage', prior.get('actual_usage', {}))
+        metadata['cumulative_usage'] = {name: metadata['current_usage'][name] + prior_usage.get(name, 0)
                                         for name in metadata['current_usage']}
-        metadata['total_cloud_llm_calls_including_initial'] = len(model.calls) + len(prior.get('calls', []))
+        metadata['total_cloud_llm_calls_including_initial'] = len(model.calls) + prior_count
+        metadata['prior_failed_revision_requests'] = corrections.get('prior_failed_revision_requests', [])
+        metadata['cloud_request_attempts_including_initial'] = metadata['total_cloud_llm_calls_including_initial'] + len(metadata['prior_failed_revision_requests'])
+        metadata['usage_scope'] = 'Provider-returned usage only. The earlier 503 request returned no token usage.'
         print(json.dumps({key: metadata[key] for key in ('status', 'total_cloud_llm_calls_including_initial', 'cumulative_usage')}))
         return 0
     except Exception as exc:

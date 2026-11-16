@@ -37,6 +37,16 @@ class WeeklyRevisionTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             revision.prepare_revision({'issue': {'week_start': '2026-11-09'}}, [], {'week_start': '2026-11-02'})
 
+    def test_new_official_citation_is_required_in_both_language_versions(self):
+        packet = {'main_events': [{'event_id': 'a', 'evidence_ids': ['media', 'official']}], 'early_signals': []}
+        corrections = {'supplemental_sources': [{'target_evidence_id': 'media', 'id': 'official'}]}
+        draft = {locale: {'main_events': [{'event_id': 'a', 'evidence_ids': ['media', 'official']}],
+                          'early_signals': []} for locale in ('en', 'zh')}
+        revision.require_supplemental_citations(draft, packet, corrections)
+        draft['en']['main_events'][0]['evidence_ids'] = ['media']
+        with self.assertRaises(ValueError):
+            revision.require_supplemental_citations(draft, packet, corrections)
+
 
 if __name__ == '__main__':
     unittest.main()

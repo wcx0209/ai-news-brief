@@ -1,6 +1,7 @@
 {
   "week_start": "2026-11-09",
   "source_run_id": "43785511373",
+  "prior_failed_revision_requests": [{"run_id": "43786548921", "provider_status": 503, "token_usage_returned": false}],
   "review_status": "assistant preflight observations, not human approval or independent verification of every claim",
   "instructions": [
     "Revise ONLY wording and citations; retain the existing eight main events and two watchlist events, in order. No new claims, no rescoring.",
