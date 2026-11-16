@@ -42,6 +42,7 @@ A company's announcement and media rewrite of that same event count once. IDs ar
 If there is insufficient evidence for a connection, set support='insufficient', explain what's missing, and do not force a trend.
 Otherwise set support='selection_based'; this means an editorial reading of this selection, NOT established fact.
 intro/limits use the top-level evidence_ids; cite every event mentioned. All IDs must come from the supplied packet.
+Use source evidence IDs only, never event_id values or their hash suffixes.
 The exact sets of citations and support status must match in Chinese and English, including top-level evidence_ids.
 Return ONLY JSON, with no other keys:
 {"zh":{"synthesis":{"intro":"...","signal":{"title":"...","text":"...","support":"selection_based|insufficient","evidence_ids":["..."]},

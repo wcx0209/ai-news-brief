@@ -1,8 +1,10 @@
 from copy import deepcopy
 import importlib.util
+import json
 import os
 from pathlib import Path
 import sys
+import tempfile
 import unittest
 from unittest.mock import MagicMock, patch
 
@@ -112,6 +114,36 @@ class WeeklySynthesisTests(unittest.TestCase):
             with self.assertRaises(SystemExit):
                 script.main(['--input', 'output/fixture'])
             mkdir.assert_not_called()
+
+    def test_editorial_copy_cloud_render_never_instantiates_a_gemini_client(self):
+        packet, catalog, result, previous = fixtures()
+        previous['issue'].update(week_start='2026-11-09')
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory).resolve()
+            source = root / 'output/source'
+            source.mkdir(parents=True)
+            edits = root / 'config/weekly-synthesis-guidance'
+            edits.mkdir(parents=True)
+            files = {'weekly-review.json': previous, 'source-catalog.json': catalog, 'evidence-packet.json': packet,
+                     'generation-metadata.json': {'calls': [], 'actual_usage': {}},
+                     'selection-audit.json': {}, 'automated-editorial-review.json': {}}
+            for name, value in files.items():
+                (source / name).write_text(json.dumps(value), encoding='utf-8')
+            editorial_payload = json.dumps({
+                'week_start': '2026-11-09', 'source_run_id': '123', 'copy': result,
+                'authoring_method': 'Cloud assistant editorial copy', 'superseded_cloud_attempts': []})
+            with patch.object(script, 'ROOT', root), \
+                    patch.dict(os.environ, {'GITHUB_ACTIONS': 'true', 'SOURCE_RUN_ID': '123', 'APPLY_EDITORIAL_COPY': 'true', 'INBRIEF_LLM_API_KEY': '', 'WEEKLY_REVIEW_EDITORIAL_COPY': editorial_payload}), \
+                    patch('weekly_generation.CloudGemini', side_effect=AssertionError('No API client')) as client:
+                self.assertEqual(script.main(['--input', 'output/source', '--output', 'output/review']), 0)
+            client.assert_not_called()
+            output = root / 'output/review'
+            report = json.loads((output / 'weekly-review.json').read_text())
+            metadata = json.loads((output / 'generation-metadata.json').read_text())
+            self.assertEqual(metadata['gemini_requests_in_this_render'], 0)
+            self.assertEqual(report['zh']['main_events'], previous['zh']['main_events'])
+            self.assertEqual(report['issue'], previous['issue'])
+            self.assertTrue((output / 'zh.html').exists())
 
 
 if __name__ == '__main__':

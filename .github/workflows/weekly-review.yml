@@ -16,6 +16,10 @@ on:
         description: Add only the signal/structure/consequence opening to the existing draft
         type: boolean
         default: false
+      apply_editorial_copy:
+        description: Render the evidence-linked editorial correction without another Gemini request
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -40,7 +44,7 @@ jobs:
       - name: Validate weekly selection, evidence and rendering offline
         run: python -m unittest discover -s tests -p 'test_weekly_*.py' -v
       - name: Draft from cloud archive with cloud Gemini
-        if: ${{ inputs.source_run_id == '' && !inputs.add_synthesis }}
+        if: ${{ inputs.source_run_id == '' && !inputs.add_synthesis && !inputs.apply_editorial_copy }}
         env:
           WEEK_START: ${{ inputs.week_start }}
           INBRIEF_SUPABASE_DB_URL: ${{ secrets.INBRIEF_SUPABASE_DB_URL }}
@@ -58,17 +62,19 @@ jobs:
           esac
           gh run download "$SOURCE_RUN_ID" --repo "$GITHUB_REPOSITORY" --name polyemergence-weekly-review --dir output/weekly-review-input
       - name: Apply one cloud Gemini revision, without a database connection
-        if: ${{ inputs.source_run_id != '' && !inputs.add_synthesis }}
+        if: ${{ inputs.source_run_id != '' && !inputs.add_synthesis && !inputs.apply_editorial_copy }}
         env:
           SOURCE_RUN_ID: ${{ inputs.source_run_id }}
           INBRIEF_LLM_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           INBRIEF_LLM_MODEL_NAME: gemini-3.5-flash-lite
         run: python scripts/revise_weekly_review.py --input output/weekly-review-input --output output/weekly-review
-      - name: Add the plain-language synthesis with cloud Gemini only
-        if: ${{ inputs.add_synthesis }}
+      - name: Add the cloud-authored synthesis to the review artifact
+        if: ${{ inputs.add_synthesis || inputs.apply_editorial_copy }}
         env:
           SOURCE_RUN_ID: ${{ inputs.source_run_id }}
-          INBRIEF_LLM_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          APPLY_EDITORIAL_COPY: ${{ inputs.apply_editorial_copy }}
+          WEEKLY_REVIEW_EDITORIAL_COPY: ${{ inputs.apply_editorial_copy && secrets.WEEKLY_REVIEW_EDITORIAL_COPY || '' }}
+          INBRIEF_LLM_API_KEY: ${{ !inputs.apply_editorial_copy && secrets.GEMINI_API_KEY || '' }}
           INBRIEF_LLM_MODEL_NAME: gemini-3.5-flash-lite
         run: python scripts/add_weekly_synthesis.py --input output/weekly-review-input --output output/weekly-review
       - name: Retain review files, never publish or commit them

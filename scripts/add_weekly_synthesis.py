@@ -38,7 +38,7 @@ def main(argv=None):
                 'new_collection': False, 'website_publication': False, 'emails_sent': False, 'calls': []}
     try:
         from weekly_generation import CloudGemini
-        from weekly_synthesis import generate_synthesis
+        from weekly_synthesis import attach_synthesis, generate_synthesis
         from weekly_render import render_review, to_markdown
         previous = load(source, 'weekly-review.json')
         packet = load(source, 'evidence-packet.json')
@@ -49,15 +49,36 @@ def main(argv=None):
             raise ValueError('weekly_synthesis_invalid_draft_period')
         path = ROOT / 'config/weekly-synthesis-guidance' / (week + '.json')
         guidance = json.loads(path.read_text(encoding='utf-8')) if path.exists() else {}
-        model = CloudGemini()
-        metadata.update(source_run_id=os.environ.get('SOURCE_RUN_ID'), model=model.model, calls=model.calls)
-        # One request only for this new user-authorized addition. No redrafting
-        # or automatic repair calls, and no live database/source access.
-        def recorded_call(system, payload, purpose):
-            result = model(system, payload, purpose)
-            save('synthesis-raw-response.json', result)
-            return result
-        report, synthesis = generate_synthesis(previous, packet, catalog, recorded_call, guidance)
+        metadata['source_run_id'] = os.environ.get('SOURCE_RUN_ID')
+        extra_calls, extra_attempts, extra_usage = 0, 0, {}
+        if os.environ.get('APPLY_EDITORIAL_COPY') == 'true':
+            payload = os.environ.get('WEEKLY_REVIEW_EDITORIAL_COPY', '')
+            if not payload:
+                raise ValueError('weekly_synthesis_missing_encrypted_editorial_copy')
+            edit = json.loads(payload)
+            if edit['week_start'] != week or edit['source_run_id'] != metadata['source_run_id']:
+                raise ValueError('weekly_synthesis_editorial_source_mismatch')
+            synthesis = edit['copy']
+            report = attach_synthesis(previous, synthesis, packet, catalog)
+            metadata['llm_runtime'] = 'Cloud-assistant editorial content; no Gemini request in this rendering step'
+            metadata['authoring_method'] = edit['authoring_method']
+            metadata['copy_transport'] = 'Encrypted temporary GitHub Actions input; no report prose committed to the repository'
+            metadata['gemini_requests_in_this_render'] = 0
+            metadata['superseded_cloud_attempts'] = edit['superseded_cloud_attempts']
+            extra_attempts = len(edit['superseded_cloud_attempts'])
+            extra_calls = sum(bool(attempt.get('usage')) for attempt in edit['superseded_cloud_attempts'])
+            extra_usage = {name: sum(attempt.get('usage', {}).get(name, 0) for attempt in edit['superseded_cloud_attempts'])
+                           for name in ('input_tokens', 'output_tokens', 'total_tokens')}
+        else:
+            model = CloudGemini()
+            metadata.update(model=model.model, calls=model.calls, authoring_method='Cloud Gemini draft')
+            # One bounded request. Keep a failed validation response for review,
+            # without automatically redrafting or contacting live sources.
+            def recorded_call(system, payload, purpose):
+                result = model(system, payload, purpose)
+                save('synthesis-raw-response.json', result)
+                return result
+            report, synthesis = generate_synthesis(previous, packet, catalog, recorded_call, guidance)
         if report['issue'] != previous['issue'] or report.get('coverage') != previous.get('coverage'):
             raise ValueError('weekly_synthesis_mutated_frozen_report')
         for locale in ('zh', 'en'):
@@ -75,17 +96,17 @@ def main(argv=None):
         metadata['generated_at'] = datetime.now(timezone.utc).isoformat()
         metadata['base_report_generated_at'] = previous['issue'].get('generated_at')
         metadata['existing_report_unchanged'] = True
-        metadata['current_usage'] = {name: sum(call.get('usage', {}).get(name) or 0 for call in model.calls)
+        metadata['current_usage'] = {name: sum(call.get('usage', {}).get(name) or 0 for call in metadata['calls'])
                                      for name in ('input_tokens', 'output_tokens', 'total_tokens')}
         old_usage = prior.get('cumulative_usage', prior.get('actual_usage', {}))
-        metadata['cumulative_usage'] = {name: metadata['current_usage'][name] + old_usage.get(name, 0)
+        metadata['cumulative_usage'] = {name: metadata['current_usage'][name] + old_usage.get(name, 0) + extra_usage.get(name, 0)
                                         for name in metadata['current_usage']}
         old_calls = prior.get('total_cloud_llm_calls_including_initial', len(prior.get('calls', [])))
-        metadata['total_cloud_llm_calls_including_initial'] = old_calls + len(model.calls)
+        metadata['total_cloud_llm_calls_including_initial'] = old_calls + len(metadata['calls']) + extra_calls
         metadata['prior_failed_revision_requests'] = prior.get('prior_failed_revision_requests', [])
         old_attempts = prior.get('cloud_request_attempts_including_initial', old_calls)
-        metadata['cloud_request_attempts_including_initial'] = old_attempts + len(model.calls)
-        metadata['usage_scope'] = 'Provider-returned usage; previous failed requests may not return token usage.'
+        metadata['cloud_request_attempts_including_initial'] = old_attempts + len(metadata['calls']) + extra_attempts
+        metadata['usage_scope'] = 'Gemini provider-returned usage only, including superseded attempts when recorded. Cloud-assistant conversation usage is separate; failed service requests may not return usage.'
         print(json.dumps({key: metadata[key] for key in ('status', 'existing_report_unchanged', 'current_usage')}))
         return 0
     except Exception as exc:
