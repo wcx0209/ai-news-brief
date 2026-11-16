@@ -1,0 +1,34 @@
+{
+  "week_start": "2026-11-09",
+  "source_run_id": "43785511373",
+  "review_status": "assistant preflight observations, not human approval or independent verification of every claim",
+  "instructions": [
+    "Revise ONLY wording and citations; retain the existing eight main events and two watchlist events, in order. No new claims, no rescoring.",
+    "Lead: every event mentioned requires its specific evidence ID. It currently mentions AlphaGenome 2 and Signal while citing only the other three stories; add their IDs or remove their claims. Frame this as selection focus, not a proven industry trend.",
+    "IBM: consistently attribute quantum advantage/performance claims to IBM. Do not assert that quantum computers have objectively surpassed the strongest classical methods or achieved broad practical advantage. Explain that the packet does not establish the task, strongest classical baseline, total resource accounting or external reproduction. This is the primary uncertainty, before future hardware roadmaps. English dek must say claims or reported progress, not a verified milestone.",
+    "AlphaGenome 2: retain 'nearly twice'/'近两倍', not an exact doubling. Attribute benchmarks to DeepMind. Missing clinical evidence means this packet cannot establish diagnostic performance, not a factual assertion that clinical generalizability has never been tested. Do not imply demonstrated clinical benefit.",
+    "BCI: explicitly describe one ALS participant, 18 sessions and median accuracy 97.1% as stated in the packet. The conclusion is feasibility in that participant and experimental setting, not proven benefit for all severely disabled patients. Match these boundaries in both languages.",
+    "Signal: title must be AI-assisted formal verification of Signal-related code, attributed to DeepMind. Do not say the entire protocol/all implementations/all attack surfaces were proven secure. State that the supplied summary does not specify the exact verified properties, components and assumptions; cost of extension is secondary.",
+    "NVIDIA: the original packet had only a QbitAI secondary summary. The supplemental official announcement below has now been checked through a cloud web tool. Cite its source ID in the NVIDIA event in BOTH languages (may additionally cite QbitAI). Keep only resignation/interim-CEO/board-chair facts supported by that announcement. Do not add rumors, allegations, motives or unverified stock-price effects. Specific future uncertainty is permanent succession/continuity, not whether an official notice exists.",
+    "Keep all uncertainty event-specific. Do not mechanically append 'still needs independent verification' everywhere. Never convert absence of information in this packet into a universal claim of no testing or no industry progress. All outputs remain DRAFT for the user."
+  ],
+  "supplemental_sources": [
+    {
+      "id": "review-nvidia-official-20261112",
+      "url": "https://nvidianews.nvidia.com/news/nvidia-announces-ceo-transition",
+      "source": "NVIDIA Newsroom",
+      "source_type": "official_release",
+      "source_published_at": "2026-11-12",
+      "published_at": "2026-11-12",
+      "date_precision": "publisher_calendar_date_only",
+      "domain": "ai",
+      "domain_labels": {"en": "Artificial Intelligence", "zh": "人工智能"},
+      "archive_url_en": null,
+      "archive_url_zh": null,
+      "review_provenance": "Official page checked via cloud web tool; supplementary citation only, not added to the news database.",
+      "target_evidence_id": "23a1cdb9-f44d-4841-a368-274b49cc290f",
+      "en": {"title": "NVIDIA Announces CEO Transition", "summary": "NVIDIA's November 12 announcement states that Jensen Huang resigned as president, CEO and director. Colette Kress was appointed interim CEO while remaining CFO; Harvey C. Jones was appointed board chair. A permanent CEO search was initiated."},
+      "zh": {"title": "NVIDIA 宣布 CEO 过渡安排", "summary": "NVIDIA 11月12日公告称，黄仁勋辞去总裁、CEO及董事职务；Colette Kress 出任临时 CEO 并继续担任 CFO，Harvey C. Jones 出任董事会主席，公司启动常任 CEO 遴选。"}
+    }
+  ]
+}

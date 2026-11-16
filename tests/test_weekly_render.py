@@ -172,6 +172,29 @@ class WeeklyRenderTests(unittest.TestCase):
         self.assertIn("<td>future</td><td>Not provided</td><td>Not provided</td>", page)
         self.assertIn("| quantum | 0 | 0 |", to_markdown(report, "en", catalog))
 
+    def test_markdown_coverage_table_is_one_contiguous_block(self):
+        report, catalog = fixture()
+        report["coverage"] = [{"domain": "ai", "selected_count": 2, "qualified_count": 12},
+                              {"domain": "quantum", "selected_count": 0, "qualified_count": 0},
+                              {"domain": "future", "domain_labels": {"en": "A field\n| not another row"}}]
+        markdown = to_markdown(report, "en", catalog)
+        expected = ("| Field | Qualified items | Selected items |\n"
+                    "| --- | ---: | ---: |\n"
+                    "| ai | 12 | 2 |\n"
+                    "| quantum | 0 | 0 |\n"
+                    r"| A field \| not another row | Not provided | Not provided |")
+        self.assertIn(expected, markdown)
+        self.assertNotIn("|\n\n|", markdown)
+
+    def test_markdown_watch_evidence_is_nested_under_its_watch_item(self):
+        report, catalog = fixture()
+        report["en"]["next_watch"].append({"text": "A second follow-up question.", "evidence_ids": []})
+        markdown = to_markdown(report, "en", catalog)
+        watch = markdown.split("## What to watch next\n\n", 1)[1].split("\n\n---", 1)[0]
+        self.assertIn("- Look for a published replication\\.\n\n  **Evidence and sources**\n  - English original title", watch)
+        self.assertIn("- A second follow\\-up question\\.\n\n  No traceable evidence references", watch)
+        self.assertEqual(sum(line.startswith("- ") for line in watch.splitlines()), 2)
+
     def test_malformed_fields_dates_and_collections_have_safe_honest_fallbacks(self):
         report = {"issue": {"start": "not-a-date", "end": "2026-02-30", "generated_at": "bad-date"},
                   "en": {"title": ["not text"], "lead": "not an object", "main_events": {"bad": "shape"}, "early_signals": [None, "bad"], "next_watch": None}}

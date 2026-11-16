@@ -313,14 +313,24 @@ def to_markdown(report, locale, catalog):
     watch = _rows(content.get("next_watch"))
     if watch:
         for row in watch:
-            lines.extend(["- " + _md(_text(row.get("text"), c["missing"])), _sources_md(row.get("evidence_ids"), catalog, locale)])
+            text = _md(_text(row.get("text"), c["missing"])).replace("\n", "\n  ")
+            sources = _sources_md(row.get("evidence_ids"), catalog, locale)
+            # Keep evidence inside its watch item rather than making the
+            # citation bullets look like additional top-level watch items.
+            nested_sources = "\n".join("  " + line if line else "" for line in sources.splitlines())
+            lines.append("- " + text + "\n\n" + nested_sources)
     else:
         lines.append(c["empty"])
     coverage = _coverage_rows(report)
     if coverage:
-        lines.extend(["## " + c["coverage"], c["coverage_note"], f'| {c["domain"]} | {c["qualified"]} | {c["selected"]} |', "| --- | ---: | ---: |"])
+        lines.extend(["## " + c["coverage"], c["coverage_note"]])
+        table = [f'| {c["domain"]} | {c["qualified"]} | {c["selected"]} |', "| --- | ---: | ---: |"]
         for row in coverage:
             label = _text(_mapping(row.get("domain_labels")).get(locale), _text(row.get("domain"), c["missing"]))
-            lines.append(f'| {_md(label)} | {_count(row.get("qualified_count"), c["missing"])} | {_count(row.get("selected_count"), c["missing"])} |')
+            label = re.sub(r"[\r\n]+", " ", label)
+            table.append(f'| {_md(label)} | {_count(row.get("qualified_count"), c["missing"])} | {_count(row.get("selected_count"), c["missing"])} |')
+        # Blank lines between table rows terminate a GFM table. The outer
+        # document still uses paragraph spacing between complete blocks.
+        lines.append("\n".join(table))
     lines.extend(["---", c["footer"], c["publisher"]])
     return "\n\n".join(lines) + "\n"
