@@ -18,7 +18,7 @@ spec.loader.exec_module(script)
 
 def plan():
     def event(number):
-        row = {'id': 'source-' + str(number), 'source': 'Fixture lab', 'source_published_at': '2026-11-10T12:00:00Z',
+        row = {'id': 'source-' + str(number), 'url': 'https://example.org/story-' + str(number), 'source': 'Fixture lab', 'source_published_at': '2026-11-10T12:00:00Z',
                'domain': 'ai', 'importance': 80, 'scores': {'confidence': 80},
                'zh': {'title': '实验室发布', 'summary': '实验室公布了初步结果。'},
                'en': {'title': 'Lab announcement', 'summary': 'The lab announced initial results.'}}
@@ -29,7 +29,13 @@ def plan():
 
 def draft(packet):
     def locale():
-        return {'title': 'Review draft', 'dek': 'Selected announcements, with evidence limitations.',
+        synthesis = {'intro': 'This selection offers examples, not an industry-wide trend.',
+                     'limits': 'Reported claims are not independent verification.', 'evidence_ids': ['source-1', 'source-2']}
+        for name in ('signal', 'structure', 'consequence'):
+            synthesis[name] = {'title': 'A bounded reading of this selection',
+                               'text': 'The selected examples suggest a specific question to examine.',
+                               'support': 'selection_based', 'evidence_ids': ['source-1', 'source-2']}
+        return {'title': 'Review draft', 'dek': 'Selected announcements, with evidence limitations.', 'synthesis': synthesis,
                 'lead': {'text': 'Three announcements were selected, not a market-wide trend.',
                          'evidence_ids': ['source-1', 'source-2']},
                 'main_events': [{'event_id': event['event_id'], 'title': 'An attributed announcement',

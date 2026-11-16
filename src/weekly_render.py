@@ -18,6 +18,12 @@ COPY = {
         "title": "Weekly technology review (draft)", "missing": "Not provided", "untitled": "Title not provided",
         "window": "Coverage window", "timezone": "Time zone", "generated": "Generated",
         "lead": "Editorial selection focus", "main": "Main events", "signals": "Signals to watch",
+        "synthesis": "What this selection suggests", "synthesis_signal": "Signals worth noticing",
+        "synthesis_structure": "How the landscape may change", "synthesis_consequence": "What it could mean for readers",
+        "synthesis_limits": "What we cannot conclude yet",
+        "synthesis_sources": "Sources for this interpretation",
+        "synthesis_insufficient": "Insufficient evidence in this selection",
+        "synthesis_note": "Editorial interpretation of this selection, not an industry-wide measurement or a certain forecast.",
         "signal_note": "These are leads to examine, not established trends or a maturity classification.",
         "what": "Reported facts · based on existing summaries", "why": "Why it matters · editorial judgment",
         "uncertainty": "Unverified points and uncertainty", "uncertainty_missing": "No uncertainty statement was provided. This does not establish certainty.",
@@ -39,6 +45,12 @@ COPY = {
         "title": "本周科技观察（审阅草稿）", "missing": "未提供", "untitled": "标题未提供",
         "window": "选材时间窗口", "timezone": "时区", "generated": "生成时间",
         "lead": "本周选材主线", "main": "主要事件", "signals": "值得跟踪的信号",
+        "synthesis": "这周看出了什么", "synthesis_signal": "值得留意的信号",
+        "synthesis_structure": "可能改变的格局", "synthesis_consequence": "对读者意味着什么",
+        "synthesis_limits": "还不能确定什么",
+        "synthesis_sources": "本段依据",
+        "synthesis_insufficient": "现有选材不足以支持这一判断",
+        "synthesis_note": "基于本期选材的编辑解读，不代表全行业统计或确定预测。",
         "signal_note": "这些条目是待观察线索，不代表已经形成行业趋势，也不据此判定技术成熟度。",
         "what": "事实摘要 · 据现有新闻摘要", "why": "为何重要 · 编辑判断",
         "uncertainty": "未验证事项与不确定性", "uncertainty_missing": "未提供不确定性说明；这不代表不存在不确定性。",
@@ -66,6 +78,8 @@ a{color:inherit;text-decoration-color:var(--orange);text-underline-offset:3px}a:
 .status{display:inline-block;margin:27px 0 14px;padding:5px 10px;border-left:4px solid var(--orange);background:#eeece7;color:#583526;font-size:12px;font-weight:750;letter-spacing:.03em}
 h1{max-width:920px;margin:0 0 17px;font-size:clamp(32px,5vw,52px);line-height:1.16;letter-spacing:-.04em;text-wrap:balance}.dek{max-width:860px;font-size:19px;color:#444;line-height:1.75}
 .issue-meta{display:grid;grid-template-columns:1fr 1fr;gap:10px 28px;margin:24px 0 34px;padding:18px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);font-size:12px;color:var(--muted)}.issue-meta p{margin:0}.issue-meta strong{color:var(--ink)}
+.synthesis{padding:23px 25px;border-left:4px solid var(--orange);background:#eeece7}.synthesis>h2{padding:0;border:0;margin-bottom:12px}.synthesis-intro{margin:14px 0 22px;font-size:20px;line-height:1.8;white-space:pre-wrap;overflow-wrap:anywhere}.synthesis-point{padding:19px 0;border-top:1px solid #d0cdc6}.synthesis-point>h3{margin:0 0 11px;font-size:13px;font-weight:750;color:#9b3b1a}.synthesis-point>h4{margin:0 0 8px;font-size:19px;line-height:1.5}.synthesis-point>p,.synthesis-limits>p{margin:0;white-space:pre-wrap;overflow-wrap:anywhere}.synthesis .source-index{margin-top:14px;padding-top:10px;font-size:11px}.synthesis .source-index li{padding-block:5px}.synthesis-limits{padding-top:18px;border-top:1px solid #d0cdc6}.synthesis-limits>strong{display:block;margin-bottom:7px;font-size:13px}
+.synthesis-sources{margin-top:13px;font-size:12px}.synthesis-sources>summary{width:fit-content;min-height:32px;display:list-item;padding-block:4px;color:#6b5749;cursor:pointer}.synthesis-sources>summary::marker{color:#9b3b1a}.synthesis-sources>summary:focus-visible{outline:3px solid var(--orange);outline-offset:3px}.synthesis-sources .source-index{margin-top:5px}.synthesis-point>.synthesis-support{width:fit-content;margin:0 0 10px;padding:5px 9px;border-left:3px solid var(--orange);background:#e3ded5;font-size:12px;font-weight:750;color:#71452f}
 section{margin-top:42px}h2{margin:0 0 20px;padding-top:14px;border-top:2px solid var(--ink);font-size:26px;line-height:1.3;letter-spacing:-.02em}h3{margin:0 0 18px;font-size:24px;line-height:1.35;letter-spacing:-.02em}
 article{margin:0 0 26px;padding:26px;background:white;border:1px solid var(--line);border-top:3px solid var(--orange)}article p{margin:8px 0 19px;white-space:pre-wrap;overflow-wrap:anywhere}.event-id{font:11px/1.5 ui-monospace,monospace;color:var(--muted);overflow-wrap:anywhere}
 .reading-label{display:block;margin-top:20px;font-size:12px;font-weight:750;color:#6b5749}.uncertainty{padding:12px 15px;background:#f1f0ec;border-left:2px solid #9b938b}.source-index{margin-top:24px;padding-top:15px;border-top:1px solid var(--line);font-size:12px;color:var(--muted)}.source-index h4{margin:0 0 9px;color:var(--ink);font-size:12px}.source-index ol{margin:0;padding-left:21px}.source-index li{padding:7px 0;overflow-wrap:anywhere}.source-title{font-weight:650;color:#3f3f3f}.source-links{display:flex;flex-wrap:wrap;gap:6px 15px}.source-meta{display:block;margin-top:3px}.missing{color:#78716a;font-size:13px}.watch-list>li{margin-bottom:20px}.watch-list>li>p{white-space:pre-wrap}.section-note{max-width:800px;color:var(--muted);font-size:13px}.lead-text{white-space:pre-wrap;font-size:20px;line-height:1.8}
@@ -199,6 +213,39 @@ def _issue_meta(report, locale):
             (c["window"], f"{exact_start} → {exact_end}")]
 
 
+def _synthesis(content):
+    """Old reports do not acquire a made-up interpretation during rendering."""
+    synthesis = _mapping(content.get("synthesis"))
+    values = [synthesis.get("intro"), synthesis.get("limits")]
+    for key in ("signal", "structure", "consequence"):
+        point = _mapping(synthesis.get(key))
+        values.extend((point.get("title"), point.get("text")))
+    return synthesis if any(_text(value) for value in values) else None
+
+
+def _synthesis_html(content, catalog, locale):
+    synthesis = _synthesis(content)
+    if synthesis is None:
+        return ""
+    c = COPY[locale]
+    points = []
+    for key in ("signal", "structure", "consequence"):
+        point = _mapping(synthesis.get(key))
+        title = _text(point.get("title"))
+        title_html = f'<h4>{_esc(title)}</h4>' if title else ""
+        support = f'<p class="synthesis-support" role="note">{c["synthesis_insufficient"]}</p>' if point.get("support") == "insufficient" else ""
+        points.append(f'<div class="synthesis-point" data-synthesis-dimension="{key}"><h3>{c["synthesis_" + key]}</h3>{title_html}{support}<p>{_esc(_text(point.get("text"), c["missing"]))}</p>{_synthesis_sources_html(point.get("evidence_ids"), catalog, locale)}</div>')
+    references = _synthesis_sources_html(synthesis.get("evidence_ids"), catalog, locale) if _evidence_ids(synthesis.get("evidence_ids")) else ""
+    return (f'<section class="synthesis" aria-labelledby="weekly-synthesis-title"><h2 id="weekly-synthesis-title">{c["synthesis"]}</h2>'
+            f'<p class="section-note">{c["synthesis_note"]}</p><p class="synthesis-intro">{_esc(_text(synthesis.get("intro"), c["missing"]))}</p>'
+            f'{"".join(points)}<div class="synthesis-limits"><strong>{c["synthesis_limits"]}</strong><p>{_esc(_text(synthesis.get("limits"), c["uncertainty_missing"]))}</p></div>{references}</section>')
+
+
+def _synthesis_sources_html(ids, catalog, locale):
+    return (f'<details class="synthesis-sources"><summary>{COPY[locale]["synthesis_sources"]}</summary>'
+            f'{_sources_html(ids, catalog, locale)}</details>')
+
+
 def _html(report, catalog, locale):
     c = COPY[locale]
     content = _mapping(report.get(locale))
@@ -228,7 +275,7 @@ def _html(report, catalog, locale):
 <html lang="{c['lang']}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'"><meta name="robots" content="noindex,nofollow"><title>{_esc(title)} | Polyemergence</title><style>{STYLE}</style></head>
 <body><main class="page"><header class="masthead"><span class="wordmark">POLYEMERGENCE</span><a class="locale-link" href="{other}.html" hreflang="{COPY[other]['lang']}">{'EN' if other == 'en' else '中'}</a></header>
 <p class="status">{c['draft']}</p><h1>{_esc(title)}</h1><p class="dek">{_esc(_text(content.get('dek'), c['missing']))}</p><div class="issue-meta">{meta}</div>
-{''.join(body)}{_coverage_html(report, locale)}<footer><p>{c['footer']}</p><p>{c['publisher']}</p></footer></main></body></html>'''
+{_synthesis_html(content, catalog, locale)}{''.join(body)}{_coverage_html(report, locale)}<footer><p>{c['footer']}</p><p>{c['publisher']}</p></footer></main></body></html>'''
 
 
 def render_review(report, catalog):
@@ -281,6 +328,27 @@ def _event_md(event, catalog, locale):
     return "\n\n".join(lines)
 
 
+def _synthesis_md(content, catalog, locale):
+    synthesis = _synthesis(content)
+    if synthesis is None:
+        return ""
+    c = COPY[locale]
+    lines = ["## " + c["synthesis"], c["synthesis_note"], _md(_text(synthesis.get("intro"), c["missing"]))]
+    for key in ("signal", "structure", "consequence"):
+        point = _mapping(synthesis.get(key))
+        lines.append("### " + c["synthesis_" + key])
+        title = _text(point.get("title"))
+        if title:
+            lines.append("**" + _md(title) + "**")
+        if point.get("support") == "insufficient":
+            lines.append("**" + c["synthesis_insufficient"] + "**")
+        lines.extend([_md(_text(point.get("text"), c["missing"])), _sources_md(point.get("evidence_ids"), catalog, locale)])
+    lines.extend(["### " + c["synthesis_limits"], _md(_text(synthesis.get("limits"), c["uncertainty_missing"]))])
+    if _evidence_ids(synthesis.get("evidence_ids")):
+        lines.append(_sources_md(synthesis.get("evidence_ids"), catalog, locale))
+    return "\n\n".join(lines)
+
+
 def to_markdown(report, locale, catalog):
     """Render one locale, retaining claim/interpretation/uncertainty boundaries."""
     locale = _locale(locale)
@@ -291,6 +359,9 @@ def to_markdown(report, locale, catalog):
     lines = ["# " + _md(_text(content.get("title"), c["title"])), c["draft"],
              _md(_text(content.get("dek"), c["missing"]))]
     lines.extend(f'**{label}:** {_md(value)}' for label, value in _issue_meta(report, locale))
+    synthesis = _synthesis_md(content, catalog, locale)
+    if synthesis:
+        lines.append(synthesis)
     lines.extend(["## " + c["lead"], _md(_text(lead.get("text"), c["missing"])), _sources_md(lead.get("evidence_ids"), catalog, locale)])
     for key, label in (("main_events", "main"), ("early_signals", "signals")):
         lines.append("## " + c[label])

@@ -1,0 +1,17 @@
+{
+  "scope": "Possible editorial angles, not extra facts. Use only the evidence packet and reject any angle it does not support.",
+  "signal": {
+    "angle": "What is being demonstrated is not just answering a question, but completing a complex task through a workflow. Explain the concrete shared emphasis in Google and Anthropic announcements without treating their architectures as identical or claiming broad adoption.",
+    "possible_evidence_ids": ["53150ae6-1fa2-418b-ae1b-37f3f8c286ec", "6607c23f-7de1-40d4-bc0e-1d7ee82ec973"]
+  },
+  "structure": {
+    "angle": "Explain the division of work among humans who define a goal/acceptance test, models that propose work, and tools that check a result. Antigravity and AlphaProof Code illustrate different checking mechanisms; the BCI study illustrates why real-world testing has different limits. Do not call different checking methods equivalent or say human work has been eliminated.",
+    "possible_evidence_ids": ["53150ae6-1fa2-418b-ae1b-37f3f8c286ec", "baea2f65-0e21-4eab-8945-94c1793ff52a", "02a763f3-f6e5-4eba-bac3-ebf0c08c79f3"]
+  },
+  "consequence": {
+    "angle": "A useful cross-field question is how researchers choose what to try next before expensive experiments or simulations. AlphaGenome, the sodium-ion design rule, and climate-emulator training are different technologies, not all AI applications. Describe possible changes to screening/experiment choice/model-building, not proven medical benefit, cheaper commercial batteries, quantified cost savings or better global forecasts.",
+    "possible_evidence_ids": ["90188d30-4621-44aa-ba30-72ce8de29409", "9a033e48-1add-48d7-aab8-7f689a377497", "86847d81-1d66-4b89-b265-6f494fa75427"],
+    "boundary": "The sodium-ion paper was published earlier; the November 14 date belongs to this selection's media coverage. Say this issue reports or describes the study, not that the invention happened this week."
+  },
+  "limits": "This is an interpretation of an editorially selected set of announcements and research reports. It cannot establish industry-wide momentum, independent replication or product/clinical readiness. Do not force the NVIDIA leadership transition into a technological trend."
+}

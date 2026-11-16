@@ -85,7 +85,7 @@ def main(argv=None):
                       {'evidence_packet': packet,
                        'previous_draft': {locale: previous[locale] for locale in ('zh', 'en')},
                        'preflight_corrections': corrections['instructions']}, 'preflight_editorial_revision')
-        validate_draft(draft, packet)
+        validate_draft(draft, packet, catalog=catalog)
         require_supplemental_citations(draft, packet, corrections)
         report = deepcopy(previous)
         report.update(draft)

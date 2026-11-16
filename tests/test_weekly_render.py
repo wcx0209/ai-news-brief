@@ -195,6 +195,112 @@ class WeeklyRenderTests(unittest.TestCase):
         self.assertIn("- A second follow\\-up question\\.\n\n  No traceable evidence references", watch)
         self.assertEqual(sum(line.startswith("- ") for line in watch.splitlines()), 2)
 
+    def test_synthesis_precedes_events_in_both_formats_and_keeps_each_dimension_traceable(self):
+        report, catalog = fixture()
+        report["en"]["synthesis"] = {
+            "intro": "A supplied plain-language overview.",
+            "signal": {"title": "A reported capability", "text": "One supplied result deserves attention.", "evidence_ids": ["evidence-one"]},
+            "structure": {"title": "A possible change in tools", "text": "This could change one workflow, not the whole industry.", "evidence_ids": ["evidence-one"]},
+            "consequence": {"title": "A practical question", "text": "A reader may want to check the cost before using it.", "evidence_ids": ["evidence-one"]},
+            "limits": "A broader effect is not established by this selection.", "evidence_ids": ["evidence-one"],
+        }
+        before = copy.deepcopy((report, catalog))
+        page = render_review(report, catalog)["en"]
+        start = page.index('<section class="synthesis"')
+        end = page.index('<h2>Editorial selection focus</h2>')
+        synthesis = page[start:end]
+        self.assertLess(page.index('class="issue-meta"'), start)
+        self.assertIn("What this selection suggests", synthesis)
+        for key, label in (("signal", "Signals worth noticing"), ("structure", "How the landscape may change"), ("consequence", "What it could mean for readers")):
+            self.assertIn(f'data-synthesis-dimension="{key}"', synthesis)
+            self.assertIn(label, synthesis)
+            self.assertIn(report["en"]["synthesis"][key]["text"], synthesis)
+        self.assertEqual(synthesis.count('class="source-index"'), 4)
+        self.assertEqual(synthesis.count('<details class="synthesis-sources">'), 4)
+        self.assertEqual(synthesis.count('<summary>Sources for this interpretation</summary>'), 4)
+        self.assertNotIn('<details class="synthesis-sources" open', synthesis)
+        self.assertEqual(synthesis.count('href="https://polyemergence.com/en/archive/one/"'), 4)
+        self.assertIn("Source published:", synthesis)
+        self.assertIn("Field: Artificial Intelligence", synthesis)
+        self.assertIn("not an industry-wide measurement or a certain forecast", synthesis)
+        self.assertNotIn("Importance", synthesis)
+        self.assertNotIn("<article", synthesis)
+        markdown = to_markdown(report, "en", catalog)
+        self.assertLess(markdown.index("## What this selection suggests"), markdown.index("## Editorial selection focus"))
+        self.assertIn("### What we cannot conclude yet", markdown)
+        self.assertIn("A broader effect is not established by this selection", markdown)
+        self.assertEqual((report, catalog), before)
+
+    def test_synthesis_sources_are_native_collapsed_details_without_changing_event_sources(self):
+        report, catalog = fixture()
+        report["zh"]["synthesis"] = {"intro": "一段已提供的讲解。", "signal": {"text": "一个信号。", "evidence_ids": ["evidence-one"]}, "limits": "不能推断全行业。"}
+        page = render_review(report, catalog)["zh"]
+        synthesis = page.split('<section class="synthesis"', 1)[1].split('<h2>本周选材主线</h2>', 1)[0]
+        reader = Elements()
+        reader.feed(synthesis)
+        details = [attrs for tag, attrs in reader.elements if tag == "details"]
+        self.assertEqual(len(details), 3)
+        self.assertTrue(all(attrs.get("class") == "synthesis-sources" and "open" not in attrs for attrs in details))
+        self.assertEqual(synthesis.count("<summary>本段依据</summary>"), 3)
+        remainder = page.split('<h2>本周选材主线</h2>', 1)[1]
+        self.assertNotIn("synthesis-sources", remainder)
+        self.assertIn('class="source-index"', remainder)
+        self.assertNotIn("<details", remainder)
+
+    def test_insufficient_synthesis_support_is_explicit_in_html_and_markdown_without_forcing_missing_metadata(self):
+        report, catalog = fixture()
+        for locale, label in (("en", "Insufficient evidence in this selection"), ("zh", "现有选材不足以支持这一判断")):
+            report[locale]["synthesis"] = {"intro": "Supplied overview.",
+                                            "signal": {"text": "A conditional interpretation.", "support": "insufficient", "evidence_ids": []},
+                                            "structure": {"text": "A supplied structural interpretation.", "support": "selection_based", "evidence_ids": ["evidence-one"]},
+                                            "consequence": {"text": "Another supplied interpretation.", "evidence_ids": ["evidence-one"]}}
+            page = render_review(report, catalog)[locale]
+            self.assertEqual(page.count(f'<p class="synthesis-support" role="note">{label}</p>'), 1)
+            self.assertEqual(to_markdown(report, locale, catalog).count("**" + label + "**"), 1)
+            self.assertIn("DRAFT", page)
+
+    def test_synthesis_is_language_specific_and_old_drafts_do_not_gain_invented_interpretation(self):
+        report, catalog = fixture()
+        for missing in (None, {}, "not an object", {"signal": {}}, {"evidence_ids": ["evidence-one"]}):
+            report["en"]["synthesis"] = missing
+            self.assertNotIn('<section class="synthesis"', render_review(report, catalog)["en"])
+            self.assertNotIn("## What this selection suggests", to_markdown(report, "en", catalog))
+        report["en"]["synthesis"] = {"intro": "English interpretation only."}
+        report["zh"]["synthesis"] = {
+            "intro": "这是本期选材中的中文讲解。",
+            "signal": {"title": "一个待核实的信号", "text": "仅据提供的报道观察。", "evidence_ids": ["evidence-one"]},
+            "structure": {"text": "一种可能的分工变化。", "evidence_ids": ["evidence-one"]},
+            "consequence": {"text": "读者应先核实适用条件。", "evidence_ids": ["evidence-one"]},
+            "limits": "不能凭这些条目推断整个行业。",
+        }
+        pages = render_review(report, catalog)
+        self.assertIn("这周看出了什么", pages["zh"])
+        self.assertIn("值得留意的信号", pages["zh"])
+        self.assertIn("可能改变的格局", pages["zh"])
+        self.assertIn("对读者意味着什么", pages["zh"])
+        self.assertIn("还不能确定什么", pages["zh"])
+        self.assertNotIn("English interpretation only", pages["zh"])
+        self.assertNotIn("这是本期选材中的中文讲解", pages["en"])
+        self.assertNotIn("What this selection suggests", to_markdown(report, "zh", catalog))
+        self.assertIn("DRAFT · 未经人工审阅", pages["zh"])
+
+    def test_synthesis_escapes_text_and_missing_evidence_without_inventing_links(self):
+        report, catalog = fixture()
+        hostile = '<script>alert("synthesis")</script><img src=x onerror=x>'
+        report["en"]["synthesis"] = {"intro": hostile, "limits": hostile,
+                                        "signal": {"title": hostile, "text": hostile, "evidence_ids": ["unknown <id>"]}}
+        page = render_review(report, catalog)["en"]
+        self.assertNotIn("<script>", page)
+        self.assertNotIn("<img ", page)
+        self.assertIn("&lt;script&gt;", page)
+        self.assertIn("unknown &lt;id&gt;", page)
+        self.assertIn("Evidence reference is missing from the supplied catalog", page)
+        self.assertIn("No uncertainty statement was provided", render_review({"en": {"synthesis": {"intro": "A supplied partial overview."}}}, [])["en"])
+        markdown = to_markdown(report, "en", catalog)
+        self.assertNotIn("<script>", markdown)
+        self.assertNotIn("<img ", markdown)
+        self.assertIn("unknown &lt;id&gt;", markdown)
+
     def test_malformed_fields_dates_and_collections_have_safe_honest_fallbacks(self):
         report = {"issue": {"start": "not-a-date", "end": "2026-02-30", "generated_at": "bad-date"},
                   "en": {"title": ["not text"], "lead": "not an object", "main_events": {"bad": "shape"}, "early_signals": [None, "bad"], "next_watch": None}}
