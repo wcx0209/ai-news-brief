@@ -273,9 +273,13 @@ def write_private_artifacts(artifacts, environ=None):
     require_cloud(environ)  # Refuse before creating/opening any local output.
     ARTIFACT_DIRECTORY.mkdir(parents=True, exist_ok=True, mode=0o700)
     ARTIFACT_DIRECTORY.chmod(0o700)
+    if 'repaired-summaries.json' not in artifacts:
+        # A preview/failure must not leave an earlier run's publishable payload.
+        (ARTIFACT_DIRECTORY / 'repaired-summaries.json').unlink(missing_ok=True)
     for name, payload in artifacts.items():
         # Filenames are fixed by run_repair, never supplied by model output.
-        if name not in {'report.json', 'audit.json', 'translation-preview.json'}:
+        if name not in {'report.json', 'audit.json', 'translation-preview.json',
+                        'repaired-summaries.json'}:
             raise RepairError('archive_language_repair_invalid_artifact_name')
         path = ARTIFACT_DIRECTORY / name
         descriptor = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
@@ -312,6 +316,11 @@ def run_repair(*, apply=False, environ=None, connection_factory=None,
         if not sources:
             report['status'] = 'skipped'
             connection.rollback()
+            if apply:
+                artifacts['repaired-summaries.json'] = {
+                    'summaries': {identifier: rows[identifier]['long_summary_en']
+                                  for identifier in TARGET_IDS},
+                }
         else:
             if sum(len(source) for source in sources.values()) > MAX_INPUT_CHARS:
                 raise RepairError('archive_language_repair_input_bound_exceeded')
@@ -344,6 +353,10 @@ def run_repair(*, apply=False, environ=None, connection_factory=None,
                 report['updated'] = len(translations)
                 report['status'] = 'applied'
                 artifacts['translation-preview.json']['status'] = 'applied_after_automated_model_audit'
+                artifacts['repaired-summaries.json'] = {
+                    'summaries': {identifier: translations.get(identifier, rows[identifier]['long_summary_en'])
+                                  for identifier in TARGET_IDS},
+                }
             else:
                 connection.rollback()
                 report['status'] = 'preview'
@@ -354,6 +367,7 @@ def run_repair(*, apply=False, environ=None, connection_factory=None,
                 and re.fullmatch(r'archive_language_repair_[a-z_]+', str(error))
                 else 'archive_language_repair_failed')
         report.update(status='failed', error=code, updated=0)
+        artifacts.pop('repaired-summaries.json', None)
         failure = RepairError(code)
         if connection is not None:
             try:

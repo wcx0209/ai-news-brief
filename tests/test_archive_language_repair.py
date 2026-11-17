@@ -172,6 +172,7 @@ class ArchiveLanguageRepairTests(unittest.TestCase):
         self.assertEqual(self.artifacts['translation-preview.json']['status'],
                          'automated_model_audited_preview')
         self.assertEqual(self.artifacts['report.json']['model_calls'], caller.calls)
+        self.assertNotIn('repaired-summaries.json', self.artifacts)
 
     def test_apply_updates_only_target_column_after_both_model_calls(self):
         original = records()
@@ -207,7 +208,27 @@ class ArchiveLanguageRepairTests(unittest.TestCase):
             artifact_writer=lambda data, env: artifacts.update(data))
         self.assertEqual((report['status'], report['already_english'], report['updated']), ('skipped', 4, 0))
         self.assertEqual(report['model_calls'], [])
+        self.assertEqual(artifacts['repaired-summaries.json'], {
+            'summaries': {identifier: TRANSLATION for identifier in repair.TARGET_IDS}})
         forbidden.assert_not_called()
+
+    def test_apply_artifact_exports_exactly_four_confirmed_summaries(self):
+        report, _, _ = self.run_offline(apply=True)
+        self.assertEqual(report['status'], 'applied')
+        self.assertEqual(self.artifacts['repaired-summaries.json'], {
+            'summaries': {identifier: TRANSLATION for identifier in repair.TARGET_IDS}})
+
+    def test_partial_apply_artifact_preserves_already_english_database_text(self):
+        rows = records(english=True)
+        for index, row in enumerate(rows):
+            row['long_summary_en'] = f'Stored English account {index}; its qualification remains unchanged.'
+        rows[2]['long_summary_en'] = SOURCE
+        expected = {row['id']: row['long_summary_en'] for row in rows}
+        expected[repair.TARGET_IDS[2]] = TRANSLATION
+        report, _, caller = self.run_offline(FakeConnection(rows), apply=True)
+        self.assertEqual(report['updated'], 1)
+        self.assertEqual(len(caller.calls), 2)
+        self.assertEqual(self.artifacts['repaired-summaries.json'], {'summaries': expected})
 
     def test_only_remaining_wrong_language_ids_are_sent_and_updated(self):
         rows = records(english=True)
@@ -242,6 +263,7 @@ class ArchiveLanguageRepairTests(unittest.TestCase):
                 self.assertEqual(len(connection.executed), 1)
                 self.assertEqual(connection.commits, 0)
                 self.assertEqual(connection.rows, records())
+                self.assertNotIn('repaired-summaries.json', self.artifacts)
 
     def test_added_removed_duplicate_and_out_of_scope_ids_are_refused(self):
         translations = {key: TRANSLATION for key in repair.TARGET_IDS}
@@ -288,6 +310,7 @@ class ArchiveLanguageRepairTests(unittest.TestCase):
         self.assertEqual(connection.rows[1]['long_summary_en'], 'Concurrent editor changed this summary.')
         self.assertEqual(self.artifacts['report.json']['updated'], 0)
         self.assertEqual(len(self.artifacts['report.json']['model_calls']), 2)
+        self.assertNotIn('repaired-summaries.json', self.artifacts)
 
     def test_provider_exception_text_is_never_in_reports(self):
         secret = 'a-secret-token-and-story-text'
