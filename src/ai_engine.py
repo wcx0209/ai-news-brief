@@ -5,6 +5,7 @@ import logging
 import threading
 import time
 from editorial_domains import category_ids, taxonomy_prompt
+from content_language import validate_localized_fields
 
 TOPIC_CATEGORIES = set(category_ids())
 
@@ -146,6 +147,10 @@ Include all five component fields plus importance_score in the JSON output.
 - Clearly separate reported facts from interpretation. Describe potential effects conditionally and identify what is not yet tested; never invent corroboration, outcomes, adoption, commercial deployment, or longitudinal evidence.
 - Do not add marketing superlatives such as "the strongest", "game-changing", "彻底颠覆", "最强", "硬刚", or "全面碾压". If a source uses them, replace them with the specific measured claim and its attribution, baseline and conditions when supplied.
 - The structure and consequence scores are an editorial assessment based on this one supplied document, not proof of a historical trend or evidence that a predicted impact has happened. Source prestige alone cannot establish accuracy or replication.
+
+# Output language boundaries (required)
+- Every title_en, summary_en and long_summary_en field must use English prose.
+- Every title_zh, summary_zh and long_summary_zh field must use Chinese prose. Keep technical names, code and numbers as appropriate, but never copy English paragraphs into Chinese fields or Chinese paragraphs into English fields.
 """ + taxonomy_prompt()
         
         # 文章内容作为 user 消息，末尾追加格式提醒以利用结尾高注意力
@@ -173,6 +178,8 @@ Reminder: You MUST output valid JSON in the exact format specified in your instr
                     timeout=timeout if timeout else self.ai_timeout
                 )
                 data = json.loads(response.choices[0].message.content.strip())
+                if not isinstance(data, dict):
+                    raise ValueError("Summary output must be a JSON object")
             except Exception as e:
                 logging.error(f"AI Summarization failed (attempt {attempt + 1}/2): {e}")
                 continue
@@ -183,12 +190,29 @@ Reminder: You MUST output valid JSON in the exact format specified in your instr
             long_ok = (not long_required) or (
                 bool(data.get('long_summary_en', '').strip()) and bool(data.get('long_summary_zh', '').strip())
             )
-            if will_be_dropped or (short_ok and long_ok):
+            wrong_language_fields = validate_localized_fields(data)
+            if will_be_dropped or (short_ok and long_ok and not wrong_language_fields):
                 break
-            logging.warning(
-                f"Incomplete summary (short_ok={short_ok}, long_ok={long_ok}, long_required={long_required}), "
-                f"retrying... title={title[:40] if title else ''}"
-            )
+            if attempt == 0:
+                reason = (
+                    f"short_ok={short_ok}, long_ok={long_ok}, long_required={long_required}, "
+                    f"wrong_language_fields={wrong_language_fields}"
+                )
+                logging.warning(f"Invalid summary ({reason}), retrying... title={title[:40] if title else ''}")
+                user_content += (
+                    "\n\nOutput validation failed: " + reason + ". "
+                    "Regenerate the complete JSON with both required summaries. "
+                    "Use English prose for all _en fields and Chinese prose for all _zh fields."
+                )
+
+        # All collection paths consume this tuple. Fail closed after the same
+        # two attempts so none can persist a swapped-language summary, even if
+        # an optional long summary or an otherwise dropped item was affected.
+        if last_data is not None:
+            wrong_language_fields = validate_localized_fields(last_data)
+            if wrong_language_fields:
+                logging.error(f"Rejecting wrong-language summary fields: {wrong_language_fields}")
+                last_data = None
 
         if last_data is None:
             return '', '', '', '', 0, [], '', '', normalize_topic_category(None, category), False, {

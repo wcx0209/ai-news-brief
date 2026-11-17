@@ -1,0 +1,99 @@
+name: Polyemergence archive quality repair
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: polyemergence-daily-brief
+  cancel-in-progress: false
+
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.ref_name }}
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0
+        with:
+          python-version: "3.11"
+      - name: Install repair and static export dependencies only
+        run: pip install 'openai>=1.0.0' 'psycopg2-binary>=2.9.0' 'python-dotenv>=1.0.0' 'pyyaml>=6.0'
+      - name: Validate the language and archive changes offline
+        run: |
+          test -f tests/test_archive_quality.py
+          python -m unittest discover -s tests -p test_content_language.py -v
+          python -m unittest discover -s tests -p test_ai_engine_language.py -v
+          python -m unittest discover -s tests -p test_archive_language_repair.py -v
+          python -m unittest discover -s tests -p test_public_language_guard.py -v
+          python -m unittest discover -s tests -p test_article_search_context.py -v
+          python -m unittest discover -s tests -p test_archive_quality.py -v
+      - name: Record public history before repair
+        run: |
+          mkdir -p output/archive-quality
+          cp web/public/data/articles.json output/archive-quality/articles-before.json
+      - name: Translate and audit only four stored English summaries in the cloud
+        env:
+          INBRIEF_SUPABASE_DB_URL: ${{ secrets.INBRIEF_SUPABASE_DB_URL }}
+          INBRIEF_LLM_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: python scripts/repair_archive_languages.py --apply
+      - name: Export repaired permanent history and existing search pages
+        env:
+          INBRIEF_SUPABASE_DB_URL: ${{ secrets.INBRIEF_SUPABASE_DB_URL }}
+        run: |
+          python scripts/export_public_feed.py --output web/public/data/latest.json --limit 60 --discover-images 0 --max-open-source 2 --max-academia 2 --min-importance 65 --min-academia-importance 70 --min-academia-confidence 65 --max-age-hours 48
+          python scripts/export_archive.py --output web/public
+          python scripts/export_observations.py --output web/public/data/observations.json --input web/public/data/articles.json
+          python scripts/export_domain_pages.py --output web/public
+      - name: Verify retained history, dates, language and weekly edition data
+        run: |
+          python - <<'PY'
+          import json, sys
+          from pathlib import Path
+          sys.path[:0] = ['src', 'scripts']
+          from content_language import wrong_language
+          from repair_archive_languages import TARGET_IDS
+          before = {i['id']: i for i in json.loads(Path('output/archive-quality/articles-before.json').read_text())['items']}
+          after = {i['id']: i for i in json.loads(Path('web/public/data/articles.json').read_text())['items']}
+          assert before.keys() <= after.keys(), 'Published history must not be removed'
+          for identifier in before:
+              for field in ('url', 'canonical_urls', 'published_at', 'source_published_at', 'site_published_at'):
+                  assert before[identifier].get(field) == after[identifier].get(field), (identifier, field)
+          for identifier in TARGET_IDS:
+              article = after[identifier]
+              assert not wrong_language(article['en']['full_summary'], 'en'), identifier
+              assert len(article['en']['full_summary']) > len(article['en']['summary']), identifier
+          assert not [(i['id'], locale) for i in after.values() for locale in ('en', 'zh')
+                      if wrong_language(i[locale].get('full_summary'), locale)], 'Wrong-language public prose'
+          gemini = after['ef947a5d-9a1d-4aaf-a3a3-fad2dc5bef6a']
+          path = gemini['canonical_urls']['en'].removeprefix('https://polyemergence.com/')
+          page = (Path('web/public') / path / 'index.html').read_text()
+          assert 'What Is Google Gemini 4 Hydrogen?' in page
+          assert 'Which workflows does the brief describe?' in page
+          print(f'Verified {len(after)} retained articles; four translations; search context; original publication dates')
+          PY
+          git diff --exit-code -- web/public/data/weekly
+      - name: Publish only static public files
+        run: |
+          git config user.name "polyemergence-bot"
+          git config user.email "polyemergence-bot@users.noreply.github.com"
+          git add web/public
+          if git diff --cached --quiet; then
+            echo "No public changes"
+          else
+            git commit -m "fix: repair archive languages and improve article search context"
+            git pull --rebase origin "$GITHUB_REF_NAME"
+            git push
+          fi
+      - name: Retain private automated repair diagnostics
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: archive-quality-repair-${{ github.run_id }}
+          path: output/archive-language-repair/
+          if-no-files-found: ignore
+          retention-days: 30

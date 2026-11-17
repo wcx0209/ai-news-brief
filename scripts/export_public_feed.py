@@ -17,9 +17,23 @@ from relevance_filter import passes_source_ai_filter
 from editorial_domains import category_ids, infer_domain, match_category
 from editorial_insights import enrich_item, is_github_trending
 from source_images import discover_images, normalize_source_url
+from content_language import safe_localized_fields
 
 
 TOPIC_CATEGORIES = set(category_ids())
+
+
+def safe_public_item(item):
+    """Guard stored and carried-forward prose before and after attribution.
+
+    This never translates, changes a date, or borrows another locale's text.
+    Keeping both checks also protects the offline re-export path.
+    """
+    result = {**item, **{locale: safe_localized_fields(item.get(locale) or {}, locale)
+                        for locale in ("en", "zh")}}
+    result = enrich_item(result)
+    return {**result, **{locale: safe_localized_fields(result.get(locale) or {}, locale)
+                        for locale in ("en", "zh")}}
 
 
 def safe_http_url(value):
@@ -415,7 +429,7 @@ def main():
             # Preserve the actual collection time, not the re-render time.
             "generated_at": original_payload.get("generated_at"),
             "count": len(items),
-            "items": [enrich_item({**item, **image_fields(item)}) for item in items],
+            "items": [safe_public_item({**item, **image_fields(item)}) for item in items],
         }
         Path(args.output).parent.mkdir(parents=True, exist_ok=True)
         with open(args.output, "w", encoding="utf-8") as handle:
@@ -535,7 +549,7 @@ def main():
                 "full_summary": localized.get("full_summary") or localized.get("long_summary") or localized.get("summary") or "",
             }
 
-    items = [enrich_item(item) for item in items]
+    items = [safe_public_item(item) for item in items]
 
     payload = {
         "brand": "Polyemergence",
