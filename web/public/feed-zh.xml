@@ -1,10 +1,11 @@
 <?xml version='1.0' encoding='utf-8'?>
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>多重涌现</title><link>https://polyemergence.com/zh/archive/</link><description>按新加坡发布日期整理的多重涌现人工智能与新兴科技情报永久记录。</description><language>zh-Hans</language><lastBuildDate>Tue, 17 Nov 2026 02:07:05 +0000</lastBuildDate><atom:link href="https://polyemergence.com/feed-zh.xml" rel="self" type="application/rss+xml" /><item><title>tenstorrent/tt-metal v0.82.0 - 硬件架构版本发布</title><link>https://polyemergence.com/zh/archive/2026/11/17/0cb0a99b-9f82-4812-95f9-d27824bbde23/</link><guid isPermaLink="true">https://polyemergence.com/zh/archive/2026/11/17/0cb0a99b-9f82-4812-95f9-d27824bbde23/</guid><pubDate>Tue, 17 Nov 2026 01:55:26 +0000</pubDate><category>开源</category><category>人工智能</category><description>概述
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>多重涌现</title><link>https://polyemergence.com/zh/archive/</link><description>按新加坡发布日期整理的多重涌现人工智能与新兴科技情报永久记录。</description><language>zh-Hans</language><lastBuildDate>Tue, 17 Nov 2026 14:13:42 +0000</lastBuildDate><atom:link href="https://polyemergence.com/feed-zh.xml" rel="self" type="application/rss+xml" /><item><title>tenstorrent/tt-metal v0.82.0 - 硬件架构版本发布</title><link>https://polyemergence.com/zh/archive/2026/11/17/0cb0a99b-9f82-4812-95f9-d27824bbde23/</link><guid isPermaLink="true">https://polyemergence.com/zh/archive/2026/11/17/0cb0a99b-9f82-4812-95f9-d27824bbde23/</guid><pubDate>Tue, 17 Nov 2026 01:55:26 +0000</pubDate><category>开源</category><category>人工智能</category><description>概述
 
 Tenstorrent 为其 tt-metal 仓库发布了 v0.82.0 版本。此版本包含多个标签比较和迭代更新，旨在完善专用 AI 处理器的软件开发工具包。
 发布详情
 
 文档列出了各种预发布标签以及与早期版本的对比点。开发者可以追踪多个开发分支上的代码变更与更新，以确保与目标硬件配置保持兼容。</description><source url="https://github.com/tenstorrent/tt-metal/releases/tag/v0.82.0">Tenstorrent TT-Metal Releases</source></item><item><title>补齐AI的最后一块拼图：物理智能与内存的核心作用</title><link>https://polyemergence.com/zh/archive/2026/11/17/9d9b2dd6-4636-44ea-b872-fd2deab36e0e/</link><guid isPermaLink="true">https://polyemergence.com/zh/archive/2026/11/17/9d9b2dd6-4636-44ea-b872-fd2deab36e0e/</guid><pubDate>Mon, 16 Nov 2026 23:58:24 +0000</pubDate><category>公司</category><category>人工智能</category><description>据SK hynix Newsroom发布的信息：
+
 走向物理智能的转变
 随着AI扩展到自动驾驶汽车和工业无人机等现实设备，由于延迟和连接风险，将所有决策外包给数据中心并不切实际。这些物理AI系统必须在电池容量有限、散热空间紧凑以及物理尺寸受限的严苛条件下运行。因此，系统级集成必须从内存容量和数据传输路径入手，而不能仅仅依赖原始算力。
 算法变革驱动内存设计
@@ -32,12 +33,14 @@ vLLM v0.34.0 是一个重要的里程碑版本，凝聚了来自 412 位贡献�
 风险投资人David Sacks和Epic Games首席执行官Tim Sweeney等业内知名人士对此表示怀疑，他们认为有关传言可能被游说者或利益相关方当作武器，旨在逼退这位富有远见的领导人。半导体研究机构SemiAnalysis进一步推测，移除黄仁勋是为了消除对出口管制法案的反对声音，该法案旨在收紧人工智能芯片的出口控制。
 
 作为回应，一封名为“支持黄仁勋”的公开信已经获得了包括埃隆·马斯克、Garry Tan和Tobias Lütke在内的18万多名科技界领袖的签名，他们要求查明事实真相而不是依靠未经证实的怀疑，并强烈呼吁恢复黄仁勋的职务。</description><source url="https://www.theverge.com/tech/1035027/tech-leaders-nvidia-jensen-huang-theories">The Verge AI</source></item><item><title>英伟达推出 DGX Spark 开发者套件，把办公桌变成超级计算机房</title><link>https://polyemergence.com/zh/archive/2026/11/17/604d693f-7517-44d3-93c2-7ef657285cd0/</link><guid isPermaLink="true">https://polyemergence.com/zh/archive/2026/11/17/604d693f-7517-44d3-93c2-7ef657285cd0/</guid><pubDate>Mon, 16 Nov 2026 23:00:05 +0000</pubDate><category>公司</category><category>人工智能</category><description>据NVIDIA Generative AI发布的信息：
+
 背景与硬件架构
 在芝加哥举办的 SC26 超算大会上，英伟达发布了面向科研人员和开发者的 DGX Spark HPC 开发者套件。该套件本质上是一个 四节点的 DGX Spark 系统集群，各个节点通过英伟达的 ConnectX-7 网络环形相连，用户甚至不需要额外购买或配置传统的网络交换机。
 性能与容量细节
 当组装到四个节点时，这套系统能够提供 512GB 的组合内存 以及 20TB 的 NVMe 存储空间，从而拥有充足的容量来分发各种模型和科学计算任务。借助 NVFP4 量化技术，研究人员能够在本地运行参数量高达 7000亿的大模型（例如 DeepSeek V4.1 等），并在自己掌控的硬件环境中完成微调。
 实际应用与影响
 将算力搬到桌面意味着科研团队不用再漫长地排队等待服务器资源，同时也能更好地保护敏感的专有数据。包括加州大学伯克利分校在内的多个实验室已经开始使用该设备开展分子动力学、药物发现和基因组预测等研究，体验到了 提速 15 倍 的效率，从而在将任务扩展到大型数据中心超算之前，提前在本地完成算法调试与连续训练。</description><source url="https://blogs.nvidia.com/blog/dgx-spark-hpc-developer-kit-sc26/">NVIDIA Generative AI</source></item><item><title>如何在亚马逊云科技 Bedrock 上构建自带记忆和权限的智能助手</title><link>https://polyemergence.com/zh/archive/2026/11/17/9dad0145-8f24-465d-9510-e32644940c0c/</link><guid isPermaLink="true">https://polyemergence.com/zh/archive/2026/11/17/9dad0145-8f24-465d-9510-e32644940c0c/</guid><pubDate>Mon, 16 Nov 2026 22:43:30 +0000</pubDate><category>模型</category><category>人工智能</category><description>据AWS Machine Learning发布的信息：
+
 核心架构与背景
 开发一个既能记住用户偏好、又能严格遵守公司文档权限的 AI 助手，过去需要写大量的数据库代码来管理聊天记录和用户身份。现在，亚马逊云科技将托管知识库与 AgentCore 记忆功能打通，把这些繁琐的后台工作交给了托管服务。
 关键细节与工作原理
@@ -65,6 +68,7 @@ OpenAI为其实践进行了辩护，称其一直在积极识别和披露对齐�
 新一代反应堆旨在以更高温度运行，这样可以大幅缩小用于散热的辐射器尺寸。然而，传统的镍基高温合金已经逼近极限，迫使该公司必须转向钨、钼、铌等难熔金属材料。这些金属用传统方法极难加工成型，许多所需的零部件供应商根本无法买到。
 发展背景
 该制造中心由曾效力于NASA的奥马尔·米雷莱斯领导，与公司位于俄亥俄州的测试中心形成互补。在此之前，SpaceNukes 于2026年10月与美国国防高级研究计划局（DARPA）达成协议，共同设计和地面试验千瓦级核反应堆，公司正朝着在2028年前将核反应堆送上太空的目标稳步推进。</description><source url="https://spacenews.com/spacenukes-opens-los-alamos-manufacture-and-materials-facility-to-build-its-next-generation-space-reactor/">SpaceNews</source></item><item><title>冰河时期海洋是如何储存碳的</title><link>https://polyemergence.com/zh/archive/2026/11/17/19bc7d45-7493-43b6-8fa0-45594401ac2b/</link><guid isPermaLink="true">https://polyemergence.com/zh/archive/2026/11/17/19bc7d45-7493-43b6-8fa0-45594401ac2b/</guid><pubDate>Mon, 16 Nov 2026 19:00:00 +0000</pubDate><category>研究</category><category>气候、水与环境工程</category><description>据MIT Climate发布的信息：
+
 背景
 在过去80万年中，受轨道变化和温室气体水平波动的影响，地球气候在温暖期和冰河时期之间交替。科学家通过研究大气与海洋之间的碳交换，来更好地理解未来的气候情景。
 研究细节
@@ -76,6 +80,7 @@ OpenAI为其实践进行了辩护，称其一直在积极识别和披露对齐�
 挑战与芯片获取
 
 黄仁勋的复职面临严峻阻碍。前OpenAI研究人员Will DePue发布了一份未经独立证实的调查结果，暗示中国AI公司获取了大量英伟达先进的Blackwell芯片，这让英伟达的出口合规情况变得复杂。此外，美国财政部长斯科特·贝森特表示英伟达不应从公司内部选择替代人选，而美国商务部的新规旨在限制通过第三方数据中心远程访问AI芯片，这可能会影响开源模型的发展步伐。</description><source url="https://www.technologyreview.com/2026/11/16/1148624/the-open-source-movement-wants-jensen-huang-back/">MIT Technology Review AI</source></item><item><title>光靠干净的数据还不够：IFS Copperleaf 如何用 Databricks 帮 AI 读懂业务</title><link>https://polyemergence.com/zh/archive/2026/11/17/880c20db-9977-4757-963e-691741df7f7e/</link><guid isPermaLink="true">https://polyemergence.com/zh/archive/2026/11/17/880c20db-9977-4757-963e-691741df7f7e/</guid><pubDate>Mon, 16 Nov 2026 18:30:56 +0000</pubDate><category>公司</category><category>人工智能</category><description>据Databricks发布的信息：
+
 放弃传统的手动建模
 传统的企业数据分析要求在查询前对所有表格进行彻底清洗和建模。面对近 30 个来源系统，IFS Copperleaf 的技术团队决定打破常规。除了对财务和销售等关键领域进行完整建模外，他们让 AI 直接处理原始数据。这一转变使数据提前几个月发挥了实用价值。
 让业务人员参与数据治理
@@ -101,6 +106,7 @@ LangChain 创始人 Harrison Chase 撰文指出，人类与 AI 代理的互动�
 传统的回收系统依赖机械破碎，这往往会出口封装层内包裹的贵金属，并产生不适合高端制造的杂质玻璃。为了在本地捕获这些价值，几家美国公司正在引入新技术。We Recycle Solar计划在2027年前利用再生溶剂开设关键材料回收设施。同样，OnePlanet Solar正在部署其PRISM工艺以生产高纯度玻璃和硅，而Comstock Metals正在内华达州运营一家工厂，在不使用传统冶炼的情况下分解粘合剂并提取有价值的金属。
 供应链与监管
 这个新兴行业的成功很大程度上取决于与制造商和开发商的合作，例如Solarcycle与Qcells和Sunrun等主要厂商达成的协议。与此同时，监管环境仍然较为零散。目前只有四个州禁止将太阳能板送入垃圾填埋场，这促使企业通过R2v3标准和SEIA计划参与等行业认证来证明其可追溯性和环境合规性，从而在竞争中脱颖而出。</description><source url="https://www.pv-magazine.com/2026/11/16/solar-recycling-2-0/">pv magazine Global</source></item><item><title>OpenAI 扩大面向科研人员的免费 ChatGPT 访问计划</title><link>https://polyemergence.com/zh/archive/2026/11/17/63ef13b0-835b-420d-8d6e-35fc6f57afbe/</link><guid isPermaLink="true">https://polyemergence.com/zh/archive/2026/11/17/63ef13b0-835b-420d-8d6e-35fc6f57afbe/</guid><pubDate>Mon, 16 Nov 2026 17:00:00 +0000</pubDate><category>公司</category><category>人工智能</category><description>据OpenAI News发布的信息：
+
 计划扩大
 OpenAI 宣布扩大其学术研究人员 ChatGPT 计划，旨在将全球受益的科研人员总数提升至 20 万名。下一轮申请将于 11 月 23 日开启，以先到先得的方式发放 50,000 个新名额，每个名额包含主申请人及最多两位合作者的免费 ChatGPT Plus 权限。
 试点成效与反馈
@@ -112,12 +118,14 @@ OpenAI 宣布扩大其学术研究人员 ChatGPT 计划，旨在将全球受益�
 信息检索和内容创作行业的受创最为严重。在旅游领域，随着AI助手开始直接比价，Tripadvisor市值下跌77%，Trivago下跌67%，而Booking Holdings则因承担最终支付环节而逆势上涨20%。在创意和自由职业领域，由于用户转向AI生成图片和数字服务，Shutterstock和Fiverr等公司的估值遭遇重创。与此同时，随着AI聊天机器人取代了订阅制的作业辅导和代码问答，Chegg和Stack Overflow等教育与开发者平台也迎来了断崖式下跌。
 未来的韧性所在
 报告指出，仅提供线索或信息的平台较为脆弱，而那些能够促成实际交易并在客服、法律等领域交付完整结果的AI驱动型业务，未来可能会表现出更强的韧性。</description><source url="https://www.livemint.com/ai/which-businesses-are-being-disrupted-by-ai-from-travel-platforms-to-education-here-s-what-is-changing-11794843796318.html">Mint AI</source></item><item><title>IBM在SC26大会展示量子计算与超级计算融合新进展</title><link>https://polyemergence.com/zh/archive/2026/11/17/b43d6cf9-0fec-4e67-9346-86c3c087a076/</link><guid isPermaLink="true">https://polyemergence.com/zh/archive/2026/11/17/b43d6cf9-0fec-4e67-9346-86c3c087a076/</guid><pubDate>Mon, 16 Nov 2026 16:00:00 +0000</pubDate><category>公司</category><category>量子技术</category><description>据IBM Quantum发布的信息：
+
 量子与超算融合
 IBM、克利夫兰诊所和日本理化学研究所（RIKEN）凭借模拟高达12,635个原子的蛋白质配体复合物，入围了2026年ACM戈登·贝尔奖决赛。该团队将复杂分子拆分为多个簇，利用量子处理器与经典超算协同工作的方法完成了这一迄今为止最大规模的量子模拟。
 纠错研究平台
 为了推进量子纠错研究，IBM联合橡树岭国家实验室（ORNL）和AMD推出了协同设计平台，将经典硬件与物理量子比特直接部署在一起。此外，IBM与AMD还发布了开源框架Pelagos，利用GPU进行量子纠错解码器测试的速度比单核CPU快上多达97倍。
 工作流管理
 超算中心通常依赖Slurm等调度器来管理计算任务。IBM正与NVIDIA合作，将开源的量子资源管理接口（QRMI）集成到Slurm中，使研究人员在编写任务脚本时，能够像申请传统GPU或CPU一样直接申请量子处理单元（QPU）。</description><source url="https://www.ibm.com/quantum/blog/sc26">IBM Quantum</source></item><item><title>Cohere 在 Compass 中推出视频智能搜索功能，让 AI 读懂企业视频</title><link>https://polyemergence.com/zh/archive/2026/11/16/a41bed63-86e5-4fb4-b7ec-f6cbac535f0f/</link><guid isPermaLink="true">https://polyemergence.com/zh/archive/2026/11/16/a41bed63-86e5-4fb4-b7ec-f6cbac535f0f/</guid><pubDate>Mon, 16 Nov 2026 15:32:57 +0000</pubDate><category>公司</category><category>人工智能</category><description>据Cohere Blog发布的信息：
+
 背景
 企业在录制的会议、培训课程和媒体档案中存储了大量信息，但与文本文档相比，视频一直难以被 AI 应用有效地搜索。
 细节
@@ -139,6 +147,7 @@ Cohere 在 Compass 中推出的全新视频智能功能可以同时分析口语�
 新规适用于算力超过1200万总处理性能指标的数据中心或网络，这大致相当于约750个英伟达H100或H200芯片的最大算力。如果这些数据中心服务于受限国家的客户，必须在90天内获得许可证。此外，由于转运风险较高，该规则对向马来西亚、新加坡、印尼、泰国和巴西传输半导体增设了新的许可要求，但目的地为这些国家美国企业的芯片则可豁免。该框架还正式废除了上一届政府的AI扩散规则。
 行业影响
 这一监管变动迫使全球云服务和数据中心运营商严格审查客户的股权结构和网络访问情况。出台此举正值外界高度关注中国企业争相争夺海外算力之际，旨在阻止相关方利用美国先进半导体开展军事或情报相关活动。</description><source url="https://techcrunch.com/2026/11/16/us-tightens-ai-chip-export-controls-to-deter-chinese-companies-from-accessing-compute-remotely/">TechCrunch AI</source></item><item><title>Sakana AI 发布 JFinBench：基于最新金融资格考试的日语金融基准</title><link>https://polyemergence.com/zh/archive/2026/11/16/1e8ca0af-6807-4d4e-b60b-6ae3f9957c16/</link><guid isPermaLink="true">https://polyemergence.com/zh/archive/2026/11/16/1e8ca0af-6807-4d4e-b60b-6ae3f9957c16/</guid><pubDate>Mon, 16 Nov 2026 15:00:00 +0000</pubDate><category>研究</category><category>人工智能</category><description>据Sakana AI发布的信息：
+
 背景与动机
 随着大语言模型承担更多专业任务，专门的基准测试对于反映其实际能力变得至关重要。尽管在软件编程等领域，开源权重模型已经几乎能够媲美闭源模型，但像日本金融和税务系统这样需要本地化且频繁更新知识的领域，仍然缺乏稳健的评估标准。现有的基准测试大多依赖美国系统或过时的考试。
 基准构建
@@ -243,12 +252,14 @@ SEW.AI 强调，垂直人工智能是专门为该行业的实际情况设计的�
 在 WorkBuddy 的实际测试中，无论是处理复杂的深度研究报告，还是从零构建 3D 交互网页与 RPG 游戏，Hy4 flash 都展现出了极高的执行效率。例如在制作 3D 历史帆船的项目中，Hy4 flash 仅用半小时便完成了任务，花费约 0.23 元，在首轮交付时间上优势显著。
 
 尽管面对长程软件工程等高难度任务仍需依靠标准版 Hy4，但 Hy4 flash 成功实现了降低使用门槛的目标。它让用户能够以更低的时间和预算，轻松应对日常办公、网页原型和小游戏开发等高频场景。</description><source url="https://www.ifanr.com/1689653?utm_source=rss&amp;utm_medium=rss&amp;utm_campaign=">iFanr 爱范儿</source></item><item><title>LVMH旗下传媒部门与OpenAI达成战略合作，将AI引入法国新闻编辑室</title><link>https://polyemergence.com/zh/archive/2026/11/16/f749cdeb-1d31-45b8-a55c-d163755c525b/</link><guid isPermaLink="true">https://polyemergence.com/zh/archive/2026/11/16/f749cdeb-1d31-45b8-a55c-d163755c525b/</guid><pubDate>Mon, 16 Nov 2026 09:00:00 +0000</pubDate><category>商业</category><category>人工智能</category><description>据OpenAI News发布的信息：
+
 合作范围
 LVMH集团旗下拥有《回声报》、《巴黎人报》和《巴黎竞赛画报》等知名法国媒体的传媒部门，近日宣布与OpenAI签署协议，将在全集团范围内部署AI工具。这项合作旨在为包括近700名记者在内的1,800名员工配备ChatGPT企业版，并通过定制培训来支持日常工作。
 实际应用
 根据官方公告，此次技术整合旨在协助新闻团队处理文件检索、比对以及初步翻译等常规任务。通过将这些流程自动化，该传媒集团希望让记者有更多时间专注于调查性报道、深度分析和一线采访。
 内容分发
 除了提升内部效率，该合作还将优化LVMH旗下媒体内容在ChatGPT中的呈现方式，向用户提供附带来源署名的摘要以及通往原始文章的直接链接。双方强调，此次合作旨在平衡技术创新与维护编辑独立性之间的关系。</description><source url="https://openai.com/index/lvmh-media-division-partnership">OpenAI News</source></item><item><title>追踪大语言模型中的知识与推理机制</title><link>https://polyemergence.com/zh/archive/2026/11/16/e4a9f8f7-f0c4-46f3-b5d5-346b3b1e5a79/</link><guid isPermaLink="true">https://polyemergence.com/zh/archive/2026/11/16/e4a9f8f7-f0c4-46f3-b5d5-346b3b1e5a79/</guid><pubDate>Mon, 16 Nov 2026 05:00:00 +0000</pubDate><category>学术</category><category>人工智能</category><description>据这篇预印本作者报告：当前的大语言模型（LLM）评估主要报告数据集层面的性能得分，这掩盖了模型的内部处理机制和潜在的失效模式。为此，作者提出了一种以任务为中心的框架，将基于注意力、激活和表征的测量指标结合起来，在从检索主导到推理主导的连续谱上对基准测试进行特征刻画。研究人员评估了16个大语言模型在24个不同基准测试上的表现，并对代表性模型和任务进行了内部状态分析。结果表明，以知识为中心的任务和以推理为中心的任务在处理模式上存在系统性差异。该研究已开源代码，旨在支持更有针对性的基准测试选择和模型决策。</description><source url="https://arxiv.org/abs/2611.17461">arXiv Computation and Language</source></item><item><title>Reflect-Reasoning：训练大型语言模型推理对齐原则</title><link>https://polyemergence.com/zh/archive/2026/11/16/4fe4c507-386d-4217-ba30-63a9bacf28db/</link><guid isPermaLink="true">https://polyemergence.com/zh/archive/2026/11/16/4fe4c507-386d-4217-ba30-63a9bacf28db/</guid><pubDate>Mon, 16 Nov 2026 05:00:00 +0000</pubDate><category>学术</category><category>人工智能</category><description>据这篇预印本作者报告：来自 arXiv 预印本的研究人员提出了 Reflect-Reasoning，这是一种旨在解决现有对齐技术局限性的训练方法。目前的对齐大多依赖于固定的偏好或静态的宪法原则，而虽然部署人员常采用推理时系统提示或后生成反思，但这些方法受限于模型固有的推理能力。Reflect-Reasoning 转而训练模型掌握一种通用的推理技能来处理对齐规范。作者在五个模型上进行的测试表明，该方法优于标准的系统提示和显式提示策略，能够泛化至分布外的医疗和金融原则领域，减少罕见但严重的原则违反情况，并在抗对抗性宪法越狱攻击方面保持鲁棒性，同时不会侵蚀原有的安全工程。作为预印本，该研究仍需独立复现和进一步的代码、数据发布验证。</description><source url="https://arxiv.org/abs/2611.17398">arXiv Machine Learning</source></item><item><title>英特尔与 SambaNova 联合展示风冷异构 AI 推理架构</title><link>https://polyemergence.com/zh/archive/2026/11/16/39248325-9249-4943-a8b2-f61b87821c8a/</link><guid isPermaLink="true">https://polyemergence.com/zh/archive/2026/11/16/39248325-9249-4943-a8b2-f61b87821c8a/</guid><pubDate>Mon, 16 Nov 2026 04:47:57 +0000</pubDate><category>公司</category><category>人工智能</category><description>据SambaNova发布的信息：
+
 架构与硬件分工
 英特尔与 SambaNova 推出了一种风冷异构推理架构，旨在处理 AI 工作负载的不同阶段。据两家公司称，该方案将英特尔的 350W 风冷 D 系列 PCIe GPU（代号 Crescent Island）用于计算密集的提示词预填充，并搭配 SambaNova 第五代 SambaRack SN50 可重构数据流单元（RDU），负责内存密集的解码生成。
 软件栈与集成
@@ -270,6 +281,7 @@ OpenAI 向媒体确认已撤销独立机器人研究团队，原有人员被分�
 自托管企业信任软件提供商 SignQuantum 将提供用于认证数字记录的 PQC 文档签名和业务连续性工具。同时，QANplatform 将利用其分布式账本提供防篡改时间戳，以验证跨越数十年的签名有效性。QANplatform 首席技术官 Johann Polecsak 表示，将这些技术结合使用可以降低未来政府记录面临的密钥泄露风险。
 未来展望
 该协议涉及技术知识共享和工作流程评估，相关负责人包括卡塔尔通信和信息技术部数字经济局局长 Faraj Jassim Abdulla 以及 SignQuantum 首席执行官 Nazmath Nazeer。不过，各方指出，任何未来的试点部署或商业合同仍需经过单独的政府评估和采购审批程序。</description><source url="https://quantumcomputingreport.com/qatar-ministry-of-communications-and-information-technology-signs-post-quantum-readiness-agreement-with-signquantum-and-qanplatform/">Quantum Computing Report</source></item><item><title>Cerebras 发布 Tungsten 语言与编译器，让整片晶圆编程变简单</title><link>https://polyemergence.com/zh/archive/2026/11/16/9648588d-de83-47e0-a13f-83969d109403/</link><guid isPermaLink="true">https://polyemergence.com/zh/archive/2026/11/16/9648588d-de83-47e0-a13f-83969d109403/</guid><pubDate>Mon, 16 Nov 2026 00:00:00 +0000</pubDate><category>模型</category><category>人工智能</category><description>据Cerebras Blog发布的信息：
+
 背景与技术细节
 Cerebras Systems 表示，长期以来，对其晶圆级芯片进行编程需要深厚的硬件专业知识，非标量程序通常需要通过手动配置描述符和布线来接近汇编语言编写。为了缩小这一抽象鸿沟，该公司发布了 Tungsten 编译器，它能够对芯片架构进行建模，并将代码映射到访问模式寄存器、事件驱动任务以及循环指令上。同时，该公司推出了 Aviary 应用与教程组合，其中包括辐射输运和分子动力学等代码，Cerebras 称其在特定任务上的表现能够超越主流超级计算机。
 AI 编程与行业影响
@@ -293,6 +305,7 @@ langchain-mistralai==1.2.0 版本是 LangChain 生态 持续开发的一部分�
 集成特性
 
 该软件包专门针对 Mistral AI 模型，为开发者提供必要的工具，以便在标准 LangChain 管道中调用、链接和管理这些 大语言模型，而无需编写自定义的集成样板代码。</description><source url="https://github.com/langchain-ai/langchain/releases/tag/langchain-mistralai%3D%3D1.2.0">LangChain Releases</source></item><item><title>向在网格上定义标准模型迈出一步</title><link>https://polyemergence.com/zh/archive/2026/11/16/604ec870-a292-43a4-b912-1db71fcb72a6/</link><guid isPermaLink="true">https://polyemergence.com/zh/archive/2026/11/16/604ec870-a292-43a4-b912-1db71fcb72a6/</guid><pubDate>Sun, 15 Nov 2026 22:00:01 +0000</pubDate><category>研究</category><category>人工智能</category><description>据OpenAI News发布的信息：
+
 背景
 在过去五十多年里，粒子物理学的标准模型成功描述了基本粒子与三种基本力，但它一直缺少一个非微扰的定义。尽管研究人员可以对强力使用微扰论或格子场论，但由于手征理论的挑战，特别是费米子加倍问题以及复杂的位相排列，将格子方法推广到整个标准模型的尝试一直受阻。
 细节
@@ -380,6 +393,7 @@ TT-NN 与大模型支持
 这一震动恰逢美国公众对科技行业激进发展路线的不安情绪日益加剧，特别是针对那些创造就业极少却疯狂耗能的数据中心。在一个高度极化的美国，选民对这类设施的抵制意外促成了两党罕见的共识，多地社区纷纷反对无节制的扩张。
 监管与政府动荡
 短期来看，特朗普政府正面临巨大压力，必须合理解释此前英伟达在出口先进芯片至中国时所享有的宽松政策。财政部长斯科特·贝森特与商务部长霍华德·卢特尼克已围绕出口限制产生内部分歧，预示着科技政策领域将迎来重大动荡。</description><source url="https://www.lemonde.fr/en/opinion/article/2026/11/14/trump-administration-rocked-by-nvidia-shockwave_6780919_23.html">Le Monde AI</source></item><item><title>目标工程：设计 AI 代理的未来新方法</title><link>https://polyemergence.com/zh/archive/2026/11/15/95af2b75-3bca-42bb-bdbd-45ea91951356/</link><guid isPermaLink="true">https://polyemergence.com/zh/archive/2026/11/15/95af2b75-3bca-42bb-bdbd-45ea91951356/</guid><pubDate>Sat, 14 Nov 2026 16:00:00 +0000</pubDate><category>创业</category><category>人工智能</category><description>据LangChain Blog发布的信息：
+
 背景与挑战
 随着 AI 代理从简单的文本生成和工具调用，演变为执行完整的开放式任务，我们设计其职责范围的方式变得极其重要。如果把代理引向错误的方向，就会浪费大量的宝贵算力。代理表现不佳的一个主要瓶颈是缺乏正确的上下文，特别是那些只存在于人类大脑中、无法在现有文档里找到的隐性知识。
 反馈与用户体验的作用
