@@ -141,3 +141,67 @@ class RecoveryTests(unittest.TestCase):
                                enrich=lambda part: (part, {}))
         self.assertFalse((self.out / 'weekly-review.json').exists())
         self.assertEqual(repair.load_json(self.out / 'generation-metadata.json')['status'], 'failed')
+
+    def final_fixture(self):
+        config = Path(self.tmp.name) / 'edited.json'
+        edited = deepcopy(self.complete)
+        for locale in ('zh', 'en'):
+            edited[locale].pop('follow_up')
+        write(config, edited)
+        prior_calls = [{'purpose': 'draft', 'finish_reason': 'stop'}]
+        calls = [{'purpose': p, 'finish_reason': 'stop'} for p in ('automated_editorial_check', 'bounded_revision')]
+        write(self.attempt / 'generation-metadata.json', {'week': self.issue, 'status': 'failed',
+              'recovered_from_publication_run_id': '11',
+              'validation_error': 'model_json_invalid_json', 'total_cloud_llm_calls_including_initial': 3,
+              'prior_run_calls': prior_calls, 'calls': calls})
+        write(self.attempt / 'model-response-texts.json', [{**calls[0], 'text': '{"issues":[]}'},
+                                                          {**calls[1], 'text': '{"zh" : {'}])
+        write(self.attempt / 'source-read-audit.json', {'requested_unique_urls': 3})
+        folder = Path(self.tmp.name) / 'corrections'
+        folder.mkdir()
+        write(folder / (self.issue['week_start'] + '.json'), {'week_start': self.issue['week_start'], 'source_run_id': '11',
+              'final_audit_source_run_id': '12', 'instructions': ['Check supporting material']})
+        location = patch.object(repair, 'CORRECTIONS', folder)
+        location.start()
+        self.addCleanup(location.stop)
+        return config
+
+    def test_final_only_uses_one_new_call_auditing_exact_editorial_copy(self):
+        config = self.final_fixture()
+        class AuditOnly:
+            calls = []
+            raw_responses = []
+            model = 'fixture'
+            def __call__(self, system, payload, purpose):
+                self.calls.append({'purpose': purpose})
+                self.reviewed = deepcopy(payload['draft'])
+                return {'issues': []}
+        fake = AuditOnly()
+        with patch.object(repair, 'refresh_missing', side_effect=AssertionError('no new collection')):
+            repair.recover(self.attempt, self.out, self.issue, '12', model_factory=lambda: fake,
+                           final_copy=config)
+        report = repair.load_json(self.out / 'weekly-review.json')
+        self.assertEqual(fake.reviewed, {k: report[k] for k in ('zh','en')})
+        self.assertEqual(fake.calls, [{'purpose': 'post_revision_editorial_check'}])
+        meta = repair.load_json(self.out / 'generation-metadata.json')
+        self.assertEqual([c['purpose'] for c in meta['prior_run_calls']], ['draft','automated_editorial_check','bounded_revision'])
+        self.assertEqual(meta['total_cloud_llm_calls_including_initial'], 4)
+        self.assertEqual(meta['recovered_from_repair_run_id'], '12')
+        self.assertEqual(meta['recovered_from_publication_run_id'], '11')
+        self.assertEqual(meta['revision_source'], 'repository_editorial_copy')
+
+    def test_final_only_rejects_wrong_lineage_and_sensitive_claims_before_model(self):
+        config = self.final_fixture()
+        with self.assertRaisesRegex(ValueError, 'unrecognized_week_or_run'):
+            repair.final_inputs(self.attempt, self.issue, '123', config)
+        data = repair.load_json(config)
+        data['en']['main_events'][0]['what_changed'] = 'The source reports a clinical benefit.'
+        write(config, data)
+        with self.assertRaisesRegex(ValueError, 'high_impact_original_source_unavailable'):
+            repair.recover(self.attempt, self.out, self.issue, '12', final_copy=config,
+                           model_factory=lambda: self.fail('no cloud call for invalid copy'))
+        prior = repair.load_json(self.attempt / 'generation-metadata.json')
+        prior['calls'].append({'purpose':'post_revision_editorial_check','finish_reason':'stop'})
+        write(self.attempt / 'generation-metadata.json', prior)
+        with self.assertRaisesRegex(ValueError,'prior_attempt_mismatch'):
+            repair.final_inputs(self.attempt,self.issue,'12',config)

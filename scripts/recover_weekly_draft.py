@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Recover a single structurally incomplete bilingual draft on GitHub Actions."""
 from datetime import datetime, timezone
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -15,31 +16,36 @@ sys.path.insert(0, str(ROOT / 'scripts'))
 from generate_weekly_review import render_coverage, week_window
 from model_json import parse_json_response
 from publish_weekly import load_json
-from weekly_generation import CloudGemini, build_packet, generate_review, validate_draft
-from weekly_publication import prepare_publication
+from weekly_generation import (AUDIT_PROMPT, CloudGemini, _validate_new_draft, build_packet, generate_review,
+                               validate_draft, validate_editorial_audit)
+from weekly_publication import _require_original_for_high_impact, prepare_publication
 from weekly_source_reads import enrich_selected_sources
 
 REPO = 'wcx0209/ai-news-brief'
 ARTIFACT = 'polyemergence-weekly-publication'
+REPAIR_DIAGNOSTICS = 'polyemergence-weekly-repair-diagnostics'
+CORRECTIONS = ROOT / 'config/weekly-review-corrections'
 WORK = ROOT / 'output/weekly-draft-repair'
 OUTPUT = WORK / 'review'
 
 
-def check_run(run, source_id):
+def check_run(run, source_id, final_only=False):
+    workflow = 'weekly-draft-repair.yml' if final_only else 'weekly-publish.yml'
     if (str(run.get('id')) != source_id or run.get('head_branch') != 'main'
-            or run.get('path') != '.github/workflows/weekly-publish.yml'
-            or run.get('event') not in ('schedule', 'workflow_dispatch')
+            or run.get('path') != '.github/workflows/' + workflow
+            or run.get('event') not in (('workflow_dispatch',) if final_only else ('schedule', 'workflow_dispatch'))
             or run.get('head_repository', {}).get('full_name') != REPO
             or run.get('status') != 'completed' or run.get('conclusion') != 'failure'
             or run.get('run_attempt') != 1):
         raise ValueError('weekly_repair_invalid_source_run')
 
 
-def retrieve(source_id, target):
+def retrieve(source_id, target, final_only=False):
     run = subprocess.run(['gh', 'api', f'repos/{REPO}/actions/runs/{source_id}'],
                          check=True, capture_output=True, timeout=30)
-    check_run(json.loads(run.stdout), source_id)
-    subprocess.run(['gh', 'run', 'download', source_id, '--repo', REPO, '--name', ARTIFACT,
+    check_run(json.loads(run.stdout), source_id, final_only)
+    name = REPAIR_DIAGNOSTICS if final_only else ARTIFACT
+    subprocess.run(['gh', 'run', 'download', source_id, '--repo', REPO, '--name', name,
                     '--dir', str(target)], check=True, timeout=90)
 
 
@@ -119,7 +125,7 @@ def refresh_missing(plan, catalog, enrich=enrich_selected_sources):
 
 
 def editorial_guidance(week, source_id):
-    path = ROOT / 'config/weekly-review-corrections' / (week + '.json')
+    path = CORRECTIONS / (week + '.json')
     if not path.exists():
         return None
     config = load_json(path)
@@ -132,23 +138,93 @@ def editorial_guidance(week, source_id):
     return instructions
 
 
-def recover(source, output, issue, source_id, model_factory=CloudGemini, enrich=enrich_selected_sources):
+def pinned_original(week, source_id):
+    config = load_json(CORRECTIONS / (week + '.json'))
+    original_id = config.get('source_run_id')
+    if (config.get('week_start') != week or config.get('final_audit_source_run_id') != source_id
+            or not isinstance(original_id, str) or not re.fullmatch(r'[1-9]\d{0,19}', original_id)):
+        raise ValueError('weekly_final_audit_unrecognized_week_or_run')
+    return original_id
+
+
+def final_inputs(source, issue, source_id, copy_path):
+    original_id = pinned_original(issue['week_start'], source_id)
+    prior = load_json(source / 'generation-metadata.json')
+    replies = load_json(source / 'model-response-texts.json')
+    purposes = ['automated_editorial_check', 'bounded_revision']
+    calls = prior.get('prior_run_calls', []) + prior.get('calls', [])
+    if (prior.get('status') != 'failed' or prior.get('validation_error') != 'model_json_invalid_json'
+            or prior.get('recovered_from_publication_run_id') != original_id or prior.get('week') != issue
+            or prior.get('total_cloud_llm_calls_including_initial') != 3
+            or [c.get('purpose') for c in calls] != ['draft', *purposes]
+            or [r.get('purpose') for r in replies] != purposes
+            or any(v.get('finish_reason') != 'stop' for v in [*calls, *replies])
+            or (source / 'weekly-review.json').exists()):
+        raise ValueError('weekly_final_audit_prior_attempt_mismatch')
+    plan = load_json(source / 'selection-audit.json')
+    catalog = load_json(source / 'source-catalog.json')
+    packet = load_json(source / 'evidence-packet.json')
+    if build_packet(plan, issue) != packet or sorted(row['id'] for row in catalog) != packet['allowed_evidence_ids']:
+        raise ValueError('weekly_repair_saved_selection_mismatch')
+    prior_audit = validate_editorial_audit(parse_json_response(replies[0]['text']), packet)
+    draft = parse_json_response(copy_path.read_text(encoding='utf-8'))
+    if set(draft) != {'zh', 'en'}:
+        raise ValueError('weekly_final_audit_requires_locale_copy_only')
+    _validate_new_draft(draft, packet)
+    validate_draft(draft, packet, catalog)
+    _require_original_for_high_impact(draft, catalog)
+    for locale, note in (('zh', '本期未作与上期的逐项对照。'),
+                         ('en', 'This edition does not include an item-by-item comparison with an earlier issue.')):
+        if 'follow_up' in draft[locale]:
+            raise ValueError('weekly_final_audit_requires_locale_copy_only')
+        draft[locale]['follow_up'] = {'available': False, 'note': note, 'items': []}
+    return plan, catalog, draft, {'calls': calls}, prior_audit, original_id
+
+
+def final_audit(model, draft, packet, prior_audit, guidance):
+    # One new provider call. The checked-in copy is attributed to an editorial
+    # correction; neither the malformed response nor the old audit is reused
+    # as the wording or review of the final copy.
+    prompt = AUDIT_PROMPT + ('\nReview the entire current edited copy afresh. Treat prior findings as history, '
+                           'and editorial guidance as questions to check against the packet, never as evidence. '
+                           'For each issue distinguish a source contradiction from an explicitly stated limitation.')
+    result = model(prompt, {'evidence_packet': packet, 'draft': draft, 'previous_review': prior_audit,
+                            'editorial_guidance': guidance or []}, 'post_revision_editorial_check')
+    validate_editorial_audit(result, packet)
+    return {**draft, 'issue': {**packet['issue'], 'status': 'DRAFT', 'generated_at': datetime.now(timezone.utc).isoformat()},
+            'editorial_review': {'automated_only': True, 'independently_verified': False, 'revision_made': True,
+                                 'audit': prior_audit, 'post_revision_audit': result}}
+
+
+def recover(source, output, issue, source_id, model_factory=CloudGemini, enrich=enrich_selected_sources,
+            final_copy=None):
     def save(name, value):
         (output / name).write_text(json.dumps(value, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
 
-    plan, catalog, previous_draft, prior = restore(source, issue)
+    final_only = final_copy is not None
+    if final_only:
+        plan, catalog, corrected, prior, prior_audit, original_run = final_inputs(source, issue, source_id, final_copy)
+    else:
+        plan, catalog, previous_draft, prior = restore(source, issue)
+        original_run = source_id
     output.mkdir(parents=True, exist_ok=False)
-    metadata = {'status': 'failed', 'recovered_from_publication_run_id': source_id, 'week': issue, 'database_reads': False,
+    metadata = {'status': 'failed', 'recovered_from_publication_run_id': original_run, 'week': issue, 'database_reads': False,
                 'website_publication': False, 'calls': [], 'prior_run_calls': prior['calls']}
     model = None
     try:
-        audit = refresh_missing(plan, catalog, enrich)
+        if final_only:
+            metadata.update(recovered_from_repair_run_id=source_id, revision_source='repository_editorial_copy',
+                            audited_copy_sha256=hashlib.sha256(json.dumps(corrected, ensure_ascii=False, sort_keys=True,
+                                                                         separators=(',', ':')).encode()).hexdigest())
+            audit = load_json(source / 'source-read-audit.json')
+        else:
+            audit = refresh_missing(plan, catalog, enrich)
         packet = build_packet(plan, issue)
         save('source-read-audit.json', audit)
         save('evidence-packet.json', packet)
         save('source-catalog.json', catalog)
         save('selection-audit.json', plan)
-        guidance = editorial_guidance(issue['week_start'], source_id)
+        guidance = editorial_guidance(issue['week_start'], original_run)
         model = model_factory()
         metadata.update(model=model.model, calls=model.calls)
         used_saved_draft = False
@@ -165,7 +241,10 @@ def recover(source, output, issue, source_id, model_factory=CloudGemini, enrich=
                 system += '\nCheck the supplied editorial guidance against the evidence and correct supported concerns. Never treat guidance as source evidence.\n'
             return model(system, payload, purpose)
 
-        report, _ = generate_review(plan, issue, resume)
+        if final_only:
+            report = final_audit(model, corrected, packet, prior_audit, guidance)
+        else:
+            report, _ = generate_review(plan, issue, resume)
         report['coverage'] = render_coverage(plan)
         review = report['editorial_review']
         if not review.get('revision_made') or not review.get('post_revision_audit'):
@@ -212,8 +291,15 @@ def main():
         return
     source = WORK / 'input'
     source.mkdir(parents=True, exist_ok=False)
-    retrieve(source_id, source)
-    recover(source, OUTPUT, issue, source_id)
+    final_only = env.get('FINAL_AUDIT_ONLY') == 'true'
+    copy_path = None
+    if final_only:
+        if env.get('GITHUB_RUN_ATTEMPT') != '1':
+            raise ValueError('weekly_final_audit_rerun_requires_review')
+        pinned_original(issue['week_start'], source_id)
+        copy_path = CORRECTIONS / (issue['week_start'] + '-draft.json')
+    retrieve(source_id, source, final_only)
+    recover(source, OUTPUT, issue, source_id, final_copy=copy_path)
     print('Recovered draft passed the automatic publication checks.')
 
 

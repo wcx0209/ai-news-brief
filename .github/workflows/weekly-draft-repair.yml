@@ -8,9 +8,14 @@ on:
         required: true
         type: string
       source_run_id:
-        description: Failed weekly publication run with a saved incomplete draft
+        description: Failed publication run, or failed repair run for final audit
         required: true
         type: string
+
+      final_audit_only:
+        description: Audit the matching checked-in edited copy using the saved repair diagnostics
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -28,6 +33,7 @@ jobs:
     env:
       WEEK_START: ${{ inputs.week_start }}
       SOURCE_RUN_ID: ${{ inputs.source_run_id }}
+      FINAL_AUDIT_ONLY: ${{ inputs.final_audit_only }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:

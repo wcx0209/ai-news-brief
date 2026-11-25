@@ -1,0 +1,354 @@
+{
+  "zh": {
+    "title": "Anthropic 首日交易、Willow 量子实验与分子光谱识别",
+    "dek": "《世界报》记录了 Anthropic 上市首日的交易。Google 和 Lila Sciences 则各自报告了一项实验，读懂结果要先弄清机器做的是哪道题。",
+    "synthesis": {
+      "intro": "一只股票的收盘价、一笔融资的金额和一次实验的得分都可能成为头条。在 Anthropic、Isomorphic Labs、Google 和 Lila Sciences 这四份报道里，数字各有含义。",
+      "signal": {
+        "title": "公司筹到了多少钱，股票又卖多少钱？",
+        "text": "《世界报》报道了 Anthropic 发行股票以及挂牌后的交易。公司通过首次公开发行筹资。股票开始交易后，价格上涨反映市场定价的变化，公司并不会因此多收到一笔发行款。BioSpace 报道 Isomorphic Labs 为药物研发完成私募融资，给出的则是这轮实际筹得的金额。读这两份报道时，先分清某个数字说的是公司募资，还是投资者交易股票的价格。",
+        "support": "selection_based",
+        "evidence_ids": [
+          "a6777120-071d-4274-bb24-7c53ca50ff2e",
+          "99bcdb0f-d4f1-40a6-b971-1e2fae829ef9"
+        ]
+      },
+      "structure": {
+        "title": "先看机器做的是哪道题",
+        "text": "Google 测的是 Willow 在一种游戏中的胜率能否超过最佳经典策略。Lila Sciences 测的是 MOSAIC 能否在评估中根据光谱认出分子结构。看 Willow 的结果，要知道游戏怎么计分、经典策略的上限在哪里。看 MOSAIC 的结果，要知道输入给模型的是什么、什么答案才算正确。两组得分各自回答了一个具体问题。",
+        "support": "selection_based",
+        "evidence_ids": [
+          "5c997519-4673-4301-b513-268b80f546b1",
+          "4a13ad4d-74ea-427b-a987-2a2ab8f499d7"
+        ]
+      },
+      "consequence": {
+        "title": "一项测试什么时候对实验室有用",
+        "text": "挑选量子硬件测试的团队，可以从 Google 的报道追问，这个游戏能揭示哪些误差，这些误差对自己要运行的任务有什么影响。考虑使用 MOSAIC 的化学研究者，更需要知道测量有噪声或样品是混合物时，模型有多大机会认出正确结构。把这些条件和自己的任务放在一起比较，才能判断报道里的实验结果能用到哪一步。",
+        "support": "selection_based",
+        "evidence_ids": [
+          "5c997519-4673-4301-b513-268b80f546b1",
+          "4a13ad4d-74ea-427b-a987-2a2ab8f499d7"
+        ]
+      },
+      "limits": "本期依据已归档的来源摘要编写，并标明了报道者。本次云端读取未能取得十篇原文的正文，读者可通过文内链接查阅各家原文。有几篇报道都提到 Anthropic 上市，所指的是同一次市场事件。",
+      "evidence_ids": [
+        "a6777120-071d-4274-bb24-7c53ca50ff2e",
+        "99bcdb0f-d4f1-40a6-b971-1e2fae829ef9",
+        "5c997519-4673-4301-b513-268b80f546b1",
+        "4a13ad4d-74ea-427b-a987-2a2ab8f499d7",
+        "cfc9b0aa-33f9-4237-9f30-1a9670753556",
+        "877abaf4-21a6-46ea-b3db-234e1ab9c727"
+      ]
+    },
+    "lead": {
+      "text": "《世界报》报道了 Anthropic 登陆纳斯达克，BioSpace 报道了 Isomorphic Labs 的私募融资。一篇追踪股票从发行到公开交易的过程，另一篇交代公司为研究筹集了多少新资金。另两份报道走得更近实验台。Google 让 Willow 处理器玩一种经典策略有明确胜率上限的游戏。Lila Sciences 则试着根据光谱，也就是样品与光相互作用留下的图样，反推出分子结构。要理解两组结果，都得先看清测试任务。",
+      "evidence_ids": [
+        "a6777120-071d-4274-bb24-7c53ca50ff2e",
+        "5c997519-4673-4301-b513-268b80f546b1",
+        "4a13ad4d-74ea-427b-a987-2a2ab8f499d7",
+        "99bcdb0f-d4f1-40a6-b971-1e2fae829ef9"
+      ]
+    },
+    "main_events": [
+      {
+        "event_id": "weekly-4971fc2058ab9a0f",
+        "title": "钛媒体把芯片与云业务收入放进 AI 企业周度盘点",
+        "what_changed": "钛媒体在一篇综述中，把 Anthropic 上市与英伟达的数据中心业务、百度的云基础设施收入放在一起观察，也讨论了企业对未来基础设施支出更审慎的态度。",
+        "why_it_matters": "把这些消息放在一起，可以分清供应商已经报告的收入，以及企业接下来准备为扩充算力花多少钱。",
+        "uncertainty": "这份综述不足以确定未来有多少支出已经落实。",
+        "evidence_ids": [
+          "cfc9b0aa-33f9-4237-9f30-1a9670753556"
+        ]
+      },
+      {
+        "event_id": "weekly-dfa1b976c5d8dc9b",
+        "title": "Google 用 Willow 处理器测试量子语境性",
+        "what_changed": "Google Research 报告称，团队在 Willow 上做了幻方游戏实验，利用相关联的测量结果，使胜率超过该游戏的最佳经典策略。研究人员还分别在更多量子比特上做了其他测试。",
+        "why_it_matters": "这个游戏的经典胜率上限已知，给硬件团队提供了明确的比较标准。据 Google 介绍，它还能暴露其他基准测试可能遗漏的误差。",
+        "uncertainty": "本次得分衡量的是指定任务。在其他计算任务中，这项测试的参考价值仍待检验。",
+        "evidence_ids": [
+          "5c997519-4673-4301-b513-268b80f546b1"
+        ]
+      },
+      {
+        "event_id": "weekly-5cfb3f471985c038",
+        "title": "BioSpace 报道 Isomorphic Labs 完成 50 亿美元融资",
+        "what_changed": "据 BioSpace 报道，Isomorphic Labs 完成了 50 亿美元 C 轮融资，计划扩展公司的仿真模型，并为内部药物研发项目提供资金。",
+        "why_it_matters": "这笔融资为模型开发及使用这些模型的研究项目提供了资源。",
+        "uncertainty": "仅凭这份归档报道，还无法判断新资金能将模型表现提高多少，或使哪一项目取得具体进展。",
+        "evidence_ids": [
+          "99bcdb0f-d4f1-40a6-b971-1e2fae829ef9"
+        ]
+      },
+      {
+        "event_id": "weekly-ee6a785a6403fafd",
+        "title": "“火神”火箭调查聚焦发动机的燃料供应",
+        "what_changed": "据 Spaceflight Now 报道，联合发射联盟的初步审查认为此次发射失败可能与输送到“火神”火箭发动机的燃料不足有关。",
+        "why_it_matters": "若燃料供应异常，调查团队就能据此缩小排查范围。亚马逊的卫星部署日程也要看火箭何时能够复飞。",
+        "uncertainty": "这仍是初步解释。归档报道没有给出最终调查结论或已确认的复飞日期。",
+        "evidence_ids": [
+          "86b4019f-dbe3-47ab-9b5c-048eefb4072f"
+        ]
+      },
+      {
+        "event_id": "weekly-2bdfca61aac7491d",
+        "title": "机器人企业从英伟达获得了哪些支持",
+        "what_changed": "The Robot Report 的一篇评论回顾了英伟达如何支持机器人企业，包括提供仿真工具、投资初创公司，以及在行业主题演讲中展示它们的产品。",
+        "why_it_matters": "文章点出了同一家供应商可能给初创公司提供的三种资源，分别是开发工具、资金，以及进入潜在合作伙伴视野的机会。",
+        "uncertainty": "这些过往案例不足以判断英伟达今后的投资安排，也无法预知各家初创公司会怎样应对。",
+        "evidence_ids": [
+          "f1982d47-0eec-4b00-95ef-a2fdf30e1a2e"
+        ]
+      },
+      {
+        "event_id": "weekly-8e1c2fe4c59fb5fe",
+        "title": "《世界报》报道 Anthropic 上市首日收涨",
+        "what_changed": "《世界报》报道称，Anthropic 在纳斯达克交易首日的收盘价比发行价高约 17%。这与行业综述提到的是同一次上市，这篇报道关注的是市场如何定价。",
+        "why_it_matters": "收盘价给出了某一时点股票的公开价格。它和公司实际募得的金额是两种不同的指标。",
+        "uncertainty": "仅看首日交易，很难判断后续财务数据公布后，投资者还愿意以什么价格买入。",
+        "evidence_ids": [
+          "a6777120-071d-4274-bb24-7c53ca50ff2e"
+        ]
+      },
+      {
+        "event_id": "weekly-a128c2f680fec795",
+        "title": "苹果招聘信息透露跨应用助理的研发方向",
+        "what_changed": "据爱范儿报道，苹果招聘高级工程经理，岗位涉及能够跨应用、浏览器和代码库执行任务的智能助理。",
+        "why_it_matters": "岗位描述点出了一个具体的工程问题，即如何让一项任务从一个应用接续到另一个应用。",
+        "uncertainty": "招聘信息体现的是用人意图，尚不足以确认最终产品的功能清单或发布日期。",
+        "evidence_ids": [
+          "877abaf4-21a6-46ea-b3db-234e1ab9c727"
+        ]
+      },
+      {
+        "event_id": "weekly-06f8f91e33e8e7a7",
+        "title": "Lila Sciences 测试从光谱识别分子结构",
+        "what_changed": "Lila Sciences 介绍了 MOSAIC 模型，用于在分子结构和光谱之间进行多方向预测。据团队报告，在从光谱预测结构这一项测试中，准确率为 88.8%。",
+        "why_it_matters": "已有光谱的研究人员可以沿这个方向提出候选结构，供下一步核对。",
+        "uncertainty": "该准确率只对应这项测试。测量数据有真实噪声或样品是复杂混合物时，模型的表现仍待检验。",
+        "evidence_ids": [
+          "4a13ad4d-74ea-427b-a987-2a2ab8f499d7"
+        ]
+      }
+    ],
+    "early_signals": [
+      {
+        "event_id": "weekly-e6e71b0c1c3691e0",
+        "title": "OpenAI 公布 Astra 与 Sol 的不同定价调整",
+        "what_changed": "OpenAI 宣布推出面向复杂专业任务的 GPT-6.2 Astra 和面向日常任务的 GPT-6.2 Sol。据公司介绍，Astra 的 API 词元单价下降，Sol 的词元单价不变。",
+        "why_it_matters": "开发者比较成本时，要同时看单价和完成一项任务用掉的词元数。OpenAI 也称，在其评测中，模型用更少的词元取得了更好的结果。",
+        "uncertainty": "归档公告不足以判断这两款模型在某个具体应用中的质量或总成本。",
+        "evidence_ids": [
+          "78bae55c-fe60-44f0-9caa-1dd120bedaa9"
+        ]
+      },
+      {
+        "event_id": "weekly-42a038c1f64faef1",
+        "title": "MIT 为混沌系统的模型预测设定物理边界",
+        "what_changed": "MIT 研究人员介绍了一种投影步骤，让机器学习模型在对混沌系统进行长时间模拟时，将预测值维持在物理边界内。",
+        "why_it_matters": "误差累积时，边界能防止模拟值增长到不合理的范围。即使数值一直在范围内，预测轨迹仍有可能偏离实际观测。",
+        "uncertainty": "根据现有归档材料，还无法判断将方法用于新的系统时，长时预测与实际轨迹会有多接近。",
+        "evidence_ids": [
+          "62b749a2-7ada-47f3-aec5-44a2a80e216d"
+        ]
+      }
+    ],
+    "next_watch": [
+      {
+        "text": "Anthropic 后续披露的财务数据，会怎样描述首日股价背后的业务表现？",
+        "evidence_ids": [
+          "a6777120-071d-4274-bb24-7c53ca50ff2e"
+        ]
+      },
+      {
+        "text": "Isomorphic Labs 使用这笔资金后，会披露哪些研发里程碑？",
+        "evidence_ids": [
+          "99bcdb0f-d4f1-40a6-b971-1e2fae829ef9"
+        ]
+      },
+      {
+        "text": "测量有噪声，或样品由多种物质组成时，MOSAIC 还能多频繁地认出正确分子？",
+        "evidence_ids": [
+          "4a13ad4d-74ea-427b-a987-2a2ab8f499d7"
+        ]
+      }
+    ]
+  },
+  "en": {
+    "title": "Anthropic’s market debut, Willow’s quantum tests and Lila’s molecule model",
+    "dek": "Le Monde covered Anthropic’s first day of trading. Google and Lila Sciences reported experiments whose results depend on the task each team chose.",
+    "synthesis": {
+      "intro": "A share price, a fundraising total and a test score can all make a headline. The accounts of Anthropic, Isomorphic Labs, Google and Lila Sciences each give their number a different meaning.",
+      "signal": {
+        "title": "What went to the company, and what did the shares trade for?",
+        "text": "Le Monde covered Anthropic’s share offering and the trading that followed. Issuing shares in an IPO raises money for the company. A rise in the share price after trading starts is a change in the market price, not additional proceeds for the issuer. BioSpace’s report on Isomorphic Labs gives the amount raised in a private round for drug-discovery research. The two figures answer different questions about the companies.",
+        "support": "selection_based",
+        "evidence_ids": [
+          "a6777120-071d-4274-bb24-7c53ca50ff2e",
+          "99bcdb0f-d4f1-40a6-b971-1e2fae829ef9"
+        ]
+      },
+      "structure": {
+        "title": "Start with the question put to the machine",
+        "text": "Google asked whether a particular strategy on Willow could win a game more often than the best classical strategy. Lila Sciences asked whether MOSAIC could recover a molecular structure from spectra in its evaluation. A reader assessing Willow needs the game and its classical limit. Someone assessing MOSAIC needs to know which information the model started with and what counted as a correct answer. The two scores answer different questions.",
+        "support": "selection_based",
+        "evidence_ids": [
+          "5c997519-4673-4301-b513-268b80f546b1",
+          "4a13ad4d-74ea-427b-a987-2a2ab8f499d7"
+        ]
+      },
+      "consequence": {
+        "title": "What would make a test useful in the lab?",
+        "text": "For a team selecting a quantum-hardware test, Google’s account gives a reason to ask which errors the game reveals and whether those errors matter for the intended task. For a chemist considering MOSAIC, the practical question is how often it identifies the right structure from a noisy measurement or a mixture. Those comparisons would help each reader decide whether a reported lab result applies to the work at hand.",
+        "support": "selection_based",
+        "evidence_ids": [
+          "5c997519-4673-4301-b513-268b80f546b1",
+          "4a13ad4d-74ea-427b-a987-2a2ab8f499d7"
+        ]
+      },
+      "limits": "This edition used archived summaries attributed to the linked publishers. The cloud reader could not retrieve the ten original texts during this run. The links let readers consult the publishers directly. Several accounts mention the same Anthropic listing, which represents one market event.",
+      "evidence_ids": [
+        "a6777120-071d-4274-bb24-7c53ca50ff2e",
+        "99bcdb0f-d4f1-40a6-b971-1e2fae829ef9",
+        "5c997519-4673-4301-b513-268b80f546b1",
+        "4a13ad4d-74ea-427b-a987-2a2ab8f499d7",
+        "cfc9b0aa-33f9-4237-9f30-1a9670753556",
+        "877abaf4-21a6-46ea-b3db-234e1ab9c727"
+      ]
+    },
+    "lead": {
+      "text": "Le Monde reported on Anthropic’s Nasdaq debut, and BioSpace covered a private funding round for Isomorphic Labs. One account follows the move from issuing shares to public trading. The other records how much new capital a company attracted for research. Two other reports come closer to the lab bench. Google describes a game played on its Willow processor with a known limit for a classical player. Lila Sciences describes predicting the structure of a molecule from its spectra, the patterns recorded when a sample interacts with light. For both results, the choice of test matters.",
+      "evidence_ids": [
+        "a6777120-071d-4274-bb24-7c53ca50ff2e",
+        "5c997519-4673-4301-b513-268b80f546b1",
+        "4a13ad4d-74ea-427b-a987-2a2ab8f499d7",
+        "99bcdb0f-d4f1-40a6-b971-1e2fae829ef9"
+      ]
+    },
+    "main_events": [
+      {
+        "event_id": "weekly-4971fc2058ab9a0f",
+        "title": "TMTPost surveys chip and cloud revenues alongside Anthropic’s listing",
+        "what_changed": "TMTPost put Anthropic’s listing alongside Nvidia’s data-center business and Baidu’s cloud infrastructure revenue in a roundup of AI company results. The roundup also discussed closer scrutiny of future infrastructure spending.",
+        "why_it_matters": "The comparison separates revenue already reported by suppliers from decisions about how much capacity to build next.",
+        "uncertainty": "The roundup does not establish how much future spending has been committed.",
+        "evidence_ids": [
+          "cfc9b0aa-33f9-4237-9f30-1a9670753556"
+        ]
+      },
+      {
+        "event_id": "weekly-dfa1b976c5d8dc9b",
+        "title": "Google tests contextuality on its Willow quantum processor",
+        "what_changed": "Google Research reported using Willow to play the magic-square game. In that game, coordinated measurements let the processor exceed the best classical strategy. Its account also describes separate tests on larger groups of qubits.",
+        "why_it_matters": "A known classical limit gives hardware teams a reference for that specific game. Google says the test can reveal errors that other benchmarks may miss.",
+        "uncertainty": "The reported result measures performance on specified tasks. Its value for other computations remains open.",
+        "evidence_ids": [
+          "5c997519-4673-4301-b513-268b80f546b1"
+        ]
+      },
+      {
+        "event_id": "weekly-5cfb3f471985c038",
+        "title": "BioSpace reports a $5 billion round for Isomorphic Labs",
+        "what_changed": "BioSpace reported that Isomorphic Labs raised $5 billion in a Series C round. The stated plans include expanding the company’s simulation models and supporting its internal drug-discovery research.",
+        "why_it_matters": "The financing gives the company resources to develop its models and the research programs that use them.",
+        "uncertainty": "The archived account provides no result showing how much the new funding will improve the models or advance a particular program.",
+        "evidence_ids": [
+          "99bcdb0f-d4f1-40a6-b971-1e2fae829ef9"
+        ]
+      },
+      {
+        "event_id": "weekly-ee6a785a6403fafd",
+        "title": "Vulcan inquiry examines fuel supply to the engines",
+        "what_changed": "Spaceflight Now reported that United Launch Alliance’s preliminary review pointed to insufficient fuel reaching Vulcan’s engines during the failed launch.",
+        "why_it_matters": "Identifying a possible problem in the fuel supply narrows what investigators can examine. Amazon’s satellite deployment schedule also depends on when the rocket can fly again.",
+        "uncertainty": "The explanation was provisional. The archived report gives no final finding or confirmed return-to-flight date.",
+        "evidence_ids": [
+          "86b4019f-dbe3-47ab-9b5c-048eefb4072f"
+        ]
+      },
+      {
+        "event_id": "weekly-2bdfca61aac7491d",
+        "title": "The Robot Report examines robotics firms’ reliance on Nvidia",
+        "what_changed": "In a commentary, The Robot Report traced Nvidia’s support for robotics firms through simulation tools, startup investments and appearances at industry keynotes.",
+        "why_it_matters": "The commentary draws attention to three different things a startup may get from a single supplier. They include development tools, financing and visibility with potential partners.",
+        "uncertainty": "The article’s account of past support does not establish Nvidia’s future investment plans or how individual startups will respond.",
+        "evidence_ids": [
+          "f1982d47-0eec-4b00-95ef-a2fdf30e1a2e"
+        ]
+      },
+      {
+        "event_id": "weekly-8e1c2fe4c59fb5fe",
+        "title": "Le Monde reports a first-day gain for Anthropic shares",
+        "what_changed": "Le Monde reported that Anthropic shares closed about 17% above the offering price on their first day of Nasdaq trading. This is a market view of the listing also covered in the industry roundup.",
+        "why_it_matters": "The close provides a public price for shares at a particular moment. That figure measures something different from proceeds raised by the company.",
+        "uncertainty": "One trading day gives little evidence about the price investors will accept once later financial results are available.",
+        "evidence_ids": [
+          "a6777120-071d-4274-bb24-7c53ca50ff2e"
+        ]
+      },
+      {
+        "event_id": "weekly-a128c2f680fec795",
+        "title": "Apple job listing points to work on cross-app assistants",
+        "what_changed": "According to iFanr, Apple advertised for a senior engineering manager to work on assistants that could carry out tasks across apps, browsers and codebases.",
+        "why_it_matters": "The job description identifies the engineering problem of carrying a task from one application to another.",
+        "uncertainty": "The posting describes hiring intentions. It provides no confirmed feature list or release date for a product.",
+        "evidence_ids": [
+          "877abaf4-21a6-46ea-b3db-234e1ab9c727"
+        ]
+      },
+      {
+        "event_id": "weekly-06f8f91e33e8e7a7",
+        "title": "Lila Sciences tests MOSAIC on molecular structures and spectra",
+        "what_changed": "Lila Sciences described MOSAIC, a model that works in several directions between molecular structures and spectra. The team reported 88.8% accuracy on its test of predicting a structure from spectra.",
+        "why_it_matters": "A researcher with a spectrum could use that direction of prediction to propose a candidate structure for further checking.",
+        "uncertainty": "The reported percentage applies to that test. Performance on noisy laboratory measurements and complex mixtures remains an open question.",
+        "evidence_ids": [
+          "4a13ad4d-74ea-427b-a987-2a2ab8f499d7"
+        ]
+      }
+    ],
+    "early_signals": [
+      {
+        "event_id": "weekly-e6e71b0c1c3691e0",
+        "title": "OpenAI describes different price changes for Astra and Sol",
+        "what_changed": "OpenAI announced GPT-6.2 Astra for complex professional tasks and GPT-6.2 Sol for everyday work. The company reported lower API token prices for Astra and unchanged token prices for Sol.",
+        "why_it_matters": "A developer comparing costs needs both the price per token and the number of tokens used to finish the task. OpenAI also reported better results using fewer tokens in its evaluations.",
+        "uncertainty": "The archived announcement does not establish the quality or total cost for a particular application.",
+        "evidence_ids": [
+          "78bae55c-fe60-44f0-9caa-1dd120bedaa9"
+        ]
+      },
+      {
+        "event_id": "weekly-42a038c1f64faef1",
+        "title": "MIT puts bounds on predictions of chaotic systems",
+        "what_changed": "MIT researchers described a projection step that keeps a learned model’s predictions within a physical bound over long simulations of chaotic systems.",
+        "why_it_matters": "A bound can keep a simulated system from reaching implausibly large values as errors accumulate. A trajectory may stay within bounds and still diverge from the observed one.",
+        "uncertainty": "The archived account leaves open how accurately the method follows a new system over a long forecast window.",
+        "evidence_ids": [
+          "62b749a2-7ada-47f3-aec5-44a2a80e216d"
+        ]
+      }
+    ],
+    "next_watch": [
+      {
+        "text": "What will Anthropic’s later financial disclosures show about the business behind its first-day share price?",
+        "evidence_ids": [
+          "a6777120-071d-4274-bb24-7c53ca50ff2e"
+        ]
+      },
+      {
+        "text": "Which research milestones will Isomorphic Labs document as it puts the funding to work?",
+        "evidence_ids": [
+          "99bcdb0f-d4f1-40a6-b971-1e2fae829ef9"
+        ]
+      },
+      {
+        "text": "How often will MOSAIC identify the right molecule when a measurement is noisy or a sample contains a mixture?",
+        "evidence_ids": [
+          "4a13ad4d-74ea-427b-a987-2a2ab8f499d7"
+        ]
+      }
+    ]
+  }
+}
