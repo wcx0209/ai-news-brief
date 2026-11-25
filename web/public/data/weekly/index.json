@@ -2,6 +2,26 @@
   "editions": [
     {
       "canonical_urls": {
+        "en": "https://polyemergence.com/en/weekly/2026-11-16/",
+        "zh": "https://polyemergence.com/zh/weekly/2026-11-16/"
+      },
+      "en": {
+        "dek": "Le Monde covered Anthropic’s first day of trading. Google and Lila Sciences reported experiments whose results depend on the task each team chose.",
+        "title": "Anthropic’s market debut, Willow’s quantum tests and Lila’s molecule model"
+      },
+      "id": "2026-11-16",
+      "json_url": "https://polyemergence.com/data/weekly/2026-11-16.json",
+      "modified_at": "2026-11-25T01:31:10.742917Z",
+      "published_at": "2026-11-25T01:31:10.742917Z",
+      "week_end": "2026-11-22",
+      "week_start": "2026-11-16",
+      "zh": {
+        "dek": "《世界报》记录了 Anthropic 上市首日的交易。Google 和 Lila Sciences 则各自报告了一项实验，读懂结果要先弄清机器做的是哪道题。",
+        "title": "Anthropic 首日交易、Willow 量子实验与分子光谱识别"
+      }
+    },
+    {
+      "canonical_urls": {
         "en": "https://polyemergence.com/en/weekly/2026-11-09/",
         "zh": "https://polyemergence.com/zh/weekly/2026-11-09/"
       },
@@ -21,7 +41,7 @@
       }
     }
   ],
-  "latest": "2026-11-09",
-  "modified_at": "2026-11-16T03:24:34.404003Z",
+  "latest": "2026-11-16",
+  "modified_at": "2026-11-25T01:31:10.742917Z",
   "schema_version": 1
 }
