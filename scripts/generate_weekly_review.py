@@ -147,10 +147,11 @@ def main(argv=None):
     generation = {'status': 'failed', 'runtime': 'GitHub Actions', 'llm_runtime': 'cloud Gemini API',
                   'database_read_only': True, 'new_collection': False, 'article_writes': False,
                   'website_publication': False, 'emails_sent': False, 'calls': []}
+    model = None
     try:
         issue = week_window(os.environ.get('WEEK_START', '2026-11-09'))
         from weekly_editorial import build_weekly_plan
-        from weekly_generation import CloudGemini, generate_review
+        from weekly_generation import CloudGemini, build_packet, generate_review
         from weekly_render import render_review, to_markdown
         from weekly_source_reads import enrich_selected_sources
         rows = load_cloud_archive(issue)
@@ -167,11 +168,9 @@ def main(argv=None):
         generation['original_source_reads'] = {
             key: source_read_audit[key] for key in (
                 'requested_unique_urls', 'retrieved_unique_urls', 'unavailable_unique_urls')}
-        model = CloudGemini()
-        generation['model'] = model.model
-        generation['calls'] = model.calls
-        report, packet = generate_review(plan, issue, model)
-        report['coverage'] = render_coverage(plan)
+        # Preserve the supplied evidence before any model call, including when
+        # a provider's completed response has an invalid transport format.
+        packet = build_packet(plan, issue)
         selected_ids = {item for section in ('main_events', 'early_signals') for event in packet[section] for item in event['evidence_ids']}
         source_reads = {row['id']: row['original_read']
                         for section in ('main', 'signals') for event in plan['shortlist'][section]
@@ -183,6 +182,11 @@ def main(argv=None):
                 record['original_read'] = deepcopy(source_reads[record['id']])
         save('source-catalog.json', catalog)
         save('evidence-packet.json', packet)
+        model = CloudGemini()
+        generation['model'] = model.model
+        generation['calls'] = model.calls
+        report, packet = generate_review(plan, issue, model)
+        report['coverage'] = render_coverage(plan)
         save('weekly-review.json', report)
         save('automated-editorial-review.json', report['editorial_review'])
         html = render_review(report, catalog)
@@ -199,13 +203,18 @@ def main(argv=None):
         # No provider exception strings: these may contain credentials or URLs.
         generation['error_type'] = type(exc).__name__
         generation['provider_status'] = getattr(exc, 'status_code', None)
-        if isinstance(exc, ValueError) and str(exc).startswith(('weekly_', 'not_enough_')):
+        if isinstance(exc, ValueError) and str(exc).startswith(('weekly_', 'not_enough_', 'model_json_')):
             generation['validation_error'] = str(exc)
         print(json.dumps({'status': 'failed', 'error_type': generation['error_type'],
                           'provider_status': generation['provider_status'],
                           'validation_error': generation.get('validation_error')}))
         return 1
     finally:
+        raw_responses = getattr(model, 'raw_responses', None)
+        if isinstance(raw_responses, list) and raw_responses:
+            # A private Actions artifact only; never embed response text in
+            # generation metadata, logs, summaries, or the public website.
+            save('model-response-texts.json', raw_responses)
         save('generation-metadata.json', generation)
         summary = os.environ.get('GITHUB_STEP_SUMMARY')
         if summary:

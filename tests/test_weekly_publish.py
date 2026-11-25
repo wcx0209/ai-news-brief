@@ -105,6 +105,11 @@ class WeeklyReleaseTests(unittest.TestCase):
         checkout = next(step for step in steps if step.get('uses', '').startswith('actions/checkout@'))
         self.assertEqual(checkout['with']['ref'], '${{ github.ref_name }}')
         self.assertFalse(any('continue-on-error' in step for step in steps))
+        preflight_index = next(i for i, step in enumerate(steps) if step.get('id') == 'issue')
+        for index, step in enumerate(steps):
+            if step.get('name', '').startswith(('Install weekly', 'Install Chinese', 'Validate weekly')):
+                self.assertGreater(index, preflight_index)
+                self.assertIn("steps.issue.outputs.exists != 'true'", step['if'])
         model_steps = [step for step in steps if 'INBRIEF_LLM_API_KEY' in step.get('env', {})]
         self.assertEqual(len(model_steps), 1)
         self.assertIn("inputs.source_run_id == ''", model_steps[0]['if'])

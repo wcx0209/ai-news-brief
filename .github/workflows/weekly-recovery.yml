@@ -1,0 +1,32 @@
+name: Polyemergence weekly transient-failure recovery
+
+on:
+  schedule:
+    - cron: "23 10 * * 2,3" # Tue/Wed 18:23 Singapore; at most two recoveries
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: write
+
+concurrency:
+  group: polyemergence-weekly-recovery
+  cancel-in-progress: false
+
+jobs:
+  recover:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: main
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0
+        with:
+          python-version: "3.11"
+      - name: Validate the recovery guard offline
+        run: python -m unittest discover -s tests -p test_weekly_recovery.py -v
+      - name: Retry only a current-week transient failure before any model response
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python scripts/recover_weekly.py

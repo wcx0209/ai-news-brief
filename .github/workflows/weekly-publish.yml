@@ -39,12 +39,6 @@ jobs:
         with:
           python-version: "3.11"
           cache: pip
-      - name: Install weekly dependencies
-        run: pip install -r requirements-weekly.txt
-      - name: Install Chinese typography for weekly covers
-        run: sudo apt-get update -qq && sudo apt-get install -y --no-install-recommends fonts-noto-cjk
-      - name: Validate weekly publication offline
-        run: python -m unittest discover -s tests -p 'test_weekly_*.py' -v
       - name: Resolve complete week and avoid regenerating a published issue
         id: issue
         run: python scripts/publish_weekly.py --preflight
@@ -55,6 +49,17 @@ jobs:
         run: |
           echo "Weekly issue $ISSUE_WEEK already exists; skipping generation and publication."
           echo "Weekly issue $ISSUE_WEEK already exists. No database/model calls or website changes." >> "$GITHUB_STEP_SUMMARY"
+      - name: Install weekly dependencies
+        if: ${{ steps.issue.outputs.exists != 'true' }}
+        run: pip install -r requirements-weekly.txt
+      - name: Install Chinese typography for weekly covers
+        if: ${{ steps.issue.outputs.exists != 'true' }}
+        run: sudo apt-get update -qq && sudo apt-get install -y --no-install-recommends fonts-noto-cjk
+      - name: Validate weekly publication offline
+        if: ${{ steps.issue.outputs.exists != 'true' }}
+        run: |
+          python -m unittest discover -s tests -p test_model_json.py -v
+          python -m unittest discover -s tests -p 'test_weekly_*.py' -v
       - name: Retrieve the authorized review artifact
         if: ${{ steps.issue.outputs.exists != 'true' && inputs.source_run_id != '' }}
         env:

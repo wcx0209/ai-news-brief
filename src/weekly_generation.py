@@ -8,6 +8,7 @@ import re
 import time
 
 from weekly_synthesis import SYNTHESIS_PROMPT, validate_synthesis
+from model_json import MAX_RESPONSE_CHARS, parse_json_response
 
 
 SYSTEM_PROMPT = """You are the bilingual weekly editor of Polyemergence, an emerging-technology publication.
@@ -249,6 +250,9 @@ class CloudGemini:
         self.model = os.environ.get('INBRIEF_LLM_MODEL_NAME', 'gemini-3.5-flash-lite')
         self.client = OpenAI(api_key=key, base_url='https://generativelanguage.googleapis.com/v1beta/openai/', max_retries=0)
         self.calls = []
+        # Private diagnostics only. A response is retained before parsing so a
+        # format failure does not discard paid output or trigger blind retries.
+        self.raw_responses = []
         self._last_request = 0.0
 
     def __call__(self, system, payload, purpose):
@@ -269,10 +273,20 @@ class CloudGemini:
             record['usage'] = {'input_tokens': response.usage.prompt_tokens,
                                'output_tokens': response.usage.completion_tokens,
                                'total_tokens': response.usage.total_tokens}
-        record['finish_reason'] = response.choices[0].finish_reason
-        if response.choices[0].finish_reason == 'length':
+        choice = response.choices[0]
+        record['finish_reason'] = choice.finish_reason
+        content = choice.message.content
+        if not isinstance(content, str):
+            raise ValueError('weekly_cloud_response_must_be_text')
+        if len(content) > MAX_RESPONSE_CHARS:
+            raise ValueError('weekly_cloud_raw_response_too_large')
+        self.raw_responses.append({'purpose': purpose, 'text': content,
+                                   'finish_reason': choice.finish_reason})
+        if choice.finish_reason == 'length':
             raise ValueError('weekly_cloud_output_truncated')
-        return json.loads(response.choices[0].message.content)
+        if choice.finish_reason != 'stop':
+            raise ValueError('weekly_cloud_output_incomplete')
+        return parse_json_response(content)
 
 
 def validate_editorial_audit(audit, packet):

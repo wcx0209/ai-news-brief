@@ -234,7 +234,8 @@ class WeeklySourceScriptTests(unittest.TestCase):
         enriched, audit = sources.enrich_selected_sources(original, reader=response)
         records = [deepcopy(selected['representative']) for selected in original['shortlist']['main']]
         packet = {'main_events': [{'evidence_ids': [row['id']]} for row in records], 'early_signals': []}
-        model = MagicMock(model='offline-model', calls=[])
+        model = MagicMock(model='offline-model', calls=[], raw_responses=[
+            {'purpose': 'draft', 'text': 'private-response-fixture', 'finish_reason': 'stop'}])
         with tempfile.TemporaryDirectory() as fixture_root, \
                 patch.object(script, 'ROOT', Path(fixture_root).resolve()), \
                 patch.dict(os.environ, {'GITHUB_ACTIONS': 'true', 'WEEK_START': '2026-11-09', 'GITHUB_STEP_SUMMARY': ''}), \
@@ -260,6 +261,19 @@ class WeeklySourceScriptTests(unittest.TestCase):
             metadata = json.loads((Path(directory) / 'generation-metadata.json').read_text())
             self.assertEqual(metadata['original_source_reads']['retrieved_unique_urls'], 3)
             self.assertFalse(metadata['article_writes'])
+            self.assertEqual(json.loads((Path(directory) / 'model-response-texts.json').read_text()), model.raw_responses)
+            self.assertNotIn('private-response-fixture', json.dumps(metadata))
+            with self.subTest('format_failure_retains_evidence_and_raw_response'):
+                generate.side_effect = ValueError('model_json_invalid')
+                failed = Path(fixture_root) / 'output' / 'failed'
+                self.assertEqual(script.main(['--output', str(failed)]), 1)
+                self.assertTrue((failed / 'evidence-packet.json').is_file())
+                self.assertTrue((failed / 'source-catalog.json').is_file())
+                self.assertEqual(json.loads((failed / 'model-response-texts.json').read_text()), model.raw_responses)
+                failed_metadata = json.loads((failed / 'generation-metadata.json').read_text())
+                self.assertEqual(failed_metadata['status'], 'failed')
+                self.assertNotIn('private-response-fixture', json.dumps(failed_metadata))
+                self.assertFalse((failed / 'weekly-review.json').exists())
         self.assertTrue(all('original_read' not in row for row in records))
 
 
