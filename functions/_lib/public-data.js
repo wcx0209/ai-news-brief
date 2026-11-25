@@ -164,7 +164,7 @@ export const METHODOLOGY = {
   evidence_labels: "Describe source provenance, not independent verification. Technical stage is unspecified unless explicitly supported. Reading context is an editorial lens.",
   observations: { window_days: 30, maximum_per_field: 3, event_identity_uncertain: true, automatic_promotion: false, status: "Tentative signals only. Heuristic report groups are not confirmed distinct events, independent verification, a trend or causation." },
   disclosure: "AI-assisted collection, translation, summarisation, classification and scoring. Original links and publication metadata are retained. Summaries are not independently fact-checked unless explicitly stated.",
-  publisher: "PolyEmergence Pte Ltd., Singapore",
+  publisher: "PolyEmergence, a sole proprietorship in Singapore",
   conflict_disclosure: "No current financial or commercial conflict declared.",
   standards_url: `${SITE}/en/standards/`,
 };

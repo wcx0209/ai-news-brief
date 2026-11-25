@@ -3,7 +3,7 @@
   "info": {
     "title": "Polyemergence Public API",
     "version": "1.2.0",
-    "description": "Read-only bilingual emerging-technology intelligence, archives, sources, and Polyemergence Method scores from PolyEmergence Pte Ltd. Preserve canonical URLs when citing results.",
+    "description": "Read-only bilingual emerging-technology intelligence, archives, sources, and Polyemergence Method scores from PolyEmergence. Preserve canonical URLs when citing results.",
     "contact": { "url": "https://polyemergence.com/en/#feedback" }
   },
   "servers": [{ "url": "https://polyemergence.com/api/v1" }],

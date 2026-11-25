@@ -38,7 +38,7 @@ COPY = {
         "watch": "What to watch next", "coverage": "Selection coverage", "qualified": "Qualified items", "selected": "Selected items",
         "coverage_note": "These supplied counts describe this draft's selection coverage, not industry activity or momentum.",
         "footer": "Review draft based on existing news summaries. Reported facts and editorial interpretations have not been reviewed by a human and are not independently fact-checked. Check the linked original sources.",
-        "publisher": "Published by PolyEmergence Pte Ltd., Singapore.",
+        "publisher": "Published by PolyEmergence, a sole proprietorship in Singapore.",
     },
     "zh": {
         "lang": "zh-Hans", "draft": "DRAFT · 未经人工审阅", "review": "周报审阅草稿",
@@ -65,7 +65,7 @@ COPY = {
         "watch": "接下来关注什么", "coverage": "本期选材覆盖", "qualified": "合格候选数", "selected": "入选数",
         "coverage_note": "所提供计数仅说明本期选材覆盖，不代表行业热度或发展速度。",
         "footer": "基于已有新闻摘要形成的审阅草稿。事实摘要与编辑解读均未经人工审阅，不构成独立事实核查；请通过所列原文核实。",
-        "publisher": "发布主体：PolyEmergence Pte Ltd.，新加坡。",
+        "publisher": "由在新加坡以独资形式经营的 PolyEmergence 发布。",
     },
 }
 

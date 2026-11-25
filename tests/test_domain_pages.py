@@ -31,7 +31,7 @@ SHELL = '''<!doctype html><html lang="en"><head><title>Home</title>
 <section id="brief" hidden><p id="edition-note" class="edition-note"></p><aside id="field-reading-guidance" class="field-reading-guidance" hidden></aside><span id="selected-field-label"></span><h2 id="brief-title"></h2>
 <p id="field-description"></p><div id="lead-story"></div><div id="story-grid"></div><div id="empty-state" hidden></div></section>
 <section id="field-seo-content" class="field-seo-content" hidden></section>
-<footer>PolyEmergence Pte Ltd. Singapore <nav class="footer-topics" aria-label="Fields"><a href="/stale-footer/">Stale footer</a></nav><a href="/en/standards/">Editorial standards</a></footer>
+<footer>Published by PolyEmergence, a sole proprietorship in Singapore. <nav class="footer-topics" aria-label="Fields"><a href="/stale-footer/">Stale footer</a></nav><a href="/en/standards/">Editorial standards</a></footer>
 </body></html>'''
 
 

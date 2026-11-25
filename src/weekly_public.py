@@ -40,7 +40,7 @@ COPY = {
         "coverage": "Selection coverage", "qualified": "Qualified items", "selected": "Selected items",
         "coverage_note": "These counts describe the supplied selection, not industry activity or momentum.",
         "process": "How this was produced", "process_note": "AI-assisted synthesis based on existing news summaries. This page does not claim human editorial review or independent fact-checking. Reported facts remain attributed to the linked sources; interpretations and uncertainty are identified separately.",
-        "publisher": "Published by PolyEmergence Pte Ltd., Singapore.", "standards": "Editorial standards", "corrections": "Corrections",
+        "publisher": "Published by PolyEmergence, a sole proprietorship in Singapore.", "standards": "Editorial standards", "corrections": "Corrections",
         "by": "By", "contents": "In this edition", "fields": "Selected fields", "fields_note": "Browse the source archives for the fields selected in this edition:", "field_archive": "archive", "cover": "Edition topic cover",
     },
     "zh": {
@@ -68,7 +68,7 @@ COPY = {
         "coverage": "本期选材覆盖", "qualified": "合格候选数", "selected": "入选数",
         "coverage_note": "这些计数仅描述本期选材，不代表行业热度或发展速度。",
         "process": "制作与核验说明", "process_note": "本周报使用 AI 辅助综合已有新闻摘要，不声称已经过人工编辑审阅或独立事实核查。事实摘要保留来源归属，编辑判断与不确定性分别列明；请通过所列原文核实。",
-        "publisher": "发布主体：PolyEmergence Pte Ltd.，新加坡。", "standards": "编辑标准", "corrections": "纠错记录",
+        "publisher": "由在新加坡以独资形式经营的 PolyEmergence 发布。", "standards": "编辑标准", "corrections": "纠错记录",
         "by": "作者机构", "contents": "本期目录", "fields": "本期入选领域", "fields_note": "继续浏览本期入选领域的来源归档：", "field_archive": "归档", "cover": "本期主题封面",
     },
 }
@@ -235,7 +235,7 @@ def _coverage(payload, locale):
 
 def _byline(locale):
     c = COPY[locale]
-    return f'<p class="weekly-byline">{c["by"]} <a href="/{locale}/#about">Polyemergence</a> · PolyEmergence Pte Ltd. · {c["ai"]} · <a href="/{locale}/standards/">{c["standards"]}</a></p>'
+    return f'<p class="weekly-byline">{c["by"]} <a href="/{locale}/#about">Polyemergence</a> · {c["ai"]} · <a href="/{locale}/standards/">{c["standards"]}</a></p>'
 
 
 def _selected_fields(payload, locale):
@@ -322,7 +322,7 @@ def render_weekly_issue(payload, locale):
     follow_items = "".join(_event(row, sources, locale) for row in _rows(follow.get("items"))) if available is True else ""
     body.append(f'<section class="weekly-section weekly-follow" id="weekly-follow-up"><h2>{c["follow"]}</h2><p class="weekly-section-note">{label}</p><p>{_esc(_text(follow.get("note"), c["missing"]))}</p>{follow_items}</section>')
     body.extend([_coverage(payload, locale), f'<details class="weekly-process"><summary>{c["process"]}</summary><p>{c["process_note"]}</p></details>'])
-    schema = {"@context": "https://schema.org", "@type": "Article", "@id": SITE + _path(locale, identifier) + "#article", "url": SITE + _path(locale, identifier), "mainEntityOfPage": SITE + _path(locale, identifier), "headline": title, "description": description, "inLanguage": c["lang"], "articleSection": c["weekly"], "author": {"@type": "Organization", "name": "Polyemergence", "legalName": "PolyEmergence Pte Ltd.", "url": SITE + f"/{locale}/#about", "sameAs": [SITE + f"/{locale}/standards/", SITE + f"/{locale}/#about"]}, "publisher": {"@type": "Organization", "name": "PolyEmergence Pte Ltd.", "url": SITE, "logo": {"@type": "ImageObject", "url": SITE + "/assets/logo-en.svg"}}, "image": [SITE + weekly_cover_path(identifier, locale)]}
+    schema = {"@context": "https://schema.org", "@type": "Article", "@id": SITE + _path(locale, identifier) + "#article", "url": SITE + _path(locale, identifier), "mainEntityOfPage": SITE + _path(locale, identifier), "headline": title, "description": description, "inLanguage": c["lang"], "articleSection": c["weekly"], "author": {"@type": "Organization", "name": "Polyemergence", "url": SITE + f"/{locale}/#about", "sameAs": [SITE + f"/{locale}/standards/", SITE + f"/{locale}/#about"]}, "publisher": {"@type": "Organization", "name": "PolyEmergence", "url": SITE, "logo": {"@type": "ImageObject", "url": SITE + "/assets/logo-en.svg"}}, "image": [SITE + weekly_cover_path(identifier, locale)]}
     if published:
         schema["datePublished"] = published.isoformat()
     if modified and (not published or modified >= published):

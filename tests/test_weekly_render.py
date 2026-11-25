@@ -147,7 +147,7 @@ class WeeklyRenderTests(unittest.TestCase):
         self.assertIn("DRAFT · Not reviewed by a human", page)
         self.assertIn("Review draft based on existing news summaries", page)
         self.assertIn("not independently fact-checked", page)
-        self.assertIn("Published by PolyEmergence Pte Ltd., Singapore.", page)
+        self.assertIn("Published by PolyEmergence, a sole proprietorship in Singapore.", page)
 
     def test_follow_up_unavailable_does_not_render_unsupplied_or_inconsistent_items(self):
         report, catalog = fixture()

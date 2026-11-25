@@ -1,6 +1,6 @@
 # Polyemergence
 
-> Bilingual emerging-technology intelligence, ranked by importance and published by PolyEmergence Pte Ltd., Singapore.
+> Bilingual emerging-technology intelligence, ranked by importance and published by PolyEmergence, a sole proprietorship in Singapore.
 
 Polyemergence covers artificial intelligence, programmable life, energy and storage, robotics, quantum technology, the space economy, advanced materials, neurotechnology, climate and water engineering, agrifood technology, and advanced manufacturing. Stories are separately classified as company, startup, research, open source, interview, policy, business, or society. AI assists collection, translation, summarisation, classification, and scoring. Preserve canonical article URLs and identify Polyemergence when citing summaries.
 
@@ -31,5 +31,5 @@ Field reading guides are general guidance, not article-specific verification. An
 
 - Editorial standards: https://polyemergence.com/en/standards/
 - Corrections: https://polyemergence.com/en/corrections/
-- Publisher: PolyEmergence Pte Ltd., Singapore
+- Publisher: PolyEmergence, a sole proprietorship in Singapore
 - Conflict disclosure: No current financial or commercial conflict declared.

@@ -656,7 +656,7 @@ def render_field_page(shell, domain, locale, domains, feed, sources, corpus, pub
     # Replace the generic homepage graph with truthful collection/list data.
     graph = {
         "@context": "https://schema.org", "@graph": [
-            {"@type": "Organization", "@id": SITE + "/#organization", "name": "Polyemergence", "legalName": "PolyEmergence Pte Ltd.", "url": SITE + "/"},
+            {"@type": "Organization", "@id": SITE + "/#organization", "name": "Polyemergence", "url": SITE + "/"},
             {"@type": "WebSite", "@id": SITE + "/#website", "name": "Polyemergence", "url": SITE + "/"},
             {"@type": "BreadcrumbList", "itemListElement": [
                 {"@type": "ListItem", "position": 1, "name": "Fields" if locale == "en" else "领域", "item": SITE + f"/{locale}/#fields"},
@@ -714,7 +714,7 @@ def render_hub_page(shell, locale, domains, feed, sources, now):
     if not inserted:
         raise ValueError("Home shell is missing #fields for the tech news hub")
     graph = {"@context": "https://schema.org", "@graph": [
-        {"@type": "Organization", "@id": SITE + "/#organization", "name": "Polyemergence", "legalName": "PolyEmergence Pte Ltd.", "url": SITE + "/"},
+        {"@type": "Organization", "@id": SITE + "/#organization", "name": "Polyemergence", "url": SITE + "/"},
         {"@type": "WebSite", "@id": SITE + "/#website", "name": "Polyemergence", "url": SITE + "/"},
         {"@type": "BreadcrumbList", "itemListElement": [
             {"@type": "ListItem", "position": 1, "name": "Polyemergence", "item": SITE + f"/{locale}/"},

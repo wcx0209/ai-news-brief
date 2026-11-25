@@ -70,7 +70,7 @@ class WeeklyPublicTests(unittest.TestCase):
             self.assertIn(f'src="/assets/logo-{locale}-reverse.svg"', page)
             for path in ("#fields", "#about", "#feedback", "weekly/", "archive/"):
                 self.assertIn(f'href="/{locale}/{path}"', page)
-            self.assertIn("PolyEmergence Pte Ltd.", page)
+            self.assertIn("Published by PolyEmergence, a sole proprietorship in Singapore." if locale == "en" else "由在新加坡以独资形式经营的 PolyEmergence 发布。", page)
 
     def test_synthesis_comes_before_lead_and_events_without_scores_or_draft_status(self):
         page = render_weekly_issue(fixture(), "en")
@@ -306,11 +306,11 @@ class WeeklyPublicTests(unittest.TestCase):
             author = schema(page)["author"]
             self.assertEqual(author["@type"], "Organization")
             self.assertEqual(author["name"], "Polyemergence")
-            self.assertEqual(author["legalName"], "PolyEmergence Pte Ltd.")
+            self.assertNotIn("legalName", author)
+            self.assertEqual(schema(page)["publisher"]["name"], "PolyEmergence")
             self.assertEqual(author["sameAs"], [f"https://polyemergence.com/{locale}/standards/", f"https://polyemergence.com/{locale}/#about"])
             byline = re.search(r'<p class="weekly-byline">(.*?)</p>', page)[1]
-            self.assertIn("Polyemergence", byline)
-            self.assertIn("PolyEmergence Pte Ltd.", byline)
+            self.assertEqual(byline.casefold().count("polyemergence"), 1)
             self.assertIn("AI-assisted" if locale == "en" else "AI 辅助", byline)
             self.assertNotIn('"@type":"Person"', page)
 
