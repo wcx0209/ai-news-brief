@@ -1,0 +1,72 @@
+name: Polyemergence repair an incomplete weekly draft
+
+on:
+  workflow_dispatch:
+    inputs:
+      week_start:
+        description: Completed issue Monday (Singapore), YYYY-MM-DD
+        required: true
+        type: string
+      source_run_id:
+        description: Failed weekly publication run with a saved incomplete draft
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: polyemergence-daily-brief
+  cancel-in-progress: false
+
+jobs:
+  repair:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      WEEK_START: ${{ inputs.week_start }}
+      SOURCE_RUN_ID: ${{ inputs.source_run_id }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: main
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0
+        with:
+          python-version: "3.11"
+          cache: pip
+      - name: Check the issue has not been published
+        id: issue
+        run: python scripts/publish_weekly.py --preflight
+      - name: Install cloud draft dependencies
+        if: steps.issue.outputs.exists != 'true'
+        run: |
+          pip install -r requirements-weekly.txt
+          sudo apt-get update -qq && sudo apt-get install -y --no-install-recommends fonts-noto-cjk
+      - name: Verify draft repair offline
+        if: steps.issue.outputs.exists != 'true'
+        run: python -m unittest discover -s tests -p 'test_weekly_*.py' -v
+      - name: Repair the saved draft and audit the final copy
+        if: steps.issue.outputs.exists != 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          INBRIEF_LLM_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          INBRIEF_LLM_MODEL_NAME: gemini-3.5-flash-lite
+        run: python scripts/recover_weekly_draft.py
+      - name: Retain only a fully checked review artifact for publication
+        if: success() && steps.issue.outputs.exists != 'true'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: polyemergence-weekly-review
+          path: output/weekly-draft-repair/review/
+          retention-days: 30
+          if-no-files-found: error
+      - name: Retain unsuccessful repair diagnostics outside the site
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: polyemergence-weekly-repair-diagnostics
+          path: output/weekly-draft-repair/review/
+          retention-days: 30
+          if-no-files-found: ignore

@@ -1,0 +1,12 @@
+{
+  "week_start": "2026-11-16",
+  "source_run_id": "45520268650",
+  "instructions": [
+    "Keep the full original selection. Three reports mention the same Anthropic listing. Give the industry roundup, market close and Apple hiring item distinct angles. Omit disputed offering totals and valuations in both languages: the summaries mix IPO proceeds with private placements, intraday with closing prices, and billion with trillion. Describe Apple's reported hiring as evidence of intent.",
+    "In Google's Willow account, the magic-square score and the largest qubit count refer to different tasks. Do not combine these results. Attribute the contextuality tests to the researchers and confine the conclusion to their specified games.",
+    "Lila's reported 88.8% applies to predicting structure from spectra on its test, not every conversion. MIT's accounts differ on energy conservation versus dissipation. Describe the projection that bounds model trajectories and leave accuracy on new systems an open question.",
+    "Isomorphic Labs raised funding for research. Explain the proposed use of funds without inferring a treatment result. Spaceflight Now attributes the preliminary fuel-supply explanation to ULA. Preserve the investigation's provisional status.",
+    "The Robot Report item is commentary on robotics suppliers' dependence on Nvidia's tools, investment and promotion. Distinguish this week's commentary from the timing of any personnel announcement. Attribute OpenAI's performance and cost comparisons to the company. Capability risk thresholds do not measure product safety.",
+    "Use each cited source's own account and limits. Treat these notes as prompts to check the evidence, never as a substitute for a source. Support synthesis and lead with the actual distinct examples discussed. Make all ten items and their citations agree across languages."
+  ]
+}

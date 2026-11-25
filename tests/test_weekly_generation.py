@@ -221,6 +221,45 @@ class WeeklyGenerationTests(unittest.TestCase):
         self.assertEqual(report['editorial_review']['audit'], audit)
         self.assertEqual(report['editorial_review']['post_revision_audit'], {'issues': []})
 
+    def test_partial_draft_gets_one_planned_revision_and_fresh_audit(self):
+        original = draft(self.packet)
+        for content in original.values():
+            content['main_events'] = content['main_events'][1:]
+            content['synthesis']['structure'] = 'A string instead of a cited dimension.'
+        complete = draft(self.packet)
+        first_audit = {'issues': [], 'note_en': 'Review of the incomplete original.'}
+        final_audit = {'issues': [], 'note_en': 'Review of the full replacement.'}
+        call = MagicMock(side_effect=[original, first_audit, complete, final_audit])
+        report, packet = generation.generate_review(plan(), self.issue, call)
+        requests = [request.args for request in call.call_args_list]
+        self.assertEqual([request[2] for request in requests],
+                         ['draft', 'automated_editorial_check', 'bounded_revision', 'post_revision_editorial_check'])
+        self.assertIs(requests[1][1]['draft'], original)
+        self.assertIs(requests[2][1]['previous_draft'], original)
+        self.assertEqual(requests[2][1]['required_event_order'], {
+            'main_events': [{'event_id': 'event-' + str(n), 'allowed_evidence_ids': ['source-' + str(n)]} for n in (1, 2, 3)],
+            'early_signals': [],
+        })
+        self.assertIs(requests[2][1]['evidence_packet'], packet)
+        self.assertIs(requests[3][1]['draft'], complete)
+        review = report['editorial_review']
+        self.assertTrue(review['revision_made'])
+        self.assertEqual(review['initial_validation_error'], 'weekly_event_plan_mismatch')
+        self.assertEqual(review['audit'], first_audit)
+        self.assertEqual(review['post_revision_audit'], final_audit)
+
+    def test_plan_repair_preserves_citation_validation_and_does_not_retry_again(self):
+        original = draft(self.packet)
+        original['zh']['main_events'].reverse()
+        invalid_citation = draft(self.packet)
+        invalid_citation['en']['main_events'][0]['evidence_ids'] = ['source-2']
+        for repaired, reason in ((original, 'weekly_event_plan_mismatch'), (invalid_citation, 'weekly_invalid_evidence_ids')):
+            with self.subTest(reason=reason):
+                call = MagicMock(side_effect=[original, {'issues': []}, repaired])
+                with self.assertRaisesRegex(ValueError, reason):
+                    generation.generate_review(plan(), self.issue, call)
+                self.assertEqual(call.call_count, 3)
+
     def test_medium_also_gets_one_revision_and_a_clean_current_audit(self):
         audit = {'issues': [{'severity': 'medium', 'event_id': 'synthesis.structure', 'evidence_ids': ['source-1', 'source-2'],
                              'detail_zh': '机制推断缺少条件。', 'detail_en': 'State the mechanism condition.'}]}

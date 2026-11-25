@@ -57,6 +57,29 @@ class WeeklyReleaseTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, 'manual_dispatch'):
                 release.main(['--preflight'])
 
+    def test_recovered_artifact_rechecks_automatic_gate_on_exact_audited_text(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory).resolve()
+            source = root / 'output' / 'review'
+            source.mkdir(parents=True)
+            report = {'issue': {'week_start': '2026-11-16'}}
+            metadata = {'recovered_from_publication_run_id': '100'}
+            for filename, value in [('weekly-review.json', report), ('generation-metadata.json', metadata),
+                                    ('evidence-packet.json', {}), ('source-catalog.json', [])]:
+                (source / filename).write_text(json.dumps(value))
+            exporter = MagicMock()
+            with patch.object(release, 'ROOT', root), patch.object(release, 'release_copy') as copy, \
+                    patch.dict(sys.modules, {'export_weekly': exporter}), \
+                    patch.object(release, 'prepare_publication', side_effect=ValueError('unresolved')) as gate, \
+                    patch.dict(os.environ, {'GITHUB_ACTIONS': 'true', 'GITHUB_EVENT_NAME': 'workflow_dispatch',
+                                            'WEEK_START': '2026-11-16', 'SOURCE_RUN_ID': '101'}):
+                with self.assertRaisesRegex(ValueError, 'unresolved'):
+                    release.main(['--input', 'output/review'])
+                copy.assert_not_called()
+                self.assertEqual(gate.call_args.args[0], report)
+                self.assertIs(gate.call_args.kwargs['user_authorized'], False)
+                exporter.export_weeklies.assert_not_called()
+
     def test_retry_only_known_transient_before_any_successful_response(self):
         value = {'status': 'failed', 'provider_status': 503, 'calls': [{'purpose': 'draft'}]}
         self.assertTrue(release.transient_before_response(value))

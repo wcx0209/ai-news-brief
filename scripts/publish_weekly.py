@@ -156,10 +156,16 @@ def main(argv=None):
     packet = load_json(source / 'evidence-packet.json')
     catalog = load_json(source / 'source-catalog.json')
     metadata = load_json(source / 'generation-metadata.json')
-    report, copyedits = release_copy(report, source_run)
+    # A recovered draft has been audited word-for-word. Publish that same text
+    # and apply the original evidence gates again, even on manual dispatch.
+    recovered = 'recovered_from_publication_run_id' in metadata
+    copyedits = []
+    if not recovered:
+        report, copyedits = release_copy(report, source_run)
     now = datetime.now(timezone.utc)
     payload = prepare_publication(report, packet, catalog, published_at=now,
-                                  user_authorized=bool(source_run), generation_metadata=metadata, now=now)
+                                  user_authorized=bool(source_run) and not recovered,
+                                  generation_metadata=metadata, now=now)
     # Exporter renders and checks every page before replacing any public file.
     export_weeklies(public, [*load_editions(public), payload])
     audit = {'status': 'publication_ready', 'week_start': week,
