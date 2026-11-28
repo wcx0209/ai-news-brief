@@ -66,12 +66,12 @@ def hydrogen_fixture():
     record["en"] = {
         "title": "Google Introduces Gemini 4 Hydrogen Model for Fast Execution and Agentic Workflows",
         "summary": "According to Google DeepMind: Google is introducing Gemini 4 Hydrogen, a new model designed for rapid execution and everyday agentic workflows.",
-        "full": "Google is rolling out Gemini 4 Hydrogen to bring cutting-edge intelligence and speed to everyday coding and agentic workflows. While frontier models like Carbon and Argon handle deep, long-horizon reasoning on complex problems, Hydrogen is built as an efficient execution engine for rapid tasks and multi-model collaboration.",
+        "full": "Google is rolling out Gemini 4 Hydrogen to bring cutting-edge intelligence and speed to everyday coding and agentic workflows. While frontier models like Carbon and Argon handle deep, long-horizon reasoning on complex problems, Hydrogen is built as an efficient execution engine for rapid tasks and multi-model collaboration.\nEcosystem Integration\nHydrogen is rolling out globally across the Gemini API, Google AI Studio, the Gemini app, Google Search, and enterprise tools.",
     }
     record["zh"] = {
         "title": "谷歌发布 Gemini 4 Hydrogen 模型，主打快速执行与智能体工作流",
         "summary": "据Google DeepMind发布的信息：谷歌推出了全新模型 Gemini 4 Hydrogen，旨在提供快速执行能力和日常的智能体工作流。",
-        "full": "谷歌正式发布了 Gemini 4 Hydrogen 模型，旨在将前沿的AI智能以高速度和高效率带入日常编程与智能体工作流中。虽然谷歌的旗舰模型 Carbon 和 Argon 专注于处理复杂的长周期推理任务，但 Hydrogen 的核心定位则是作为一个高效的执行引擎，胜任各类高频和多步骤的日常任务。",
+        "full": "谷歌正式发布了 Gemini 4 Hydrogen 模型，旨在将前沿的AI智能以高速度和高效率带入日常编程与智能体工作流中。虽然谷歌的旗舰模型 Carbon 和 Argon 专注于处理复杂的长周期推理任务，但 Hydrogen 的核心定位则是作为一个高效的执行引擎，胜任各类高频和多步骤的日常任务。\n生态整合与应用\nHydrogen 目前正在向全球的开发者、企业和普通消费者全面推送，覆盖 Gemini API、AI Studio、Gemini App 以及谷歌搜索。",
     }
     return record
 
@@ -210,6 +210,7 @@ class ArchiveSearchContextTests(unittest.TestCase):
                 self.assertIn(f'<h1>{html.escape(context["seo_title"])}</h1>', page)
                 self.assertEqual(data["headline"], context["seo_title"])
                 self.assertEqual(data["description"], context["description"])
+                self.assertIn(f'<p class="archive-dek">{html.escape(context["description"])}</p>', page)
                 self.assertIn(f'<meta name="description" content="{html.escape(context["description"], quote=True)}">', page)
                 self.assertIn('class="archive-prose archive-search-context"', page)
                 reader_section = re.search(r'<section class="archive-prose archive-search-context".*?</section>', page, re.S)[0]

@@ -22,6 +22,7 @@ sys.path.insert(0, str(ROOT / "src"))
 from editorial_insights import enrich_item, reading_guidance, article_reading_context
 from editorial_artwork import editorial_artwork_path, editorial_caption
 from source_catalog import load_seed_catalog
+from weekly_seo import compact_weekly_period
 SITE = "https://polyemergence.com"
 SGT = ZoneInfo("Asia/Singapore")
 WINDOW = timedelta(hours=48)
@@ -485,6 +486,43 @@ def render_domain_links(locale, domains):
     )
 
 
+def latest_published_weekly(public):
+    directory = public / "data/weekly"
+    index = directory / "index.json"
+    if not index.is_file():
+        return None
+    identifier = json.loads(index.read_text(encoding="utf-8")).get("latest")
+    if not identifier:
+        return None
+    if not isinstance(identifier, str) or not re.fullmatch(r"\d{4}-\d{2}-\d{2}", identifier):
+        raise ValueError("Invalid latest weekly edition id")
+    data = directory / f"{identifier}.json"
+    if not data.is_file() or not all(
+            (public / locale / "weekly" / identifier / "index.html").is_file() for locale in ("en", "zh")):
+        return None
+    edition = json.loads(data.read_text(encoding="utf-8"))
+    if edition.get("id") != identifier or edition.get("week_start") != identifier:
+        raise ValueError("Latest weekly edition does not match its published index")
+    return edition
+
+
+def sync_latest_weekly_link(page, locale, edition, domain=None):
+    """Keep one visible, dated link on the home page and on fields covered by this issue."""
+    page = re.sub(r'<a data-latest-weekly\b[^>]*>.*?</a>', "", page, flags=re.S)
+    if not edition or (domain and not any(
+        row["domain"] == domain and row["selected_count"] > 0 for row in edition.get("coverage", {}).get("fields", [])
+    )):
+        return page
+    label = "Latest weekly review" if locale == "en" else "最新科技周报"
+    if domain:
+        label = "This field in the weekly review" if locale == "en" else "本领域周报选读"
+    period = compact_weekly_period(edition, locale)
+    link = (f'<a data-latest-weekly class="tech-news-link" href="/{locale}/weekly/{edition["id"]}/">'
+            f'{label} · {esc(period)} <span aria-hidden="true">↗</span></a>')
+    section = "brief" if domain else "fields"
+    return re.sub(rf'(<section\b[^>]*\bid="{section}"[^>]*>)', lambda match: match[0] + link, page, count=1)
+
+
 def sync_home_navigation(shell, locale, domains):
     """Keep crawlable homepage links in step with the data-driven field registry."""
     # Weekly is a standalone locale route, not a field-selection hash target.
@@ -740,11 +778,15 @@ def export(public, registry_path, feed_path, sources_path, articles_path=None, n
         corpus = {str(item.get("id")): item for item in json.loads(Path(articles_path).read_text(encoding="utf-8")).get("items", [])}
     observations_path = Path(observations_path) if observations_path else public / "data/observations.json"
     observations = json.loads(observations_path.read_text(encoding="utf-8")) if observations_path.is_file() else {}
+    weekly = latest_published_weekly(public)
     urls = []
     for locale in ("en", "zh"):
         home = public / locale / "index.html"
         shell = sync_home_navigation(home.read_text(encoding="utf-8"), locale, domains)
-        home.write_text(shell, encoding="utf-8")
+        # Homes are also our field/hub templates. Remove yesterday's feature
+        # from the shell before inserting this issue on the appropriate pages.
+        shell = sync_latest_weekly_link(shell, locale, None)
+        home.write_text(sync_latest_weekly_link(shell, locale, weekly), encoding="utf-8")
         destination = public / hub_path(locale).lstrip("/") / "index.html"
         destination.parent.mkdir(parents=True, exist_ok=True)
         destination.write_text(render_hub_page(shell, locale, domains, feed, sources, now), encoding="utf-8")
@@ -753,7 +795,8 @@ def export(public, registry_path, feed_path, sources_path, articles_path=None, n
             path = field_path(locale, domain["id"])
             destination = public / path.lstrip("/") / "index.html"
             destination.parent.mkdir(parents=True, exist_ok=True)
-            destination.write_text(render_field_page(shell, domain, locale, domains, feed, sources, corpus, public, now, observations), encoding="utf-8")
+            page = render_field_page(shell, domain, locale, domains, feed, sources, corpus, public, now, observations)
+            destination.write_text(sync_latest_weekly_link(page, locale, weekly, domain["id"]), encoding="utf-8")
             urls.append(SITE + path)
     namespace = "http://www.sitemaps.org/schemas/sitemap/0.9"
     ET.register_namespace("", namespace)

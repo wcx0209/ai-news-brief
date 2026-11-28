@@ -74,7 +74,7 @@ def weekly_period(payload, locale):
 def weekly_heading(payload, locale):
     """Full readable title: publication type, actual supplied topic, period."""
     topic = weekly_topic(payload, locale)
-    period = _compact_period(payload, locale, include_year=True)
+    period = compact_weekly_period(payload, locale, include_year=True)
     return (f"{WEEKLY_TYPES[locale]}: {topic} ({period})" if locale == "en"
             else f"{WEEKLY_TYPES[locale]}：{topic}（{period}）")
 
@@ -88,7 +88,7 @@ def weekly_meta_title(payload, locale):
     """
     _locale(locale)
     topic = weekly_topic(payload, locale)
-    period = _compact_period(payload, locale)
+    period = compact_weekly_period(payload, locale)
     prefix = "Weekly Tech News: " if locale == "en" else "科技周报："
     suffix = f" | {period}" if locale == "en" else f"｜{period}"
     budget = max(20, 100 - len(prefix + suffix + " | " + _BRANDS[locale]))
@@ -125,7 +125,7 @@ def weekly_meta_title(payload, locale):
     return prefix + short + suffix
 
 
-def _compact_period(payload, locale, include_year=False):
+def compact_weekly_period(payload, locale, include_year=False):
     payload = payload if isinstance(payload, Mapping) else {}
     try:
         start = date.fromisoformat(_text(payload.get("week_start"))[:10])

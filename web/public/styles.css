@@ -779,6 +779,7 @@ footer p { margin: 0; color: var(--fog); }
 
 /* One honest field guide, and an index of technology coverage rather than a mixed feed. */
 .tech-news-link { display: inline-block; margin-bottom: 18px; color: #a93a13; font-size: 12px; font-weight: 700; text-decoration-thickness: 1px; text-underline-offset: 4px; }
+.fields [data-latest-weekly] { margin-inline-end: 20px; }
 .field-reading-guidance { margin: 0 0 18px; max-width: 900px; color: #68645c; }
 .field-reading-guidance details { padding: 0; border: 0; }
 .field-reading-guidance summary { display: list-item; width: fit-content; padding-block: 4px; color: #6a6258; font-size: 12px; line-height: 1.5; cursor: pointer; text-underline-offset: 3px; }

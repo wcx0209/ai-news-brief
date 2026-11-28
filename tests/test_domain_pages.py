@@ -67,6 +67,42 @@ class DomainPagesTests(unittest.TestCase):
         sources.write_text("SOURCES = " + repr(self.sources), encoding="utf-8")
         return registry, feed, sources
 
+    def test_current_weekly_entry_follows_edition_and_selected_fields(self):
+        with tempfile.TemporaryDirectory() as directory:
+            public = Path(directory)
+            registry, feed, sources = self.export_fixture(public, self.domains)
+            weekly = public / "data/weekly"
+            weekly.mkdir(parents=True)
+            for start, end, field in (("2026-11-09", "2026-11-15", "ai"),
+                                       ("2026-11-16", "2026-11-22", "programmable_life")):
+                (weekly / "index.json").write_text(json.dumps({"latest": start}))
+                (weekly / f"{start}.json").write_text(json.dumps({
+                    "id": start, "week_start": start, "week_end": end,
+                    "coverage": {"fields": [{"domain": d["id"], "selected_count": int(d["id"] == field),
+                                             "qualified_count": 5} for d in self.domains]},
+                }))
+                for locale in ("en", "zh"):
+                    dated = public / locale / "weekly" / start
+                    dated.mkdir(parents=True)
+                    (dated / "index.html").write_text("Published")
+                for _ in range(2):
+                    pages.export(public, registry, feed, sources)
+                    for locale in ("en", "zh"):
+                        folder = public / locale
+                        expected = f'href="/{locale}/weekly/{start}/"'
+                        for name in ("index.html", f"fields/{field}/index.html"):
+                            body = (folder / name).read_text()
+                            self.assertEqual(body.count("data-latest-weekly"), 1)
+                            self.assertIn(expected, body)
+                            self.assertIn("weekly review" if locale == "en" else "周报", body)
+                        other = next(d["id"] for d in self.domains if d["id"] != field)
+                        for name in (f"fields/{other}/index.html", "tech-news/index.html"):
+                            self.assertNotIn("data-latest-weekly", (folder / name).read_text())
+            (weekly / "index.json").write_text(json.dumps({"latest": None}))
+            pages.export(public, registry, feed, sources)
+            self.assertNotIn("data-latest-weekly", (public / "en/index.html").read_text())
+            self.assertNotIn("data-latest-weekly", (public / "zh/fields/programmable_life/index.html").read_text())
+
     def test_publication_window_and_domain_are_enforced_in_visible_html_and_jsonld(self):
         items = [self.item(), self.item("boundary", source_published_at=(self.now - timedelta(hours=48)).isoformat()), self.item("old", source_published_at=(self.now - timedelta(hours=48, seconds=1)).isoformat()), self.item("future", source_published_at=(self.now + timedelta(seconds=1)).isoformat()), self.item("missing", source_published_at=None), self.item("other", domain="ai"), self.item("unsafe", url="javascript:alert(1)"), self.item()]
         with tempfile.TemporaryDirectory() as folder:

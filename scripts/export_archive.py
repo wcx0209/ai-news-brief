@@ -886,7 +886,10 @@ def story_html(record, locale, detail=False):
     context_html = f'<p class="story-context"><strong>{"Observation focus (editorial lens)" if locale == "en" else "观察重点（编辑视角）"}</strong> {esc(context)}</p>' if context else ""
     dek_html = ""
     if detail:
-        dek, body = detail_dek(text, locale)
+        if search_context:
+            dek, body = search_context["description"], text["full"] or text["summary"]
+        else:
+            dek, body = detail_dek(text, locale)
         dek_html = f'<p class="archive-dek">{esc(dek)}</p>' if dek else ""
         summary_html = archive_figure(record, locale) + archive_prose(body)
     else:
