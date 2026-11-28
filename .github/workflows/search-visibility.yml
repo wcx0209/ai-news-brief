@@ -1,0 +1,66 @@
+name: Daily lead search visibility
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "37 */3 * * *"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: polyemergence-lead-search-visibility
+  cancel-in-progress: false
+
+jobs:
+  monitor:
+    if: github.ref == 'refs/heads/main' && vars.GSC_WIF_PROVIDER != '' && vars.GSC_SERVICE_ACCOUNT != ''
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - &checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - &python
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0
+        with:
+          python-version: "3.11"
+      - &install
+        name: Install monitoring dependencies
+        run: python -m pip install "google-auth[requests]>=2.28,<3" "psycopg2-binary>=2.9,<3" "requests>=2.32.5,<3"
+      - name: Authenticate to Google using GitHub OIDC
+        uses: google-github-actions/auth@7c6bc770dae815cd3e89ee6cdf493a5fab2cc093 # v3
+        with:
+          workload_identity_provider: ${{ vars.GSC_WIF_PROVIDER }}
+          service_account: ${{ vars.GSC_SERVICE_ACCOUNT }}
+          create_credentials_file: true
+      - name: Check indexing milestones and search impressions
+        env: &database
+          INBRIEF_SUPABASE_DB_URL: ${{ secrets.INBRIEF_SUPABASE_DB_URL }}
+        run: |
+          test -r "$GOOGLE_APPLICATION_CREDENTIALS"
+          args=(--public web/public --output-dir output/search-indexing)
+          if [[ "$GITHUB_EVENT_NAME" == workflow_dispatch ]]; then
+            args+=(--verify-access)
+          fi
+          python scripts/track_search_indexing.py "${args[@]}"
+          echo "Monitoring completed. Read the private report in Supabase." >> "$GITHUB_STEP_SUMMARY"
+
+  discover:
+    if: github.ref == 'refs/heads/main' && (vars.GSC_WIF_PROVIDER == '' || vars.GSC_SERVICE_ACCOUNT == '')
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - *checkout
+      - *python
+      - *install
+      - name: Register lead articles while Google access is being configured
+        env: *database
+        run: |
+          python scripts/track_search_indexing.py --public web/public --output-dir output/search-indexing --discover-only
+          echo "::warning::Search Console access is pending. Only publication discovery ran."
+          echo "Publication discovery completed. Search Console measurements are pending credentials." >> "$GITHUB_STEP_SUMMARY"
