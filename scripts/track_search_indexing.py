@@ -234,8 +234,9 @@ def update_checks(conn, cursor, rows, session):
             if timestamp(result["observed_at"]) >= row["published_at"] + timedelta(hours=hour) + GRACE:
                 continue
             row["checkpoints"][str(hour)] = result
-            cursor.execute("UPDATE search_monitor_private.leads SET checkpoints=%s WHERE url=%s",
-                           (json.dumps(row["checkpoints"]), row["url"]))
+            cursor.execute("""UPDATE search_monitor_private.leads
+                              SET checkpoints=checkpoints || %s::jsonb WHERE url=%s AND NOT (checkpoints ? %s)""",
+                           (json.dumps({str(hour): result}), row["url"], str(hour)))
             conn.commit()
     return failed
 
@@ -269,8 +270,10 @@ def update_analytics(conn, cursor, rows, session, now):
             if url in dates or url in hours:
                 metrics.setdefault("first_seen_in_api_at", now.isoformat())
             metrics["checked_at"] = now.isoformat()
-            cursor.execute("UPDATE search_monitor_private.leads SET analytics=%s WHERE url=%s",
-                           (json.dumps(metrics), url))
+            cursor.execute("""UPDATE search_monitor_private.leads SET analytics=analytics || %s::jsonb
+                              WHERE url=%s AND (analytics->>'checked_at' IS NULL
+                              OR (analytics->>'checked_at')::timestamptz < %s)""",
+                           (json.dumps(metrics), url, now))
         conn.commit()
     return failed
 
@@ -333,8 +336,8 @@ def main():
     conn = psycopg2.connect(os.environ["INBRIEF_SUPABASE_DB_URL"], connect_timeout=20)
     try:
         with conn.cursor(cursor_factory=RealDictCursor) as cursor:
-            # Serialize even manual retries from a second runner, including schema initialization.
-            cursor.execute("SELECT pg_advisory_lock(815746313)")
+            # Safe with both direct and transaction-pooled Supabase connections.
+            cursor.execute("SELECT pg_advisory_xact_lock(815746313)")
             cursor.execute(SCHEMA)
             enroll(cursor, found, now)
             conn.commit()
@@ -355,7 +358,7 @@ def main():
                 conn.rollback()
                 store_report(conn, cursor, recent_records(cursor, now), args.output_dir, "google_measurement_incomplete")
                 raise
-            store_report(conn, cursor, rows, args.output_dir, mode)
+            store_report(conn, cursor, recent_records(cursor, now), args.output_dir, mode)
             print("Search visibility cohort and private report saved.", flush=True)
     finally:
         conn.close()
